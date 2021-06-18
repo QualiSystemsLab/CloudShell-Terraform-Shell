@@ -3,11 +3,11 @@ TERRAFORM_URL = "https://releases.hashicorp.com/terraform"
 TERRAFORM_LATEST_URL = "https://checkpoint-api.hashicorp.com/v1/check/terraform"
 
 # OS types defined by sys.platform
-OS_TYPES = {
-        'darwin': 'linux_amd64',
-        'linux': 'linux_amd64',
-        'win32': 'windows_amd64'
-}
+os_types = {
+ 'darwin': 'darwin_amd64',
+ 'linux' : 'linux_amd64',
+ 'win32' : 'windows_amd64'
+ }
 
 CS_SERVER = "192.168.0.138"
 CS_SERVER2 = "192.168.33.37"
