@@ -155,34 +155,94 @@ class TerraformService2G(object):
         return 'TerraformService2G'
 
     @property
-    def terraform_module_path(self):
+    def github_terraform_module_url(self):
         """
         :rtype: str
         """
-        return self.attributes['Terraform Service 2G.Terraform Module Path'] if 'Terraform Service 2G.Terraform Module Path' in self.attributes else None
+        return self.attributes['Terraform Service 2G.Github Terraform Module URL'] if 'Terraform Service 2G.Github Terraform Module URL' in self.attributes else None
 
-    @terraform_module_path.setter
-    def terraform_module_path(self, value):
+    @github_terraform_module_url.setter
+    def github_terraform_module_url(self, value):
         """
-        path to target module. Target directory will be changed to here before running terraform commands.
+        The Github url e.g https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH
         :type value: str
         """
-        self.attributes['Terraform Service 2G.Terraform Module Path'] = value
+        self.attributes['Terraform Service 2G.Github Terraform Module URL'] = value
 
     @property
-    def terraform_executable(self):
+    def terraform_version(self):
         """
         :rtype: str
         """
-        return self.attributes['Terraform Service 2G.Terraform Executable'] if 'Terraform Service 2G.Terraform Executable' in self.attributes else None
+        return self.attributes['Terraform Service 2G.Terraform Version'] if 'Terraform Service 2G.Terraform Version' in self.attributes else None
 
-    @terraform_executable.setter
-    def terraform_executable(self, value):
+    @terraform_version.setter
+    def terraform_version(self, value):
         """
-        path to folder with terraform.exe
+        The version of terraform needed (empty=latest)
         :type value: str
         """
-        self.attributes['Terraform Service 2G.Terraform Executable'] = value
+        self.attributes['Terraform Service 2G.Terraform Version'] = value
+
+    @property
+    def github_token(self):
+        """
+        :rtype: string
+        """
+        return self.attributes['Terraform Service 2G.Github Token'] if 'Terraform Service 2G.Github Token' in self.attributes else None
+
+    @github_token.setter
+    def github_token(self, value):
+        """
+        Github Token
+        :type value: string
+        """
+        self.attributes['Terraform Service 2G.Github Token'] = value
+
+    @property
+    def cloud_provider(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Terraform Service 2G.Cloud Provider'] if 'Terraform Service 2G.Cloud Provider' in self.attributes else None
+
+    @cloud_provider.setter
+    def cloud_provider(self, value):
+        """
+        Cloud provider name to be used for cloud access
+        :type value: str
+        """
+        self.attributes['Terraform Service 2G.Cloud Provider'] = value
+
+    @property
+    def terraform_output(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Terraform Service 2G.Terraform Output'] if 'Terraform Service 2G.Terraform Output' in self.attributes else None
+
+    @terraform_output.setter
+    def terraform_output(self, value):
+        """
+        Output from Terraform run
+        :type value: str
+        """
+        self.attributes['Terraform Service 2G.Terraform Output'] = value
+
+    @property
+    def terraform_inputs(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Terraform Service 2G.Terraform Inputs'] if 'Terraform Service 2G.Terraform Inputs' in self.attributes else None
+
+    @terraform_inputs.setter
+    def terraform_inputs(self, value):
+        """
+        comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
+        :type value: str
+        """
+        self.attributes['Terraform Service 2G.Terraform Inputs'] = value
 
     @property
     def name(self):

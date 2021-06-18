@@ -1,9 +1,17 @@
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
-from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadResource, \
-    AutoLoadAttribute, AutoLoadDetails, CancellationContext
+from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext
+from cloudshell.shell.core.session.logging_session import LoggingSessionContext
+
 from data_model import *  # run 'shellfoundry generate' to generate data model classes
 from subprocess import check_output
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
+
+from downloaders.downloader import Downloader
+from driver_helper_obj import DriverHelperObject
+from subprocess import STDOUT, CalledProcessError
+
+from services.provider_handler import ProviderHandler
+from services.tf_proc_exec import TfProcExec
 
 
 class TerraformService2GDriver (ResourceDriverInterface):
@@ -20,6 +28,7 @@ class TerraformService2GDriver (ResourceDriverInterface):
         This is a good place to load and cache the driver configuration, initiate sessions etc.
         :param InitCommandContext context: the context the command runs on
         """
+
         pass
 
     def cleanup(self):
@@ -41,27 +50,41 @@ class TerraformService2GDriver (ResourceDriverInterface):
         service_resource = TerraformService2G.create_from_context(context)
         tform_dir = service_resource.terraform_module_path
         tform_exe_dir = service_resource.terraform_executable
-        tform_command = [f"{tform_exe_dir}\\terraform.exe", "apply", "-auto-approve", "-no-color"]
+        tform_command = [f"{tform_exe_dir}\\terraform.exe", "apply", '"holdme"' "-auto-approve", "-no-color"]
         outp = check_output(tform_command, cwd=tform_dir).decode("utf-8")
 
         return outp
 
-    def plan_terraform(self, context):
-        """
-        :param ResourceCommandContext context:
-        :return:
-        """
-        api = CloudShellSessionContext(context).get_api()
-        res_id = context.reservation.reservation_id
+    def execute_terraform(self, context: ResourceCommandContext):
+        with LoggingSessionContext(context) as logger:
 
-        api.WriteMessageToReservationOutput(res_id, "Generating terraform plan..")
-        service_resource = TerraformService2G.create_from_context(context)
-        tform_dir = service_resource.terraform_module_path
-        tform_exe_dir = service_resource.terraform_executable
-        tform_command = [f"{tform_exe_dir}\\terraform.exe", "plan", "-no-color"]
-        outp = check_output(tform_command, cwd=tform_dir).decode("utf-8")
+            api = CloudShellSessionContext(context).get_api()
+            res_id = context.reservation.reservation_id
+            tf_service = TerraformService2G.create_from_context(context)
 
-        return outp
+            driver_helper_obj = DriverHelperObject(api, res_id, tf_service, logger)
+
+            try:
+                downloader = Downloader(driver_helper_obj)
+                tf_workingdir = downloader.download_terraform_module()
+                downloader.download_terraform_executable(tf_workingdir)
+
+                ProviderHandler.initialize_provider(driver_helper_obj)
+                tf_proc_executer = TfProcExec(driver_helper_obj, tf_workingdir)
+                tf_proc_executer.init_terraform()
+                tf_proc_executer.plan_terraform()
+                tf_proc_executer.apply_terraform()
+                # todo : write output to file
+                tf_proc_executer.parse_and_save_terraform_outputs()
+
+            except CalledProcessError as e:
+                logger.error(f"Error occurred while trying to execute Terraform {str(e)} "
+                             f"output = {e.stdout.decode('utf-8')}")
+                raise
+            except Exception as e:
+                logger.error(f"Error occurred while trying to execute Terraform {str(e)} ")
+                raise
+
 
     def destroy_terraform(self, context):
         """
@@ -76,7 +99,7 @@ class TerraformService2GDriver (ResourceDriverInterface):
         tform_dir = service_resource.terraform_module_path
         tform_exe_dir = service_resource.terraform_executable
         tform_command = [f"{tform_exe_dir}\\terraform.exe", "destroy", "-auto-approve", "-no-color"]
-        outp = check_output(tform_command, cwd=tform_dir).decode("utf-8")
+        outp = check_output(tform_command, cwd=tform_dir , stderr=STDOUT).decode("utf-8")
 
         return outp
 
