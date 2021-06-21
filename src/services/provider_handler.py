@@ -12,12 +12,12 @@ class ProviderHandler(object):
         clp_res_model = driver_help_object.api.GetResourceDetails(clp_resource_name).ResourceModelName
         clpr_res_fam = driver_help_object.api.GetResourceDetails(clp_resource_name).ResourceFamilyName
 
-        if clpr_res_fam != 'Cloud Provider':
+        if clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider':
             driver_help_object.logger.error(f"{clpr_res_fam} currently not supported")
             raise ValueError(f"{clpr_res_fam} currently not supported")
 
         try:
-            if clp_res_model == 'Microsoft Azure':
+            if clp_res_model == 'Microsoft Azure' or clp_res_model == 'Microsoft Azure Cloud Provider Shell 2G':
                 driver_help_object.api.WriteMessageToReservationOutput(driver_help_object.res_id, "Preparing Terraform Keys...")
                 driver_help_object.logger.info("Initializing Environment variables with CloudProvider details")
                 clp_resource_attributes = driver_help_object.api.GetResourceDetails(clp_resource_name).ResourceAttributes
