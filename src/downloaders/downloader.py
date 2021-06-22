@@ -20,9 +20,9 @@ class Downloader(object):
 
     def download_terraform_executable(self, tf_workingdir: str) -> None:
         try:
-            self._driver_helper_obj.logger.info("Downloading Terraform Executable")
+            self._driver_helper_obj.logger.info("Downloading Terraform executable")
             self._driver_helper_obj.api.WriteMessageToReservationOutput(self._driver_helper_obj.res_id,
-                                                                        "Downloading Terraform Executable...")
+                                                                        "Downloading Terraform executable...")
 
             TfExecDownloader.download_terraform_executable(tf_workingdir,
                                                            self._driver_helper_obj.tf_service.terraform_version)

@@ -23,7 +23,7 @@ class TfProcExec(object):
     def plan_terraform(self):
         self._driver_helper_obj.logger.info("Running Terraform Plan")
         self._driver_helper_obj.api.WriteMessageToReservationOutput(self._driver_helper_obj.res_id,
-                                                                    "Generating terraform plan...")
+                                                                    "Generating Terraform Plan...")
         vars = ["plan", ]
         if self._driver_helper_obj.tf_service.terraform_inputs:
             for input in self._driver_helper_obj.tf_service.terraform_inputs.split(","):
@@ -36,7 +36,7 @@ class TfProcExec(object):
     def apply_terraform(self):
         self._driver_helper_obj.logger.info("Running Terraform Apply")
         self._driver_helper_obj.api.WriteMessageToReservationOutput(self._driver_helper_obj.res_id,
-                                                                     "Executing terraform with auto approve...")
+                                                                    "Executing Terraform Apply with auto approve...")
         vars = ["apply", "--auto-approve", "-no-color", "planfile"]
         return self._run_tf_proc_with_command(vars)
 
