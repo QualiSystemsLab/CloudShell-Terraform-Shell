@@ -36,7 +36,7 @@ node_types:
       Terraform Output:
         description: Output from Terraform run
         type: string
-        tags: [ read_only ]
+        tags: [ ]
       Terraform Inputs:
         description: comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
         type: string
