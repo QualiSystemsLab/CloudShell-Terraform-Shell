@@ -85,7 +85,6 @@ class TerraformService2GDriver (ResourceDriverInterface):
                 logger.error(f"Error occurred while trying to execute Terraform {str(e)} ")
                 raise
 
-
     def destroy_terraform(self, context):
         """
         :param ResourceCommandContext context:

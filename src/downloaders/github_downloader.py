@@ -14,7 +14,8 @@ REPO_FILE_NAME = "repo.zip"
 
 
 class GitHubScriptDownloader(object):
-    GITHUB_REP_FILES_API_PATTERN = "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/blob/(?P<branch_id>.+?)/(?P<path>.*?)$"
+    GITHUB_REPO_BLOB_PATTERN = "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/blob/(?P<branch_id>.+?)/(?P<path>.*?)$"
+    GITHUB_REPO_TREE_PATTERN = "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/tree/(?P<branch_id>.+?)/(?P<path>.*?)$"
 
     def __init__(self, logger: Logger):
         self.logger = logger
@@ -61,7 +62,10 @@ class GitHubScriptDownloader(object):
         ZipFile(source, 'r').extractall(destination)
 
     def _validate_github_url(self, url: str) -> None:
-        matching = re.match(self.GITHUB_REP_FILES_API_PATTERN, url)
+        if "/tree/" in url:
+            matching = re.match(self.GITHUB_REPO_TREE_PATTERN, url)
+        else:
+            matching = re.match(self.GITHUB_REPO_BLOB_PATTERN, url)
         if not matching:
             self._raise_url_syntax_error()
 
@@ -75,7 +79,10 @@ class GitHubScriptDownloader(object):
         :param str url:
         :rtype: GitHubFileData
         """
-        matching = re.match(self.GITHUB_REP_FILES_API_PATTERN, url)
+        if "/tree/" in url:
+            matching = re.match(self.GITHUB_REPO_TREE_PATTERN, url)
+        else:
+            matching = re.match(self.GITHUB_REPO_BLOB_PATTERN, url)
         if matching:
 
             matched_groups = matching.groupdict()
