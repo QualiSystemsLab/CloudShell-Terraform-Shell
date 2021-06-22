@@ -40,7 +40,7 @@ node_types:
       Terraform Inputs:
         description: comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
         type: string
-        tags: [ read_only ]
+        tags: [ ]
     #  Terraform Module Path:
     #    description: path to target module. Target directory will be changed to here before running terraform commands.
     #    type: string
