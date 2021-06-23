@@ -74,8 +74,6 @@ class TerraformService2GDriver (ResourceDriverInterface):
                 tf_proc_executer.init_terraform()
                 tf_proc_executer.plan_terraform()
                 tf_proc_executer.apply_terraform()
-                # todo - write output to file
-                # todo - separate between output parsing and output saving
                 tf_proc_executer.parse_and_save_terraform_outputs()
 
             except CalledProcessError as e:
