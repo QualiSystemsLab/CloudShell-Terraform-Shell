@@ -245,6 +245,66 @@ class TerraformService2G(object):
         self.attributes['Terraform Service 2G.Terraform Inputs'] = value
 
     @property
+    def var_keyvault_name(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Terraform Service 2G.var_KEYVAULT_NAME'] if 'Terraform Service 2G.var_KEYVAULT_NAME' in self.attributes else None
+
+    @var_keyvault_name.setter
+    def var_keyvault_name(self, value):
+        """
+        
+        :type value: str
+        """
+        self.attributes['Terraform Service 2G.var_KEYVAULT_NAME'] = value
+
+    @property
+    def var_keyvault_rg(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Terraform Service 2G.var_KEYVAULT_RG'] if 'Terraform Service 2G.var_KEYVAULT_RG' in self.attributes else None
+
+    @var_keyvault_rg.setter
+    def var_keyvault_rg(self, value):
+        """
+        
+        :type value: str
+        """
+        self.attributes['Terraform Service 2G.var_KEYVAULT_RG'] = value
+
+    @property
+    def var_secret_name(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Terraform Service 2G.var_SECRET_NAME'] if 'Terraform Service 2G.var_SECRET_NAME' in self.attributes else None
+
+    @var_secret_name.setter
+    def var_secret_name(self, value):
+        """
+        
+        :type value: str
+        """
+        self.attributes['Terraform Service 2G.var_SECRET_NAME'] = value
+
+    @property
+    def out_secret_value(self):
+        """
+        :rtype: string
+        """
+        return self.attributes['Terraform Service 2G.out_SECRET_VALUE'] if 'Terraform Service 2G.out_SECRET_VALUE' in self.attributes else None
+
+    @out_secret_value.setter
+    def out_secret_value(self, value):
+        """
+        
+        :type value: string
+        """
+        self.attributes['Terraform Service 2G.out_SECRET_VALUE'] = value
+
+    @property
     def name(self):
         """
         :rtype: str
