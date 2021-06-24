@@ -73,17 +73,20 @@ class TfProcExec(object):
     def parse_and_save_terraform_outputs(self):
         try:
             self._driver_helper.logger.info("Running 'terraform output -json'")
+
+            # get all TF outputs in json format
             vars = ["output", "-json"]
             tf_exec_output = self._run_tf_proc_with_command(vars)
-
             unparsed_output_json = json.loads(tf_exec_output)
-            output_string = []
 
+            attr_req = []
+            # check if output exists in driver data model and if it does create an attribute update request
             for output in unparsed_output_json:
-                output_string += [(output + '=' + str(unparsed_output_json[output]['value']))]
+                attr_name = f"{self._driver_helper.tf_service.cloudshell_model_name}.out_{output}"
+                if attr_name in self._driver_helper.tf_service.attributes:
+                    attr_req.append(AttributeNameValue(attr_name, unparsed_output_json[output]['value']))
 
-            attr_name = f"{self._driver_helper.tf_service.cloudshell_model_name}.Terraform Output"
-            attr_req = [AttributeNameValue(attr_name, ",".join(output_string))]
+            # send attribute update request using CS API
             self._driver_helper.api.SetServiceAttributesValues(self._driver_helper.res_id,
                                                                self._driver_helper.tf_service.name, attr_req)
         except Exception as e:

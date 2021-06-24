@@ -215,36 +215,6 @@ class TerraformService2G(object):
         self.attributes['Terraform Service 2G.Cloud Provider'] = value
 
     @property
-    def terraform_output(self):
-        """
-        :rtype: str
-        """
-        return self.attributes['Terraform Service 2G.Terraform Output'] if 'Terraform Service 2G.Terraform Output' in self.attributes else None
-
-    @terraform_output.setter
-    def terraform_output(self, value):
-        """
-        Output from Terraform run
-        :type value: str
-        """
-        self.attributes['Terraform Service 2G.Terraform Output'] = value
-
-    @property
-    def terraform_inputs(self):
-        """
-        :rtype: str
-        """
-        return self.attributes['Terraform Service 2G.Terraform Inputs'] if 'Terraform Service 2G.Terraform Inputs' in self.attributes else None
-
-    @terraform_inputs.setter
-    def terraform_inputs(self, value):
-        """
-        comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
-        :type value: str
-        """
-        self.attributes['Terraform Service 2G.Terraform Inputs'] = value
-
-    @property
     def var_keyvault_name(self):
         """
         :rtype: str
