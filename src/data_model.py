@@ -245,6 +245,36 @@ class TerraformService2G(object):
         self.attributes['Terraform Service 2G.Terraform Inputs'] = value
 
     @property
+    def uuid(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Terraform Service 2G.UUID'] if 'Terraform Service 2G.UUID' in self.attributes else None
+
+    @uuid.setter
+    def uuid(self, value):
+        """
+        Holds UUID for the instance for driver
+        :type value: str
+        """
+        self.attributes['Terraform Service 2G.UUID'] = value
+
+    @property
+    def terraform_working_dir(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Terraform Service 2G.Terraform Working Dir'] if 'Terraform Service 2G.Terraform Working Dir' in self.attributes else None
+
+    @terraform_working_dir.setter
+    def terraform_working_dir(self, value):
+        """
+        Place holder for Working Dir (Will be removed in the future)
+        :type value: str
+        """
+        self.attributes['Terraform Service 2G.Terraform Working Dir'] = value
+
+    @property
     def name(self):
         """
         :rtype: str

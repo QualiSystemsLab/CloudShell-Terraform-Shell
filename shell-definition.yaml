@@ -40,6 +40,14 @@ node_types:
         description: comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
         type: string
         tags: [ user_input  ]
+      UUID:
+        description: Holds UUID for the instance for driver
+        type: string
+        tags: [ ]
+      Terraform Working Dir:
+        description: Place holder for Working Dir (Will be removed in the future)
+        type: string
+        tags: [ ]
       Service Categories:
         type: list
         default: [ Infra As Code ]

@@ -1,0 +1,10 @@
+CS_SERVER = "192.168.0.138"
+CS_SERVER2 = "192.168.33.37"
+CS_USERNAME = "admin"
+CS_PASSWORD = "admin"
+# todo: change back to mock
+#CLP_RESOURSE = "mock_azure"
+CLP_RESOURSE = "real_azure"
+TFEXEC_VERSION = "1.0.0"
+RESERVATION_ID = "d9bfd604-64e8-4923-9e93-bef05db397d2"
+RESERVATION_DOMAIN = "Global"

@@ -33,22 +33,5 @@ dev_helpers.attach_to_cloudshell_as(CS_USERNAME,
 sandbox = Sandbox()
 api = sandbox.automation_api
 
-tf_service = sandbox.components.services['ooo']
-cmds = api.GetServiceCommands(tf_service.ServiceName)
-# api.ExecuteServiceCommand(RESERVATION_ID,tf_service.Alias,'execute_terraform')
-
-
-qs_logger = get_qs_logger(
-            log_group="BLA", log_category="QS", log_file_prefix="TESTBLA"
-        )
-qs_logger.info("BLA2")
-
-
-with LoggingSessionContext(context) as logger:
-    filename = logger.handlers[0].baseFilename
-    path_to_log = os.sep.join(filename.split(os.sep)[:-1])
-    logger.handlers[0].baseFilename = os.path.join(path_to_log,"testlog.txt")
-    # logger = get_qs_logger(log_file_prefix="TF-plan")
-    logger.error("BLA2")
-
-print("")
+# tf_service = sandbox.components.services['ooo']
+# cmds = api.GetServiceCommands(tf_service.ServiceName)

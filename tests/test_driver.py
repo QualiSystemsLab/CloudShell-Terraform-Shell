@@ -3,6 +3,7 @@ from unittest import mock, TestCase
 from unittest.mock import Mock, patch
 from subprocess import Popen, PIPE
 
+from cloudshell.api.cloudshell_api import CloudShellAPISession
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
@@ -11,8 +12,9 @@ from data_model import TerraformService2G
 from downloaders.downloader import Downloader
 from driver import TerraformService2GDriver
 from driver_helper_obj import DriverHelperObject
-from constants import CS_SERVER, CS_USERNAME, CS_PASSWORD, RESERVATION_ID, RESERVATION_DOMAIN, CLP_RESOURSE, \
-    TFEXEC_VERSION, SHELL_NAME, GITHUB_TF_FOLDER_LINK, TERRAFORM_FILE, TERRAFORM_EXEC_FILE
+from constants import SHELL_NAME, GITHUB_TF_FOLDER_LINK, TERRAFORM_FILE, TERRAFORM_EXEC_FILE
+from tests.test_constants import CS_SERVER, CS_USERNAME, CS_PASSWORD, RESERVATION_ID, RESERVATION_DOMAIN, CLP_RESOURSE, \
+    TFEXEC_VERSION
 from services.provider_handler import ProviderHandler
 
 
@@ -23,7 +25,12 @@ class MainDriverTest(TestCase):
         self._driver = self._create_driver()
         # api = CloudShellSessionContext(self._context).get_api()
         mock_api = Mock()
+        # real_api = CloudShellAPISession(CS_SERVER, CS_USERNAME, CS_PASSWORD, "Global")
+
         mock_api.DecryptPassword = _DecryptPassword
+        # mock_api.GetSandboxData = real_api.GetSandboxData
+        # mock_api.SetSandboxData = real_api.SetSandboxData
+        # mock_api.ClearSandboxData = real_api.ClearSandboxData
 
         mock_resource_details = Mock()
         mock_resource_details.ResourceModelName = "Microsoft Azure"
@@ -48,9 +55,10 @@ class MainDriverTest(TestCase):
         context = mock.create_autospec(ResourceCommandContext)
 
         context.connectivity = mock.MagicMock()
-        # api = CloudShellAPISession(CS_SERVER, CS_USERNAME, CS_PASSWORD, "Global")
+
+
         # token = api.authentication.xmlrpc_token
-        context.connectivity.server_address = CS_SERVER
+        # context.connectivity.server_address = CS_SERVER
         # context.connectivity.admin_auth_token = token
 
         context.resource = mock.MagicMock()
@@ -127,6 +135,21 @@ class MainDriverTest(TestCase):
                          'Terraform Service 2G.Terraform Output')
         self.assertEqual(self._driver_helper_object.api.SetServiceAttributesValues.call_args.args[2][0].Value,
                          'hello=Test!')
+
+    @patch("driver.CloudShellSessionContext")
+    def test_execute_terraform_with_input2(self, cssc):
+        # Arrange
+        cssc.return_value.get_api.return_value = self._driver_helper_object.api
+
+        self._context.resource.attributes[f"{SHELL_NAME}.Terraform Inputs"] = "KEYVAULT_NAME=alexaz-amd-test2,KEYVAULT_RG=alexaz-test-amd2,SECRET_NAME=test2"
+        # Act
+        self._driver.execute_terraform(self._context)
+
+        # Assert
+        self.assertEqual(self._driver_helper_object.api.SetServiceAttributesValues.call_args.args[2][0].Name,
+                         'Terraform Service 2G.Terraform Output')
+        self.assertEqual(self._driver_helper_object.api.SetServiceAttributesValues.call_args.args[2][0].Value,
+                         'KEYVAULT_NAME=alexaz-amd-test2,KEYVAULT_RG=alexaz-test-amd2,SECRET_NAME=test2')
 
 
 
