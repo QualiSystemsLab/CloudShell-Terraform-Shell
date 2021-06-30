@@ -44,10 +44,6 @@ node_types:
         description: Holds UUID for the instance for driver
         type: string
         tags: [ ]
-      Terraform Working Dir:
-        description: Place holder for Working Dir (Will be removed in the future)
-        type: string
-        tags: [ ]
       Service Categories:
         type: list
         default: [ Infra As Code ]

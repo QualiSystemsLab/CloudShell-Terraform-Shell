@@ -3,14 +3,15 @@ import uuid
 
 from cloudshell.api.cloudshell_api import SandboxDataKeyValue, AttributeNameValue, GetSandboxDataInfo
 
-from constants import EXECUTE_STATUS, DESTROY_STATUS, NONE
+from constants import EXECUTE_STATUS, DESTROY_STATUS, NONE, TF_WORKING_DIR
 from driver_helper_obj import DriverHelperObject
 
 
 class SbDataHandler(object):
-    def __init__(self, driver_helper_obj: DriverHelperObject):
+    def __init__(self, driver_helper_obj: DriverHelperObject, tf_working_dir: str = None):
         self._driver_helper_obj = driver_helper_obj
         self._uuid = self._get_tf_uuid()
+        self._tf_working_dir = self._get_tf_working_dir(tf_working_dir)
 
     def _get_tf_uuid(self) -> str:
         # if uuid exists as attribute just return it
@@ -28,10 +29,17 @@ class SbDataHandler(object):
             self._create_tf_exec_state_data_entry(new_uuid)
             return new_uuid
 
+    def _get_tf_working_dir(self, tf_working_dir: str) -> str:
+        # if tf_working_dir was not provided we need to get the information from the SB DATA
+        if not tf_working_dir:
+            return self.get_tf_working_dir()
+        # if tf_working_dir was provided we need to set the information in SB DATA and also return it
+        else:
+            self.set_tf_working_dir(tf_working_dir)
+            return tf_working_dir
+
     # This creates the uuid:state(statuses...) entry
     def _create_tf_exec_state_data_entry(self, uuid: str) -> None:
-        current_sb_data = self._driver_helper_obj.api.GetSandboxData(self._driver_helper_obj.res_id)
-
         first_entry = self._generate_first_uuid_state_entry()
         new_sdkv = SandboxDataKeyValue(uuid, first_entry)
         self._add_entry_to_sandbox_data(new_sdkv)
@@ -42,7 +50,8 @@ class SbDataHandler(object):
     def _generate_first_uuid_state_entry(self) -> str:
         first_tf_exec_status_data_entry = {
                     EXECUTE_STATUS: NONE,
-                    DESTROY_STATUS: NONE
+                    DESTROY_STATUS: NONE,
+                    TF_WORKING_DIR: NONE
         }
         return json.dumps(first_tf_exec_status_data_entry)
 
@@ -52,15 +61,26 @@ class SbDataHandler(object):
             return value[0]
 
     def set_status(self, status_type: str, status: str) -> None:
-        uuid_sdkv_value = self._check_for_uuid_data()
+        self._set_value_for_key(status_type, status)
 
-        uuid_sdkv_value[status_type] = status
+    def get_status(self, status_type: str) -> str:
+        return self._get_value_for_key(status_type)
+
+    def set_tf_working_dir(self, tf_working_dir: str) -> None:
+        self._set_value_for_key(TF_WORKING_DIR, tf_working_dir)
+
+    def get_tf_working_dir(self) -> str:
+        return self._get_value_for_key(TF_WORKING_DIR)
+
+    def _set_value_for_key(self, key: str, new_value: str):
+        uuid_sdkv_value = self._check_for_uuid_data()
+        uuid_sdkv_value[key] = new_value
         updated_sdkv = SandboxDataKeyValue(self._uuid, json.dumps(uuid_sdkv_value))
         self._driver_helper_obj.api.SetSandboxData(self._driver_helper_obj.res_id, [updated_sdkv])
 
-    def get_status(self, status_type: str) -> str:
+    def _get_value_for_key(self, key:str) -> str:
         uuid_sdkv_value = self._check_for_uuid_data()
-        return uuid_sdkv_value[status_type]
+        return uuid_sdkv_value[key]
 
     def _check_for_uuid_data(self) -> dict:
         current_data = self._driver_helper_obj.api.GetSandboxData(self._driver_helper_obj.res_id)

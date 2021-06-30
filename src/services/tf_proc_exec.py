@@ -16,10 +16,10 @@ from services.string_cleaner import StringCleaner
 
 
 class TfProcExec(object):
-    def __init__(self, driver_helper_obj: DriverHelperObject, tf_workingdir: str):
+    def __init__(self, driver_helper_obj: DriverHelperObject, sb_data_handler: SbDataHandler):
         self._driver_helper_obj = driver_helper_obj
-        self._tf_workingdir = tf_workingdir
-        self._sb_data_handler = SbDataHandler(driver_helper_obj)
+        self._tf_workingdir = sb_data_handler.get_tf_working_dir()
+        self._sb_data_handler = sb_data_handler
 
         dt = datetime.now().strftime("%d_%m_%y-%H_%M_%S")
         self._exec_output_log = _create_logger(
@@ -35,6 +35,7 @@ class TfProcExec(object):
             self._run_tf_proc_with_command(vars, "INIT")
         except Exception as e:
             self._sb_data_handler.set_status(EXECUTE_STATUS, INIT_FAILED)
+            # self._driver_helper_obj.api.SetServiceLiveStatus()
             raise
 
     def destroy_terraform(self):
@@ -51,7 +52,7 @@ class TfProcExec(object):
         try:
             self._run_tf_proc_with_command(vars, "DESTROY")
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_PASSED)
-        except:
+        except Exception as e:
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
             raise
 
@@ -81,7 +82,7 @@ class TfProcExec(object):
         try:
             self._run_tf_proc_with_command(vars, "APPLY")
             self._sb_data_handler.set_status(EXECUTE_STATUS, APPLY_PASSED)
-        except:
+        except Exception as e:
             self._sb_data_handler.set_status(EXECUTE_STATUS, APPLY_FAILED)
             raise
 
@@ -140,17 +141,18 @@ class TfProcExec(object):
             raise TerraformExecutionError("Error during Terraform Plan. For more information please look at the logs.",
                                           clean_output)
         except Exception as e:
-            self._driver_helper_obj.logger.error(f"Error Running Terraform plan {StringCleaner.get_clean_string(str(e))}")
-            self._write_to_to_exec_log(command, StringCleaner.get_clean_string(str(e)), ERROR_LOG_LEVEL)
+            clean_output = StringCleaner.get_clean_string(str(e))
+            self._driver_helper_obj.logger.error(f"Error Running Terraform plan {clean_output}")
             raise TerraformExecutionError("Error during Terraform Plan. For more information please look at the logs.")
 
     def _write_to_to_exec_log(self, command: str, log_data: str, log_level: int) -> None:
+        clean_output = StringCleaner.get_clean_string(log_data)
         self._exec_output_log.log(
             log_level,
             f"-------------------------------------------------=< {command} START "
             f">=-------------------------------------------------\n"
         )
-        self._exec_output_log.log(log_level, log_data)
+        self._exec_output_log.log(log_level, clean_output)
         self._exec_output_log.log(
             log_level,
             f"-------------------------------------------------=< {command} END "

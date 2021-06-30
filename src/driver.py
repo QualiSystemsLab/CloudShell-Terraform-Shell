@@ -1,4 +1,3 @@
-from cloudshell.api.cloudshell_api import AttributeNameValue
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
@@ -11,6 +10,7 @@ from downloaders.downloader import Downloader
 from driver_helper_obj import DriverHelperObject
 
 from services.provider_handler import ProviderHandler
+from services.sb_data_handler import SbDataHandler
 from services.tf_proc_exec import TfProcExec
 
 
@@ -68,21 +68,20 @@ class TerraformService2GDriver (ResourceDriverInterface):
             tf_workingdir = downloader.download_terraform_module()
             downloader.download_terraform_executable(tf_workingdir)
 
-            attr_name = f"{tf_service.cloudshell_model_name}.Terraform Working Dir"
-            # 'Terraform Service 2G.Terrafrom Working Dir'
-            attr_req = [AttributeNameValue(attr_name, tf_workingdir)]
-            api.SetServiceAttributesValues(res_id, tf_service.name, attr_req)
-            tf_service.terrafrom_working_dir = tf_workingdir
-
             ProviderHandler.initialize_provider(driver_helper_obj)
-            tf_proc_executer = TfProcExec(driver_helper_obj, tf_workingdir)
+            sb_data_handler = SbDataHandler(driver_helper_obj, tf_workingdir)
+            tf_proc_executer = TfProcExec(driver_helper_obj, sb_data_handler)
             if tf_proc_executer.can_execute_run():
                 tf_proc_executer.init_terraform()
                 tf_proc_executer.plan_terraform()
                 tf_proc_executer.apply_terraform()
                 tf_proc_executer.parse_and_save_terraform_outputs()
             else:
-                # todo : find the right output
+                api.WriteMessageToReservationOutput(
+                    res_id,
+                    "Execution is not enabled due to either failed previous Execution (*Try Destroy first) or "
+                    "Successfully executed previously without successfully destroying it first"
+                )
                 raise Exception("Execute Blocked due to ")
 
     def destroy_terraform(self, context):
@@ -93,10 +92,10 @@ class TerraformService2GDriver (ResourceDriverInterface):
             tf_service = TerraformService2G.create_from_context(context)
 
             driver_helper_obj = DriverHelperObject(api, res_id, tf_service, logger)
+            sb_data_handler = SbDataHandler(driver_helper_obj)
 
-            tf_workingdir = tf_service.terraform_working_dir
-            if tf_workingdir:
-                tf_proc_executer = TfProcExec(driver_helper_obj, tf_workingdir)
+            if sb_data_handler.get_tf_working_dir():
+                tf_proc_executer = TfProcExec(driver_helper_obj, sb_data_handler)
                 if tf_proc_executer.can_destroy_run():
                     tf_proc_executer.destroy_terraform()
                 else:
@@ -120,6 +119,6 @@ class TerraformService2GDriver (ResourceDriverInterface):
             outp = state_file.read()
 
             state_file.close()
-        except:
+        except Exception as e:
             outp = "Could not retrieve deployment state."
         return outp

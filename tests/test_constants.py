@@ -1,10 +1,5 @@
-CS_SERVER = "192.168.0.138"
-CS_SERVER2 = "192.168.33.37"
-CS_USERNAME = "admin"
-CS_PASSWORD = "admin"
-# todo: change back to mock
-#CLP_RESOURSE = "mock_azure"
-CLP_RESOURSE = "real_azure"
-TFEXEC_VERSION = "1.0.0"
-RESERVATION_ID = "d9bfd604-64e8-4923-9e93-bef05db397d2"
-RESERVATION_DOMAIN = "Global"
+# todo :move the hello.tf to be part of this repo
+# todo check publix repo
+GITHUB_TF_PUBLIC_HELLO_URL = "https://github.com/QualiSystemsLab/Terraform-Service-2G/tree/master/tests/a/b/c/hello.tf"
+
+TF_HELLO_FILE = "hello.tf"

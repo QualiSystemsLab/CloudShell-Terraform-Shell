@@ -12,9 +12,7 @@ ERROR_LOG_LEVEL = 40
 INFO_LOG_LEVEL = 20
 
 SHELL_NAME = "Terraform Service 2G"
-# GITHUB_TF_FOLDER_LINK = "https://github.com/qualidan/terraform/blob/main/test/a/b/c/hello.tf"
-GITHUB_TF_FOLDER_LINK = "https://github.com/alexazarh/Colony-experiments/blob/master/terraform/azure-vault/main.tf"
-TERRAFORM_FILE = "hello.tf"
+
 TERRAFORM_EXEC_FILE = "terraform.exe"
 
 EXECUTE_STATUS = "EXECUTE_STATUS"
@@ -26,6 +24,7 @@ INIT_FAILED = "INIT_FAILED"
 DESTROY_FAILED = "DESTROY_FAILED"
 DESTROY_PASSED = "DESTROY_PASSED"
 NONE = "NONE"
+TF_WORKING_DIR = "TF_WORKING_DIR"
 
 DIRTY_CHARS = r'''
                 \x1B  # ESC
