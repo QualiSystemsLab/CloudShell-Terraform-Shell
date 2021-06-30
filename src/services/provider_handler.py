@@ -23,7 +23,8 @@ class ProviderHandler(object):
                 driver_help_object.api.WriteMessageToReservationOutput(driver_help_object.res_id,
                                                                        "Initializing provider...")
                 driver_help_object.logger.info("Initializing Environment variables with CloudProvider details")
-                clp_resource_attributes = driver_help_object.api.GetResourceDetails(clp_resource_name).ResourceAttributes
+                clp_resource_attributes = \
+                    driver_help_object.api.GetResourceDetails(clp_resource_name).ResourceAttributes
                 for attr in clp_resource_attributes:
                     if attr.Name == "Azure Subscription ID":
                         os.environ["ARM_SUBSCRIPTION_ID"] = attr.Value

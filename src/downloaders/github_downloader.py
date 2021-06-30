@@ -43,9 +43,11 @@ class GitHubScriptDownloader(object):
                     repo_zip_path = os.path.join(repo_temp_dir, REPO_FILE_NAME)
                     with open(os.path.join(repo_temp_dir,REPO_FILE_NAME), 'wb+') as file:
                         file.write(repo_response.content)
-                    self._extract_repo(repo_zip_path,repo_temp_dir)
+                    self._extract_repo(repo_zip_path, repo_temp_dir)
                     commit_folder_in_zip = ZipFile(repo_zip_path, 'r').namelist()[0][:-1]
-                    return os.path.join(repo_temp_dir, commit_folder_in_zip, path_in_repo)
+                    os.chdir(repo_temp_dir)
+                    os.rename(commit_folder_in_zip,"REPO")
+                    return os.path.join(repo_temp_dir, "REPO", path_in_repo)
                 else:
                     raise Exception(f'Error Downloading/Extracting - Download code for repo '
                                     f'{repo_response.status_code}')

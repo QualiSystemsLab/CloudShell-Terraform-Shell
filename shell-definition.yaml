@@ -44,6 +44,10 @@ node_types:
         description: comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
         type: string
         tags: [ ]
+      UUID:
+        description: Holds UUID for the instance for driver
+        type: string
+        tags: [ ]
 
       # Terraform module variables
       # attributes that start with "var_" prefix will be mapped to Terraform variables automatically

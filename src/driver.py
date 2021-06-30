@@ -8,11 +8,11 @@ from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionCo
 
 from downloaders.downloader import Downloader
 from driver_helper_obj import DriverHelperObject
-from subprocess import STDOUT, CalledProcessError
 
 from services import input_output_service
 from services.input_output_service import InputOutputService
 from services.provider_handler import ProviderHandler
+from services.sb_data_handler import SbDataHandler
 from services.tf_proc_exec import TfProcExec
 
 
@@ -66,42 +66,43 @@ class TerraformService2GDriver (ResourceDriverInterface):
 
             driver_helper_obj = DriverHelperObject(api, res_id, tf_service, logger)
 
-            try:
-                downloader = Downloader(driver_helper_obj)
-                tf_workingdir = downloader.download_terraform_module()
-                downloader.download_terraform_executable(tf_workingdir)
+            downloader = Downloader(driver_helper_obj)
+            tf_workingdir = downloader.download_terraform_module()
+            downloader.download_terraform_executable(tf_workingdir)
 
-                ProviderHandler.initialize_provider(driver_helper_obj)
-                tf_proc_executer = TfProcExec(driver_helper_obj, tf_workingdir, InputOutputService(driver_helper_obj))
+            ProviderHandler.initialize_provider(driver_helper_obj)
+            tf_proc_executer = TfProcExec(driver_helper_obj, SbDataHandler(driver_helper_obj, tf_workingdir), InputOutputService(driver_helper_obj))
+            if tf_proc_executer.can_execute_run():
                 tf_proc_executer.init_terraform()
                 tf_proc_executer.plan_terraform()
                 tf_proc_executer.apply_terraform()
                 tf_proc_executer.save_terraform_outputs()
-
-            except CalledProcessError as e:
-                logger.error(f"Error occurred while trying to execute Terraform {str(e)} "
-                             f"output = {e.stdout.decode('utf-8')}")
-                raise
-            except Exception as e:
-                logger.error(f"Error occurred while trying to execute Terraform {str(e)} ")
-                raise
+            else:
+                api.WriteMessageToReservationOutput(
+                    res_id,
+                    "Execution is not enabled due to either failed previous Execution (*Try Destroy first) or "
+                    "Successfully executed previously without successfully destroying it first"
+                )
+                raise Exception("Execute Blocked due to ")
 
     def destroy_terraform(self, context):
-        """
-        :param ResourceCommandContext context:
-        :return:
-        """
-        api = CloudShellSessionContext(context).get_api()
-        res_id = context.reservation.reservation_id
+        with LoggingSessionContext(context) as logger:
 
-        api.WriteMessageToReservationOutput(res_id, "Destroying terraform deployment..")
-        service_resource = TerraformService2G.create_from_context(context)
-        tform_dir = service_resource.terraform_module_path
-        tform_exe_dir = service_resource.terraform_executable
-        tform_command = [f"{tform_exe_dir}\\terraform.exe", "destroy", "-auto-approve", "-no-color"]
-        outp = check_output(tform_command, cwd=tform_dir , stderr=STDOUT).decode("utf-8")
+            api = CloudShellSessionContext(context).get_api()
+            res_id = context.reservation.reservation_id
+            tf_service = TerraformService2G.create_from_context(context)
 
-        return outp
+            driver_helper_obj = DriverHelperObject(api, res_id, tf_service, logger)
+            sb_data_handler = SbDataHandler(driver_helper_obj)
+
+            if sb_data_handler.get_tf_working_dir():
+                tf_proc_executer = TfProcExec(driver_helper_obj, sb_data_handler)
+                if tf_proc_executer.can_destroy_run():
+                    tf_proc_executer.destroy_terraform()
+                else:
+                    raise Exception("Destroy blocked because APPLY was not yet executed")
+            else:
+                raise Exception("Destroy blocked due to missing state file")
 
     def show_terraform_state(self, context):
         """
@@ -119,6 +120,6 @@ class TerraformService2GDriver (ResourceDriverInterface):
             outp = state_file.read()
 
             state_file.close()
-        except:
+        except Exception as e:
             outp = "Could not retrieve deployment state."
         return outp
