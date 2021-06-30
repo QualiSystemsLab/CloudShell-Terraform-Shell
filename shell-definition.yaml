@@ -36,9 +36,8 @@ node_types:
         type: list
         default: [ Infra As Code ]
 
-      # TODO - remove this attributes
       Terraform Output:
-        description: Output from Terraform run
+        description: Outputs from Terraform apply
         type: string
         tags: [ ]
       Terraform Inputs:
@@ -47,24 +46,18 @@ node_types:
         tags: [ ]
 
       # Terraform module variables
-      var_KEYVAULT_NAME:
-        description:
-        type: string
-        tags: [ user_input ]
-      var_KEYVAULT_RG:
-        description:
-        type: string
-        tags: [ user_input ]
-      var_SECRET_NAME:
-        description:
-        type: string
-        tags: [ user_input ]
+      # attributes that start with "var_" prefix will be mapped to Terraform variables automatically
+#      var_MY_VAR:
+#        description:
+#        type: string
+#        tags: [ user_input ]
 
       # Terraform module outputs
-      out_SECRET_VALUE:
-        description:
-        type: cloudshell.datatypes.Password
-        tags: [ user_input ]
+      # attributes that start with "out_" prefix will be mapped to Terraform outputs automatically
+#      out_MY_OUTPUT:
+#        description:
+#        type: string
+#        tags: [ user_input ]
     artifacts:
       icon:
         file: shell-icon.png

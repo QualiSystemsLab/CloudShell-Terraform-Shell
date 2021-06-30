@@ -10,6 +10,8 @@ from downloaders.downloader import Downloader
 from driver_helper_obj import DriverHelperObject
 from subprocess import STDOUT, CalledProcessError
 
+from services import input_output_service
+from services.input_output_service import InputOutputService
 from services.provider_handler import ProviderHandler
 from services.tf_proc_exec import TfProcExec
 
@@ -70,11 +72,11 @@ class TerraformService2GDriver (ResourceDriverInterface):
                 downloader.download_terraform_executable(tf_workingdir)
 
                 ProviderHandler.initialize_provider(driver_helper_obj)
-                tf_proc_executer = TfProcExec(driver_helper_obj, tf_workingdir)
+                tf_proc_executer = TfProcExec(driver_helper_obj, tf_workingdir, InputOutputService(driver_helper_obj))
                 tf_proc_executer.init_terraform()
                 tf_proc_executer.plan_terraform()
                 tf_proc_executer.apply_terraform()
-                tf_proc_executer.parse_and_save_terraform_outputs()
+                tf_proc_executer.save_terraform_outputs()
 
             except CalledProcessError as e:
                 logger.error(f"Error occurred while trying to execute Terraform {str(e)} "

@@ -9,12 +9,15 @@ from cloudshell.logging.qs_logger import get_qs_logger, _create_logger
 
 from driver_helper_obj import DriverHelperObject
 from models.exceptions import TerraformExecutionError
+from services.input_output_service import InputOutputService
 
 
 class TfProcExec(object):
-    def __init__(self, driver_helper_obj: DriverHelperObject, tf_workingdir: str):
+    def __init__(self, driver_helper_obj: DriverHelperObject, tf_workingdir: str,
+                 input_output_service: InputOutputService):
         self._driver_helper = driver_helper_obj
         self._tf_workingdir = tf_workingdir
+        self._input_output_service = input_output_service
 
         dt = datetime.now().strftime("%d_%m_%y-%H_%M_%S")
         self._exec_output_log = _create_logger(
@@ -44,18 +47,17 @@ class TfProcExec(object):
 
         cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
 
-        # find all attributes that start with "var_"
-        var_prefix = f"{self._driver_helper.tf_service.cloudshell_model_name}.var_"
-        tf_vars = filter(lambda x: x.startswith(var_prefix),
-                         self._driver_helper.tf_service.attributes.keys())
+        # get variables from attributes that should be mapped to TF variables
+        tf_vars = self._input_output_service.get_variables_from_var_attributes()
+        # get any additional TF variables from "Terraform Inputs" variable
+        tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
 
-        # add variable to command
-        for var in tf_vars:
-            # remove the prefix to get the TF variable name
-            tf_var = var.replace(var_prefix, "")
+        # add all TF variables to command
+        for tf_var in tf_vars:
             cmd.append("-var")
-            # no need to worry about escaping white spaces, python will handle this automatically for us
-            cmd.append(f"{tf_var}={self._driver_helper.tf_service.attributes[var]}")
+            cmd.append(f"{tf_var.name}={tf_var.value}")
+
+        self._driver_helper.logger.info(" ".join(cmd))
 
         output = self._run_tf_proc_with_command(cmd)
 
@@ -70,7 +72,7 @@ class TfProcExec(object):
         output = self._run_tf_proc_with_command(vars)
         self._write_to_exec_log("PLAN", output)
 
-    def parse_and_save_terraform_outputs(self):
+    def save_terraform_outputs(self):
         try:
             self._driver_helper.logger.info("Running 'terraform output -json'")
 
@@ -79,16 +81,8 @@ class TfProcExec(object):
             tf_exec_output = self._run_tf_proc_with_command(vars)
             unparsed_output_json = json.loads(tf_exec_output)
 
-            attr_req = []
-            # check if output exists in driver data model and if it does create an attribute update request
-            for output in unparsed_output_json:
-                attr_name = f"{self._driver_helper.tf_service.cloudshell_model_name}.out_{output}"
-                if attr_name in self._driver_helper.tf_service.attributes:
-                    attr_req.append(AttributeNameValue(attr_name, unparsed_output_json[output]['value']))
+            self._input_output_service.parse_and_save_outputs(unparsed_output_json)
 
-            # send attribute update request using CS API
-            self._driver_helper.api.SetServiceAttributesValues(self._driver_helper.res_id,
-                                                               self._driver_helper.tf_service.name, attr_req)
         except Exception as e:
             self._driver_helper.logger.error(f"Error occurred while trying to parse Terraform outputs -> {str(e)}")
             raise
