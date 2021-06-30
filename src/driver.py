@@ -71,7 +71,9 @@ class TerraformService2GDriver (ResourceDriverInterface):
             downloader.download_terraform_executable(tf_workingdir)
 
             ProviderHandler.initialize_provider(driver_helper_obj)
-            tf_proc_executer = TfProcExec(driver_helper_obj, SbDataHandler(driver_helper_obj, tf_workingdir), InputOutputService(driver_helper_obj))
+            tf_proc_executer = TfProcExec(driver_helper_obj,
+                                          SbDataHandler(driver_helper_obj, tf_workingdir),
+                                          InputOutputService(driver_helper_obj))
             if tf_proc_executer.can_execute_run():
                 tf_proc_executer.init_terraform()
                 tf_proc_executer.plan_terraform()
@@ -96,7 +98,7 @@ class TerraformService2GDriver (ResourceDriverInterface):
             sb_data_handler = SbDataHandler(driver_helper_obj)
 
             if sb_data_handler.get_tf_working_dir():
-                tf_proc_executer = TfProcExec(driver_helper_obj, sb_data_handler)
+                tf_proc_executer = TfProcExec(driver_helper_obj, sb_data_handler, InputOutputService(driver_helper_obj))
                 if tf_proc_executer.can_destroy_run():
                     tf_proc_executer.destroy_terraform()
                 else:
