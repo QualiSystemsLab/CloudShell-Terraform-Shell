@@ -4,13 +4,14 @@ from cloudshell.api.cloudshell_api import CloudShellAPISession
 
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
+from dotenv import load_dotenv
 
-from constants import SHELL_NAME, TERRAFORM_EXEC_FILE
+from constants import SHELL_NAME
 from data_model import TerraformService2G
 from downloaders.downloader import Downloader
 from driver import TerraformService2GDriver
 from driver_helper_obj import DriverHelperObject
-from tests.test_constants import TF_HELLO_FILE
+from tests.test_constants import TF_HELLO_FILE, TERRAFORM_EXEC_FILE, GITHUB_TF_PUBLIC_HELLO_URL, VAULT_TF_INPUTS
 
 
 class RealDebugInstance(TestCase):
@@ -29,6 +30,7 @@ class RealDebugInstance(TestCase):
         self._driver_helper_object = DriverHelperObject(api, res_id, service_resource, self._logger)
 
     def _load_env_vars(self):
+        load_dotenv()
         self._cs_user = os.environ.get("CS_USERNAME")
         self._cs_pass = os.environ.get("CS_PASSWORD")
         self._cs_server = os.environ.get("CS_SERVER")
@@ -66,27 +68,27 @@ class RealDebugInstance(TestCase):
 
     def test_execute_and_destory(self):
 
+        self._context.resource.attributes[f"{SHELL_NAME}.Terraform Inputs"] = VAULT_TF_INPUTS
         self._context.resource.attributes[
-            f"{SHELL_NAME}.Terraform Inputs"] = \
-            "KEYVAULT_NAME=alexaz-amd-test,KEYVAULT_RG=alexaz-test-amd,SECRET_NAME=test"
+            f"{SHELL_NAME}.Github Terraform Module URL"] = os.environ.get("GITHUB_TF_PRIVATE_VAULT_URL")
         self._context.resource.attributes[
             f"{SHELL_NAME}.UUID"] = ""
         self._real_api.ClearSandboxData(self._driver_helper_object.res_id)
 
         self._driver.execute_terraform(self._context)
 
-        # As UUID has been created and SB data now contains UUID and STatus we must update context so destroy can run
-        # And also replace the custom inputs
+        # As UUID has been created and SB data now contains UUID and Status we must update context so destroy can run
+        # And also replace the custom inputs and TF URL
         self._set_context_resource_attributes()
+        self._context.resource.attributes[f"{SHELL_NAME}.Terraform Inputs"] = VAULT_TF_INPUTS
         self._context.resource.attributes[
-            f"{SHELL_NAME}.Terraform Inputs"] = \
-            "KEYVAULT_NAME=alexaz-amd-test,KEYVAULT_RG=alexaz-test-amd,SECRET_NAME=test"
+            f"{SHELL_NAME}.Github Terraform Module URL"] = os.environ.get("GITHUB_TF_PRIVATE_VAULT_URL")
 
         self._driver.destroy_terraform(self._context)
 
-    def test_download_terraform_module(self):
+    def _test_download_terraform_module(self, url: str):
         self._context.resource.attributes[
-            f"{SHELL_NAME}.Github Terraform Module URL"] = os.environ.get("GITHUB_TF_PRIVATE_HELLO_URL")
+            f"{SHELL_NAME}.Github Terraform Module URL"] = url
         service_resource = TerraformService2G.create_from_context(self._context)
         self._driver_helper_object = DriverHelperObject(self._real_api,
                                                         self._context.reservation.reservation_id,
@@ -96,6 +98,10 @@ class RealDebugInstance(TestCase):
         downloader = Downloader(self._driver_helper_object)
         tf_workingdir = downloader.download_terraform_module()
         self.assertTrue(os.path.exists(os.path.join(tf_workingdir, TF_HELLO_FILE)))
+
+    def test_public_and_private_hello_dl(self):
+        self._test_download_terraform_module(os.environ.get("GITHUB_TF_PRIVATE_HELLO_URL"))
+        self._test_download_terraform_module(GITHUB_TF_PUBLIC_HELLO_URL)
 
     def test_download_terraform_executable(self):
         downloader = Downloader(self._driver_helper_object)

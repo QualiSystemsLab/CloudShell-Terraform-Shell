@@ -33,9 +33,20 @@ class TfProcExec(object):
         vars = ["init", "-no-color"]
         try:
             self._run_tf_proc_with_command(vars, "INIT")
+            self._driver_helper_obj.api.SetServiceLiveStatus(
+                self._driver_helper_obj.res_id,
+                self._driver_helper_obj.tf_service.name,
+                "Progress 30",
+                "Init Passed"
+            )
         except Exception as e:
             self._sb_data_handler.set_status(EXECUTE_STATUS, INIT_FAILED)
-            # self._driver_helper_obj.api.SetServiceLiveStatus()
+            self._driver_helper_obj.api.SetServiceLiveStatus(
+                self._driver_helper_obj.res_id,
+                self._driver_helper_obj.tf_service.name,
+                "Error",
+                "Init Failed"
+            )
             raise
 
     def destroy_terraform(self):
@@ -52,8 +63,20 @@ class TfProcExec(object):
         try:
             self._run_tf_proc_with_command(vars, "DESTROY")
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_PASSED)
+            self._driver_helper_obj.api.SetServiceLiveStatus(
+                self._driver_helper_obj.res_id,
+                self._driver_helper_obj.tf_service.name,
+                "Info",
+                "Destroy Passed"
+            )
         except Exception as e:
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
+            self._driver_helper_obj.api.SetServiceLiveStatus(
+                self._driver_helper_obj.res_id,
+                self._driver_helper_obj.tf_service.name,
+                "Error",
+                "Destroy Failed"
+            )
             raise
 
     def plan_terraform(self) -> None:
@@ -69,8 +92,20 @@ class TfProcExec(object):
             vars.append(var)
         try:
             self._run_tf_proc_with_command(vars, "PLAN")
+            self._driver_helper_obj.api.SetServiceLiveStatus(
+                self._driver_helper_obj.res_id,
+                self._driver_helper_obj.tf_service.name,
+                "Progress 60",
+                "Plan Passed"
+            )
         except Exception as e:
             self._sb_data_handler.set_status(EXECUTE_STATUS, PLAN_FAILED)
+            self._driver_helper_obj.api.SetServiceLiveStatus(
+                self._driver_helper_obj.res_id,
+                self._driver_helper_obj.tf_service.name,
+                "Error",
+                "Plan Failed"
+            )
             raise
 
     def apply_terraform(self):
@@ -82,8 +117,20 @@ class TfProcExec(object):
         try:
             self._run_tf_proc_with_command(vars, "APPLY")
             self._sb_data_handler.set_status(EXECUTE_STATUS, APPLY_PASSED)
+            self._driver_helper_obj.api.SetServiceLiveStatus(
+                self._driver_helper_obj.res_id,
+                self._driver_helper_obj.tf_service.name,
+                "Online",
+                "Apply Passed"
+            )
         except Exception as e:
             self._sb_data_handler.set_status(EXECUTE_STATUS, APPLY_FAILED)
+            self._driver_helper_obj.api.SetServiceLiveStatus(
+                self._driver_helper_obj.res_id,
+                self._driver_helper_obj.tf_service.name,
+                "Error",
+                "Apply Failed"
+            )
             raise
 
     def parse_and_save_terraform_outputs(self):
