@@ -11,7 +11,7 @@ from cloudshell.shell.core.driver_context import ResourceCommandContext
 from data_model import TerraformService2G
 from driver import TerraformService2GDriver
 from driver_helper_obj import DriverHelperObject
-from tests.test_constants import SHELL_NAME
+from tests.constants import SHELL_NAME
 from services.provider_handler import ProviderHandler
 from dotenv import load_dotenv
 load_dotenv()
@@ -77,6 +77,7 @@ class MainDriverTest(TestCase):
         driver.initialize(self._context)
         return driver
 
+    # todo - move to provider test class
     def test_initialize_provider(self):
         ProviderHandler.initialize_provider(self._driver_helper_object)
 
@@ -91,8 +92,9 @@ class MainDriverTest(TestCase):
         print(f"var={var} output={stdout.decode('utf-8').rstrip()} value={value}")
         self.assertEqual(stdout.decode("utf-8").rstrip(), value)
 
+    # todo - this is not a unittest, move to integration tests section to a proper test class
     @patch("driver.CloudShellSessionContext")
-    def test_execute_terraform_wout_input(self, cssc):
+    def test_execute_terraform_without_input(self, cssc):
         # Arrange
         cssc.return_value.get_api.return_value = self._driver_helper_object.api
 
@@ -107,6 +109,7 @@ class MainDriverTest(TestCase):
         self.assertEqual(self._driver_helper_object.api.SetServiceAttributesValues.call_args.args[2][0].Value,
                          'hello=World!')
 
+    # todo - this is not a unittest, move to integration tests section to a proper test class
     @patch("driver.CloudShellSessionContext")
     def test_execute_terraform_with_input(self, cssc):
         # Arrange
