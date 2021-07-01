@@ -1,8 +1,5 @@
-import json
 from unittest import TestCase
-from unittest.mock import Mock, MagicMock, ANY
-
-from cloudshell.api.cloudshell_api import AttributeNameValue
+from unittest.mock import Mock, MagicMock
 
 from services.input_output_service import InputOutputService, TFVar
 

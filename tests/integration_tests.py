@@ -6,12 +6,12 @@ from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 from dotenv import load_dotenv
 
-from constants import SHELL_NAME
 from data_model import TerraformService2G
 from downloaders.downloader import Downloader
 from driver import TerraformService2GDriver
 from driver_helper_obj import DriverHelperObject
-from tests.test_constants import TF_HELLO_FILE, TERRAFORM_EXEC_FILE, GITHUB_TF_PUBLIC_HELLO_URL, VAULT_TF_INPUTS
+from tests.test_constants import TF_HELLO_FILE, TERRAFORM_EXEC_FILE, GITHUB_TF_PUBLIC_HELLO_URL, VAULT_TF_INPUTS, \
+    SHELL_NAME
 
 
 class RealDebugInstance(TestCase):

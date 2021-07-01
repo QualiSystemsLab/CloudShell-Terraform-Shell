@@ -37,13 +37,13 @@ node_types:
         default: [ Infra As Code ]
 
       Terraform Output:
-        description: Outputs from Terraform apply
+        description: Outputs from Terraform apply. All unmapped outputs will be stored here. Sensitive data will be omited.
         type: string
-        tags: [ ]
+        tags: [ user_input ]
       Terraform Inputs:
-        description: comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
+        description: Comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
         type: string
-        tags: [ ]
+        tags: [ user_input ]
       UUID:
         description: Holds UUID for the instance for driver
         type: string

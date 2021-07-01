@@ -1,4 +1,5 @@
 import os
+from typing import List
 from unittest import mock, TestCase
 from unittest.mock import Mock, patch
 from subprocess import Popen, PIPE
@@ -10,7 +11,7 @@ from cloudshell.shell.core.driver_context import ResourceCommandContext
 from data_model import TerraformService2G
 from driver import TerraformService2GDriver
 from driver_helper_obj import DriverHelperObject
-from constants import SHELL_NAME
+from tests.test_constants import SHELL_NAME
 from services.provider_handler import ProviderHandler
 from dotenv import load_dotenv
 load_dotenv()
@@ -121,7 +122,7 @@ class MainDriverTest(TestCase):
         self.assertEqual(self._driver_helper_object.api.SetServiceAttributesValues.call_args.args[2][0].Value,
                          'hello=Test!')
 
-    def _set_sb_data(self, resid: str, sdkv_list=list[SandboxDataKeyValue]) -> None:
+    def _set_sb_data(self, resid: str, sdkv_list=List[SandboxDataKeyValue]) -> None:
         self._sdkv_list = sdkv_list
 
     def _get_sb_data(self, resid: str):

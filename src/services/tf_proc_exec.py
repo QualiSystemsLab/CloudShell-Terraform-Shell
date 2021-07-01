@@ -44,30 +44,26 @@ class TfProcExec(object):
         self._driver_helper.logger.info("Performing Terraform Destroy")
         self._driver_helper.api.WriteMessageToReservationOutput(self._driver_helper.res_id,
                                                                 "Performing Terraform Destroy...")
-        vars = ["destroy"]
-        if self._driver_helper.tf_service.terraform_inputs:
-            for input in self._driver_helper.tf_service.terraform_inputs.split(","):
-                vars.append("-var")
-                vars.append(f'{input}')
-        for var in ["-auto-approve", "-no-color"]:
-            vars.append(var)
+        cmd = ["destroy", "-auto-approve", "-no-color"]
+
+        # get variables from attributes that should be mapped to TF variables
+        tf_vars = self._input_output_service.get_variables_from_var_attributes()
+        # get any additional TF variables from "Terraform Inputs" variable
+        tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
+
+        # add all TF variables to command
+        for tf_var in tf_vars:
+            cmd.append("-var")
+            cmd.append(f"{tf_var.name}={tf_var.value}")
+
         try:
-            self._run_tf_proc_with_command(vars, "DESTROY")
+            self._run_tf_proc_with_command(cmd, "DESTROY")
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_PASSED)
-            self._driver_helper.api.SetServiceLiveStatus(
-                self._driver_helper.res_id,
-                self._driver_helper.tf_service.name,
-                "Info",
-                "Destroy Passed"
-            )
+            self._set_service_status("Offline", "Destroy Passed")
+
         except Exception as e:
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
-            self._driver_helper.api.SetServiceLiveStatus(
-                self._driver_helper.res_id,
-                self._driver_helper.tf_service.name,
-                "Error",
-                "Destroy Failed"
-            )
+            self._set_service_status("Error", "Destroy Failed")
             raise
 
     def plan_terraform(self) -> None:
@@ -98,7 +94,7 @@ class TfProcExec(object):
     def apply_terraform(self):
         self._driver_helper.logger.info("Running Terraform Apply")
         self._driver_helper.api.WriteMessageToReservationOutput(self._driver_helper.res_id,
-                                                                "Executing Terraform Apply with auto approve...")
+                                                                "Executing Terraform Apply...")
         cmd = ["apply", "--auto-approve", "-no-color", "planfile"]
 
         try:
