@@ -43,7 +43,7 @@ class InputOutputService:
 
     def get_variables_from_terraform_input_attribute(self) -> List[TFVar]:
         """
-        'Terraform Inputs' is an optional attribute. The attribute is a CSV list of key=value.
+        'Terraform Inputs' is an optional attribute. The attribute is tests_helper_files CSV list of key=value.
         """
         tf_inputs_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.Terraform Inputs"
         result = []

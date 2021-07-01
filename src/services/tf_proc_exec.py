@@ -6,7 +6,8 @@ from subprocess import check_output, STDOUT, CalledProcessError
 from cloudshell.logging.qs_logger import _create_logger
 
 from constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, EXECUTE_STATUS, APPLY_PASSED, PLAN_FAILED, INIT_FAILED, \
-    DESTROY_STATUS, DESTROY_FAILED, APPLY_FAILED, DESTROY_PASSED
+    DESTROY_STATUS, DESTROY_FAILED, APPLY_FAILED, DESTROY_PASSED, INIT, DESTROY, PLAN, OUTPUT, APPLY, \
+    ALLOWED_LOGGING_CMDS
 from driver_helper_obj import DriverHelperObject
 from models.exceptions import TerraformExecutionError
 from services.input_output_service import InputOutputService
@@ -33,7 +34,8 @@ class TfProcExec(object):
                                                                 "Performing Terraform Init...")
         vars = ["init", "-no-color"]
         try:
-            self._run_tf_proc_with_command(vars, "INIT")
+            self._set_service_status("Progress 10", "Executing Terraform Init...")
+            self._run_tf_proc_with_command(vars, INIT)
             self._set_service_status("Progress 30", "Init Passed")
         except Exception as e:
             self._sb_data_handler.set_status(EXECUTE_STATUS, INIT_FAILED)
@@ -57,7 +59,8 @@ class TfProcExec(object):
             cmd.append(f"{tf_var.name}={tf_var.value}")
 
         try:
-            self._run_tf_proc_with_command(cmd, "DESTROY")
+            self._set_service_status("Progress 50", "Executing Terraform Destroy...")
+            self._run_tf_proc_with_command(cmd, DESTROY)
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_PASSED)
             self._set_service_status("Offline", "Destroy Passed")
 
@@ -84,7 +87,8 @@ class TfProcExec(object):
             cmd.append(f"{tf_var.name}={tf_var.value}")
 
         try:
-            self._run_tf_proc_with_command(cmd, "PLAN")
+            self._set_service_status("Progress 40", "Executing Terraform Plan...")
+            self._run_tf_proc_with_command(cmd, PLAN)
             self._set_service_status("Progress 60", "Plan Passed")
         except Exception:
             self._sb_data_handler.set_status(EXECUTE_STATUS, PLAN_FAILED)
@@ -98,7 +102,8 @@ class TfProcExec(object):
         cmd = ["apply", "--auto-approve", "-no-color", "planfile"]
 
         try:
-            self._run_tf_proc_with_command(cmd, "APPLY")
+            self._set_service_status("Progress 70", "Executing Terraform Apply...")
+            self._run_tf_proc_with_command(cmd, APPLY)
             self._sb_data_handler.set_status(EXECUTE_STATUS, APPLY_PASSED)
             self._set_service_status("Online", "Apply Passed")
         except Exception as e:
@@ -112,7 +117,7 @@ class TfProcExec(object):
 
             # get all TF outputs in json format
             cmd = ["output", "-json"]
-            tf_exec_output = self._run_tf_proc_with_command(cmd, "OUTPUT")
+            tf_exec_output = self._run_tf_proc_with_command(cmd, OUTPUT)
             unparsed_output_json = json.loads(tf_exec_output)
 
             self._input_output_service.parse_and_save_outputs(unparsed_output_json)
@@ -152,7 +157,8 @@ class TfProcExec(object):
             self._driver_helper.logger.error(
                 f"Error occurred while trying to execute Terraform | Output = {clean_output}"
             )
-            self._write_to_to_exec_log(command, clean_output, ERROR_LOG_LEVEL)
+            if command in ALLOWED_LOGGING_CMDS:
+                self._write_to_to_exec_log(command, clean_output, ERROR_LOG_LEVEL)
             raise TerraformExecutionError("Error during Terraform Plan. For more information please look at the logs.",
                                           clean_output)
         except Exception as e:

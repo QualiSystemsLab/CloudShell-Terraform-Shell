@@ -35,7 +35,7 @@ class GitHubScriptDownloader(object):
                 if repo_response.status_code == 200:
 
                     # Removing the file from the path as we are interested in the Folder that contains it
-                    if tf_response_json['type'] == 'file':
+                    if not isinstance(tf_response_json, list):
                         path_in_repo = os.sep.join(url_data.path.split("/")[:-1])
 
                     repo_temp_dir = tempfile.mkdtemp()

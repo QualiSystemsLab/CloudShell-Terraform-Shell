@@ -1,8 +1,0 @@
-#nose
-#coverage
-#unittest2
-mock==4.0.3
-python-dotenv==0.18.0
-#teamcity-messages
-#jsonpickle
-#nose-exclude

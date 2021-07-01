@@ -10,11 +10,11 @@ from data_model import TerraformService2G
 from downloaders.downloader import Downloader
 from driver import TerraformService2GDriver
 from driver_helper_obj import DriverHelperObject
-from tests.constants import TF_HELLO_FILE, TERRAFORM_EXEC_FILE, GITHUB_TF_PUBLIC_HELLO_URL, VAULT_TF_INPUTS, \
-    SHELL_NAME
+from tests.constants import TF_HELLO_FILE, TERRAFORM_EXEC_FILE, VAULT_TF_INPUTS, \
+    SHELL_NAME, GITHUB_TF_PUBLIC_HELLO_URL_FILE, GITHUB_TF_PUBLIC_HELLO_URL_FOLDER
 
 
-# todo - give it a meaningful name to the class and to the file
+# todo - give it tests_helper_files meaningful name to the class and to the file
 class TestTerraformExecuteDestroy(TestCase):
     def setUp(self) -> None:
         self._load_env_vars()
@@ -103,10 +103,12 @@ class TestTerraformExecuteDestroy(TestCase):
 
     # todo - move to "Downloader Integration Test"
     def test_public_and_private_hello_dl(self):
-        # todo - we dont need the "a/b/c/..." in the source code. only save the hello.tf file and add proper comments
+        # todo - we dont need the "a/tf_modules/hello/..." in the source code. only save the hello.tf file and add proper comments
         #  for how to use and set uo the test
+        self._test_download_terraform_module(GITHUB_TF_PUBLIC_HELLO_URL_FILE)
         self._test_download_terraform_module(os.environ.get("GITHUB_TF_PRIVATE_HELLO_URL"))
-        self._test_download_terraform_module(GITHUB_TF_PUBLIC_HELLO_URL)
+        self._test_download_terraform_module(GITHUB_TF_PUBLIC_HELLO_URL_FOLDER)
+
 
     # todo - move to "Downloader Integration Test"
     def test_download_terraform_executable(self):
