@@ -47,3 +47,4 @@ DIRTY_CHARS = r'''
                     [@-~]   # Final byte
                 )
             '''
+AZURE2G_MODEL = "Microsoft Azure Cloud Provider 2G"
