@@ -32,21 +32,36 @@ node_types:
         description: Cloud provider name to be used for cloud access
         type: string
         tags: [ user_input ]
+      Service Categories:
+        type: list
+        default: [ Infra As Code ]
+
       Terraform Output:
-        description: Output from Terraform run
+        description: Outputs from Terraform apply. All unmapped outputs will be stored here. Sensitive data will be omited.
         type: string
-        tags: [ ]
+        tags: [ user_input ]
       Terraform Inputs:
-        description: comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
+        description: Comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
         type: string
-        tags: [ user_input  ]
+        tags: [ user_input ]
       UUID:
         description: Holds UUID for the instance for driver
         type: string
         tags: [ ]
-      Service Categories:
-        type: list
-        default: [ Infra As Code ]
+
+      # Terraform module variables
+      # attributes that start with "var_" prefix will be mapped to Terraform variables automatically
+#      var_MY_VAR:
+#        description:
+#        type: string
+#        tags: [ user_input ]
+
+      # Terraform module outputs
+      # attributes that start with "out_" prefix will be mapped to Terraform outputs automatically
+#      out_MY_OUTPUT:
+#        description:
+#        type: string
+#        tags: [ user_input ]
     artifacts:
       icon:
         file: shell-icon.png

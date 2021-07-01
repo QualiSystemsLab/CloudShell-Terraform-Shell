@@ -224,7 +224,7 @@ class TerraformService2G(object):
     @terraform_output.setter
     def terraform_output(self, value):
         """
-        Output from Terraform run
+        Outputs from Terraform apply. All unmapped outputs will be stored here. Sensitive data will be omited.
         :type value: str
         """
         self.attributes['Terraform Service 2G.Terraform Output'] = value
@@ -239,7 +239,7 @@ class TerraformService2G(object):
     @terraform_inputs.setter
     def terraform_inputs(self, value):
         """
-        comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
+        Comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
         :type value: str
         """
         self.attributes['Terraform Service 2G.Terraform Inputs'] = value
@@ -258,21 +258,6 @@ class TerraformService2G(object):
         :type value: str
         """
         self.attributes['Terraform Service 2G.UUID'] = value
-
-    @property
-    def terraform_working_dir(self):
-        """
-        :rtype: str
-        """
-        return self.attributes['Terraform Service 2G.Terraform Working Dir'] if 'Terraform Service 2G.Terraform Working Dir' in self.attributes else None
-
-    @terraform_working_dir.setter
-    def terraform_working_dir(self, value):
-        """
-        Place holder for Working Dir (Will be removed in the future)
-        :type value: str
-        """
-        self.attributes['Terraform Service 2G.Terraform Working Dir'] = value
 
     @property
     def name(self):

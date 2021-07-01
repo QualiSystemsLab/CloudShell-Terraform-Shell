@@ -3,10 +3,12 @@ from logging import Logger
 
 from driver_helper_obj import DriverHelperObject
 
+
 class ProviderHandler(object):
     def __init__(self, logger: Logger):
         self.logger = logger
 
+    @staticmethod
     def initialize_provider(driver_help_object: DriverHelperObject):
         clp_resource_name = driver_help_object.tf_service.cloud_provider
         clp_res_model = driver_help_object.api.GetResourceDetails(clp_resource_name).ResourceModelName

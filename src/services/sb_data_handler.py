@@ -49,9 +49,9 @@ class SbDataHandler(object):
 
     def _generate_first_uuid_state_entry(self) -> str:
         first_tf_exec_status_data_entry = {
-                    EXECUTE_STATUS: NONE,
-                    DESTROY_STATUS: NONE,
-                    TF_WORKING_DIR: NONE
+            EXECUTE_STATUS: NONE,
+            DESTROY_STATUS: NONE,
+            TF_WORKING_DIR: NONE
         }
         return json.dumps(first_tf_exec_status_data_entry)
 
@@ -78,7 +78,7 @@ class SbDataHandler(object):
         updated_sdkv = SandboxDataKeyValue(self._uuid, json.dumps(uuid_sdkv_value))
         self._driver_helper_obj.api.SetSandboxData(self._driver_helper_obj.res_id, [updated_sdkv])
 
-    def _get_value_for_key(self, key:str) -> str:
+    def _get_value_for_key(self, key: str) -> str:
         uuid_sdkv_value = self._check_for_uuid_data()
         return uuid_sdkv_value[key]
 
@@ -88,4 +88,3 @@ class SbDataHandler(object):
         if not self._get_sb_data_val_by_key(current_data, self._uuid):
             raise Exception("Missing uuid data in sandbox data")
         return json.loads(uuid_sdkv)
-
