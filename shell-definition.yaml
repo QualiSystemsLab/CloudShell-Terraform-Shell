@@ -8,7 +8,6 @@ metadata:
 
 description: >
   TOSCA based service shell
-
 imports:
   - cloudshell_standard: cloudshell_custom_service_standard_1_0_0.yaml
 
@@ -17,28 +16,52 @@ node_types:
   vendor.resource.Terraform Service 2G:
     derived_from: cloudshell.nodes.CustomService
     properties:
-    #  User:
-    #    description: User with administrative privileges
-    #    type: string
-    #    tags: [user_input]
-    #  Password:
-    #    type: cloudshell.datatypes.Password
-    #    tags: [user_input]
-    #  Address:
-    #    description: Address for remote access
-    #    type: string
-    #    tags: [user_input]
-    #  Service Categories:
-    #    type: list
-    #    default: [My Category 1, My Category 2]
-      Terraform Module Path:
-        description: path to target module. Target directory will be changed to here before running terraform commands.
+      Github Terraform Module URL:
+        description:  The Github url e.g https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH
         type: string
         tags: [ user_input ]
-      Terraform Executable:
-        description: path to folder with terraform.exe
+      Terraform Version:
+        description: The version of terraform needed (empty=latest)
         type: string
         tags: [ user_input ]
+      Github Token:
+        description: Github Token
+        type: cloudshell.datatypes.Password
+        tags: [ user_input ]
+      Cloud Provider:
+        description: Cloud provider name to be used for cloud access
+        type: string
+        tags: [ user_input ]
+      Service Categories:
+        type: list
+        default: [ Infra As Code ]
+
+      Terraform Output:
+        description: Outputs from Terraform apply. All unmapped outputs will be stored here. Sensitive data will be omited.
+        type: string
+        tags: [ user_input ]
+      Terraform Inputs:
+        description: Comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
+        type: string
+        tags: [ user_input ]
+      UUID:
+        description: Holds UUID for the instance for driver
+        type: string
+        tags: [ ]
+
+      # Terraform module variables
+      # attributes that start with "var_" prefix will be mapped to Terraform variables automatically
+#      var_MY_VAR:
+#        description:
+#        type: string
+#        tags: [ user_input ]
+
+      # Terraform module outputs
+      # attributes that start with "out_" prefix will be mapped to Terraform outputs automatically
+#      out_MY_OUTPUT:
+#        description:
+#        type: string
+#        tags: [ user_input ]
     artifacts:
       icon:
         file: shell-icon.png
