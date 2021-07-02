@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import traceback
+import ssl
 from io import BytesIO
 from logging import Logger
 from urllib.request import Request, urlopen
@@ -16,6 +17,10 @@ class TfExecDownloader(object):
         self.logger = logger
 
     def download_terraform_executable(tf_workingdir: str, version='latest'):
+
+        # Used to prevent missing certificates in python 3 from failing to download terraform exe
+        ssl._create_default_https_context = ssl._create_unverified_context
+
         # Must be in format of d.dd.dd and cannot have 0 in front of a number like 0.05.05, this is valid 0.5.0
         valid_version_regex = re.compile('^([0-9]{1})\.([1-9]{0,1}[0-9]{1})\.([1-9]{0,1}[0-9]{1})$')
 
