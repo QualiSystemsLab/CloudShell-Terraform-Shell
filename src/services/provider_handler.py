@@ -12,6 +12,8 @@ class ProviderHandler(object):
     @staticmethod
     def initialize_provider(driver_helper: DriverHelperObject):
         clp_resource_name = driver_helper.tf_service.cloud_provider
+        if not clp_resource_name:
+            return
         clp_res_model = driver_helper.api.GetResourceDetails(clp_resource_name).ResourceModelName
         clpr_res_fam = driver_helper.api.GetResourceDetails(clp_resource_name).ResourceFamilyName
 

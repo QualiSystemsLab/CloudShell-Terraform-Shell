@@ -17,7 +17,7 @@ node_types:
     derived_from: cloudshell.nodes.CustomService
     properties:
       Github Terraform Module URL:
-        description:  The Github url e.g https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH
+        description:  The Github url e.g https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH or The Github url e.g https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH/filename
         type: string
         tags: [ user_input ]
       Terraform Version:

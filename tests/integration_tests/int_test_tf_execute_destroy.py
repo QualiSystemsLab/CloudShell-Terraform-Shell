@@ -1,39 +1,55 @@
-import os
+import time
+from os import environ
 from unittest import TestCase
 
-from data_model import TerraformService2G
-from downloaders.downloader import Downloader
-from driver_helper_obj import DriverHelperObject
-from tests.constants import TF_HELLO_FILE, TERRAFORM_EXEC_FILE, SHELL_NAME, GITHUB_TF_PUBLIC_HELLO_URL_FILE, \
-    GITHUB_TF_PUBLIC_HELLO_URL_FOLDER
-from tests.integration_tests.helper_objects.integration_context import IntegrationData
+from tests.constants import TF_HELLO_DEFAULT_OUTPUT
+from tests.integration_tests.helpers.integration_tests_data import IntegrationTestsData
 
 
 class TestTerraformExecuteDestroy(TestCase):
+
     def setUp(self) -> None:
-        self.integration_data = IntegrationData()
-
-
+        self.data = IntegrationTestsData()
+        self.data.real_api.ClearSandboxData(self.data.driver_helper.res_id)
+        self.data.set_attribute("UUID")
+        self.data.set_attribute("Terraform Output")
 
     def test_execute_and_destroy(self):
-        self.integration_data.context.resource.attributes[f"{SHELL_NAME}.Terraform Inputs"] = \
-            os.environ.get(" VAULT_TF_INPUTS")
-        self.integration_data.context.resource.attributes[
-            f"{SHELL_NAME}.Github Terraform Module URL"] = os.environ.get("GITHUB_TF_PRIVATE_AZUREAPP_URL")
-        self.integration_data.context.resource.attributes[
-            f"{SHELL_NAME}.UUID"] = ""
+        # Testing the following:
+        # 1) The download of a private Repo that has an app that needs Azure Access (so tests providers as well)
+        # 2) The download of TF Executable
+        # 3) The execution and destruction of the module
 
-        self.integration_data.context.real_api.ClearSandboxData(self._driver_helper.res_id)
+        self.data.set_attribute("Terraform Inputs",
+                                environ.get("AZUREAPP_TF_INPUTS"))
+        self.data.set_attribute("Github Terraform Module URL",
+                                environ.get("GITHUB_TF_PRIVATE_AZUREAPP_URL"))
 
-        self.integration_data.driver.execute_terraform(self.integration_data.context)
+        self.data.driver.execute_terraform(self.data.context)
 
         # As UUID has been created and SB data now contains UUID and Status we must update context so destroy can run
         # And also replace the custom inputs and TF URL
-        self.integration_data.set_context_resource_attributes()
-        self.integration_data.context.resource.attributes[f"{SHELL_NAME}.Terraform Inputs"] = \
-            os.environ.get(" VAULT_TF_INPUTS")
-        self.integration_data.context.resource.attributes[
-            f"{SHELL_NAME}.Github Terraform Module URL"] = os.environ.get("GITHUB_TF_PRIVATE_VAULT_URL")
+        self.data.set_context_resource_attributes()
+        self.data.set_attribute("Terraform Inputs",
+                                environ.get("AZUREAPP_TF_INPUTS"))
+        self.data.set_attribute("Github Terraform Module URL",
+                                environ.get("GITHUB_TF_PRIVATE_AZUREAPP_URL"))
 
-        self.integration_data.driver.destroy_terraform(self.integration_data.context)
+        self.data.driver.destroy_terraform(self.data.context)
 
+    def _test_execute_terraform_input_output(self, inputs: str, outputs: str):
+        # Arrange
+        self.data.set_attribute("Github Terraform Module URL", environ.get("GITHUB_TF_PRIVATE_HELLO_URL"))
+        self.data.set_attribute("Terraform Inputs", inputs)
+
+        # Act
+        self.data.driver.execute_terraform(self.data.context)
+
+        # Assert
+        self.assertEqual(self.data.get_attribute("Terraform Output"), outputs)
+
+    def test_execute_terraform_without_input(self):
+        self._test_execute_terraform_input_output("", TF_HELLO_DEFAULT_OUTPUT)
+
+    def test_execute_terraform_with_input(self):
+        self._test_execute_terraform_input_output("hello=Test!", "hello=Test!")

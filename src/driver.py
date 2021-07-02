@@ -63,12 +63,13 @@ class TerraformService2GDriver (ResourceDriverInterface):
                 tf_proc_executer.apply_terraform()
                 tf_proc_executer.save_terraform_outputs()
             else:
+                err_msg = "Execution is not enabled due to either failed previous Execution (*Try Destroy first) or " \
+                          "Successfully executed previously without successfully destroying it first"
                 api.WriteMessageToReservationOutput(
-                    res_id,
-                    "Execution is not enabled due to either failed previous Execution (*Try Destroy first) or "
-                    "Successfully executed previously without successfully destroying it first"
+                    res_id,err_msg
+
                 )
-                raise Exception("Execute Blocked due to ")
+                raise Exception(err_msg)
 
     def destroy_terraform(self, context):
         with LoggingSessionContext(context) as logger:
