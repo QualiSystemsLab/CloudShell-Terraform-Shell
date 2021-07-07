@@ -8,8 +8,8 @@ from cloudshell.api.cloudshell_api import SandboxDataKeyValue
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
-from data_model import TerraformService2G
-from driver import TerraformService2GDriver
+from data_model import GenericTerraformService
+from driver import GenericTerraformServiceDriver
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from tests.constants import SHELL_NAME
 from cloudshell.iac.terraform.services.provider_handler import ProviderHandler
@@ -46,7 +46,7 @@ class MainDriverTest(TestCase):
 
         api = mock_api
         res_id = self._context.reservation.reservation_id
-        service_resource = TerraformService2G.create_from_context(self._context)
+        service_resource = GenericTerraformService.create_from_context(self._context)
         logger = get_qs_logger(log_group=self._context.resource.name)
         self._driver_helper_object = ShellHelperObject(api, res_id, service_resource, logger)
 
@@ -72,8 +72,8 @@ class MainDriverTest(TestCase):
         context.resource.attributes[f"{SHELL_NAME}.Terraform Version"] = os.environ.get("TFEXEC_VERSION")
         return context
 
-    def _create_driver(self) -> TerraformService2GDriver:
-        driver = TerraformService2GDriver()
+    def _create_driver(self) -> GenericTerraformServiceDriver:
+        driver = GenericTerraformServiceDriver()
         driver.initialize(self._context)
         return driver
 
@@ -104,7 +104,7 @@ class MainDriverTest(TestCase):
         # Assert
         self.assertEqual(
             self._driver_helper_object.api.SetServiceAttributesValues.call_args.args[2][0].Name,
-            'Terraform Service 2G.Terraform Output'
+            f'{SHELL_NAME}.Terraform Outputs'
         )
         self.assertEqual(self._driver_helper_object.api.SetServiceAttributesValues.call_args.args[2][0].Value,
                          'hello=World!')
@@ -121,7 +121,7 @@ class MainDriverTest(TestCase):
 
         # Assert
         self.assertEqual(self._driver_helper_object.api.SetServiceAttributesValues.call_args.args[2][0].Name,
-                         'Terraform Service 2G.Terraform Output')
+                         f'{SHELL_NAME}.Terraform Outputs')
         self.assertEqual(self._driver_helper_object.api.SetServiceAttributesValues.call_args.args[2][0].Value,
                          'hello=Test!')
 

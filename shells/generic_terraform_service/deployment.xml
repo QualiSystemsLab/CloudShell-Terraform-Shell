@@ -29,7 +29,7 @@
                  <source>src</source>
             </sources>
             <!-- the driver name of the driver to update -->
-            <targetName>TerraformService2GDriver</targetName>
+            <targetName>GenericTerraformServiceDriver</targetName>
         </driver>
     </drivers>
 

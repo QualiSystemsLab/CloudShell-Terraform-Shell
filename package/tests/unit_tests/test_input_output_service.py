@@ -123,7 +123,7 @@ class TestInputOutputService(TestCase):
         # arrange
         driver_helper = Mock()
         var_name = f"{driver_helper.tf_service.cloudshell_model_name}.out_MyVar1"
-        tf_output_name = f"{driver_helper.tf_service.cloudshell_model_name}.Terraform Output"
+        tf_output_name = f"{driver_helper.tf_service.cloudshell_model_name}.Terraform Outputs"
         driver_helper.tf_service.attributes = {
             var_name: "val1",
             tf_output_name: ""
@@ -158,7 +158,7 @@ class TestInputOutputService(TestCase):
     def test_parse_and_save_outputs_with_sensitive_unmapped_attributes(self):
         # arrange
         driver_helper = Mock()
-        tf_output_name = f"{driver_helper.tf_service.cloudshell_model_name}.Terraform Output"
+        tf_output_name = f"{driver_helper.tf_service.cloudshell_model_name}.Terraform Outputs"
         driver_helper.tf_service.attributes = {
             tf_output_name: ""
         }

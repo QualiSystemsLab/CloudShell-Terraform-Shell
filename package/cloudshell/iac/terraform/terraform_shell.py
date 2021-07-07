@@ -14,6 +14,7 @@ from cloudshell.iac.terraform.services.tf_proc_exec import TfProcExec
 
 
 class TerraformShell:
+    # todo: add support to provide the info needed from attributes as parameters to the init (not shell attributes)
     def __init__(self, driver_context: ResourceCommandContext, terraform_service_shell: any, logger: logging.Logger):
         self._context = driver_context
         self._tf_service = terraform_service_shell

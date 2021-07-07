@@ -72,14 +72,14 @@ class LegacyUtils(object):
         return inspect.getmembers(sys.modules[__name__], inspect.isclass)
 
 
-class TerraformService2G(object):
+class GenericTerraformService(object):
     def __init__(self, name):
         """
         
         """
         self.attributes = {}
         self.resources = {}
-        self._cloudshell_model_name = 'Terraform Service 2G'
+        self._cloudshell_model_name = 'Generic Terraform Service'
         self._name = name
 
     def add_sub_resource(self, relative_path, sub_resource):
@@ -92,9 +92,9 @@ class TerraformService2G(object):
         :param context: cloudshell.shell.core.driver_context.ResourceCommandContext
         :type context: cloudshell.shell.core.driver_context.ResourceCommandContext
         :return:
-        :rtype TerraformService2G
+        :rtype GenericTerraformService
         """
-        result = TerraformService2G(name=context.resource.name)
+        result = GenericTerraformService(name=context.resource.name)
         for attr in context.resource.attributes:
             result.attributes[attr] = context.resource.attributes[attr]
         return result
@@ -152,44 +152,44 @@ class TerraformService2G(object):
         Returns the name of the Cloudshell model
         :return:
         """
-        return 'TerraformService2G'
+        return 'GenericTerraformService'
 
     @property
     def github_terraform_module_url(self):
         """
         :rtype: str
         """
-        return self.attributes['Terraform Service 2G.Github Terraform Module URL'] if 'Terraform Service 2G.Github Terraform Module URL' in self.attributes else None
+        return self.attributes['Generic Terraform Service.Github Terraform Module URL'] if 'Generic Terraform Service.Github Terraform Module URL' in self.attributes else None
 
     @github_terraform_module_url.setter
     def github_terraform_module_url(self, value):
         """
-        The Github url e.g https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH
+        Github url to the Terraform module. Supports the same URL format from a browser. The entire repo will be downloaded. Url to a folder: https://github.com/<ACCOUNT>/<REPO>/tree/<BRANCH>/<PATH_TO_FOLDER> or url to a TF file: https://github.com/<ACCOUNT>/<REPO>/blob/<BRANCH>/<PATH>/filename.tf
         :type value: str
         """
-        self.attributes['Terraform Service 2G.Github Terraform Module URL'] = value
+        self.attributes['Generic Terraform Service.Github Terraform Module URL'] = value
 
     @property
     def terraform_version(self):
         """
         :rtype: str
         """
-        return self.attributes['Terraform Service 2G.Terraform Version'] if 'Terraform Service 2G.Terraform Version' in self.attributes else None
+        return self.attributes['Generic Terraform Service.Terraform Version'] if 'Generic Terraform Service.Terraform Version' in self.attributes else None
 
     @terraform_version.setter
     def terraform_version(self, value):
         """
-        The version of terraform needed (empty=latest)
+        The version of terraform needed (empty=latest). E.g. '1.0.0'
         :type value: str
         """
-        self.attributes['Terraform Service 2G.Terraform Version'] = value
+        self.attributes['Generic Terraform Service.Terraform Version'] = value
 
     @property
     def github_token(self):
         """
         :rtype: string
         """
-        return self.attributes['Terraform Service 2G.Github Token'] if 'Terraform Service 2G.Github Token' in self.attributes else None
+        return self.attributes['Generic Terraform Service.Github Token'] if 'Generic Terraform Service.Github Token' in self.attributes else None
 
     @github_token.setter
     def github_token(self, value):
@@ -197,14 +197,14 @@ class TerraformService2G(object):
         Github Token
         :type value: string
         """
-        self.attributes['Terraform Service 2G.Github Token'] = value
+        self.attributes['Generic Terraform Service.Github Token'] = value
 
     @property
     def cloud_provider(self):
         """
         :rtype: str
         """
-        return self.attributes['Terraform Service 2G.Cloud Provider'] if 'Terraform Service 2G.Cloud Provider' in self.attributes else None
+        return self.attributes['Generic Terraform Service.Cloud Provider'] if 'Generic Terraform Service.Cloud Provider' in self.attributes else None
 
     @cloud_provider.setter
     def cloud_provider(self, value):
@@ -212,29 +212,29 @@ class TerraformService2G(object):
         Cloud provider name to be used for cloud access
         :type value: str
         """
-        self.attributes['Terraform Service 2G.Cloud Provider'] = value
+        self.attributes['Generic Terraform Service.Cloud Provider'] = value
 
     @property
-    def terraform_output(self):
+    def terraform_outputs(self):
         """
         :rtype: str
         """
-        return self.attributes['Terraform Service 2G.Terraform Output'] if 'Terraform Service 2G.Terraform Output' in self.attributes else None
+        return self.attributes['Generic Terraform Service.Terraform Outputs'] if 'Generic Terraform Service.Terraform Outputs' in self.attributes else None
 
-    @terraform_output.setter
-    def terraform_output(self, value):
+    @terraform_outputs.setter
+    def terraform_outputs(self, value):
         """
         Outputs from Terraform apply. All unmapped outputs will be stored here. Sensitive data will be omited.
         :type value: str
         """
-        self.attributes['Terraform Service 2G.Terraform Output'] = value
+        self.attributes['Generic Terraform Service.Terraform Outputs'] = value
 
     @property
     def terraform_inputs(self):
         """
         :rtype: str
         """
-        return self.attributes['Terraform Service 2G.Terraform Inputs'] if 'Terraform Service 2G.Terraform Inputs' in self.attributes else None
+        return self.attributes['Generic Terraform Service.Terraform Inputs'] if 'Generic Terraform Service.Terraform Inputs' in self.attributes else None
 
     @terraform_inputs.setter
     def terraform_inputs(self, value):
@@ -242,22 +242,22 @@ class TerraformService2G(object):
         Comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
         :type value: str
         """
-        self.attributes['Terraform Service 2G.Terraform Inputs'] = value
+        self.attributes['Generic Terraform Service.Terraform Inputs'] = value
 
     @property
     def uuid(self):
         """
         :rtype: str
         """
-        return self.attributes['Terraform Service 2G.UUID'] if 'Terraform Service 2G.UUID' in self.attributes else None
+        return self.attributes['Generic Terraform Service.UUID'] if 'Generic Terraform Service.UUID' in self.attributes else None
 
     @uuid.setter
     def uuid(self, value):
         """
-        Holds UUID for the instance for driver
+        UUID for the driver instance. Used internally by the Terraform Shell, should not be a user input.
         :type value: str
         """
-        self.attributes['Terraform Service 2G.UUID'] = value
+        self.attributes['Generic Terraform Service.UUID'] = value
 
     @property
     def name(self):

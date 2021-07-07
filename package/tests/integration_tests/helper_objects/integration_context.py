@@ -4,8 +4,8 @@ from cloudshell.api.cloudshell_api import CloudShellAPISession
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
-from data_model import TerraformService2G
-from driver import TerraformService2GDriver
+from data_model import GenericTerraformService
+from driver import GenericTerraformServiceDriver
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from tests.integration_tests import EnvVars
 
@@ -22,7 +22,7 @@ class IntegrationData(object):
         self._set_context()
         self._logger = get_qs_logger(log_group=self.context.resource.name)
 
-        service_resource = TerraformService2G.create_from_context(self.context)
+        service_resource = GenericTerraformService.create_from_context(self.context)
         self._driver_helper = ShellHelperObject(
             self.real_api,
             self.context.reservation.reservation_id,
@@ -54,5 +54,5 @@ class IntegrationData(object):
                     self.context.resource.attributes[attribute.Name] = attribute.Value
 
     def _create_driver(self) :
-        self.driver = TerraformService2GDriver()
+        self.driver = GenericTerraformServiceDriver()
         self.driver.initialize(self.context)

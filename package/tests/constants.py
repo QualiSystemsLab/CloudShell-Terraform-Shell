@@ -4,4 +4,4 @@ GITHUB_TF_PUBLIC_HELLO_URL_FOLDER = "https://github.com/QualiSystemsLab/CloudShe
 
 TERRAFORM_EXEC_FILE = "terraform.exe"
 TF_HELLO_FILE = "hello.tf"
-SHELL_NAME = "Terraform Service 2G"
+SHELL_NAME = "Generic Terraform Service"

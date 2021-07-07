@@ -1,5 +1,5 @@
 @echo off
-cd shells\generic_terraform_shell
+cd shells\generic_terraform_service
 shellfoundry install
 cd ..\..\package
 python setup.py sdist

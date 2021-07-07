@@ -65,7 +65,7 @@ class InputOutputService:
     def parse_and_save_outputs(self, unparsed_output_json: Dict) -> None:
         """
         Parse the raw json from "terraform output -json" and update service attributes that are mapped to specific outputs.
-        If "Terraform Output" attribute exist then save all unmapped outputs on this attribute
+        If "Terraform Outputs" attribute exist then save all unmapped outputs on this attribute
         """
         # check if output exists in driver data model and if it does create an attribute update request
         attr_update_req = []
@@ -77,8 +77,8 @@ class InputOutputService:
             else:
                 unmaped_outputs[output] = unparsed_output_json[output]
 
-        # if "Terraform Output" attribute exists then we want to save all unmapped outputs to this attribute
-        tf_out_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.Terraform Output"
+        # if "Terraform Outputs" attribute exists then we want to save all unmapped outputs to this attribute
+        tf_out_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.Terraform Outputs"
         if tf_out_attr in self._driver_helper.tf_service.attributes:
             # parse unmapped outputs
             output_string = []

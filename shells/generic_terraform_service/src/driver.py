@@ -6,7 +6,7 @@ from cloudshell.iac.terraform.terraform_shell import TerraformShell
 from data_model import *  # run 'shellfoundry generate' to generate data model classes
 
 
-class TerraformService2GDriver (ResourceDriverInterface):
+class GenericTerraformServiceDriver (ResourceDriverInterface):
 
     def __init__(self):
         """
@@ -32,12 +32,12 @@ class TerraformService2GDriver (ResourceDriverInterface):
 
     def execute_terraform(self, context: ResourceCommandContext):
         with LoggingSessionContext(context) as logger:
-            tf_service = TerraformService2G.create_from_context(context)
+            tf_service = GenericTerraformService.create_from_context(context)
             tf_shell = TerraformShell(context, tf_service, logger)
             tf_shell.execute_terraform()
 
     def destroy_terraform(self, context: ResourceCommandContext):
         with LoggingSessionContext(context) as logger:
-            tf_service = TerraformService2G.create_from_context(context)
+            tf_service = GenericTerraformService.create_from_context(context)
             tf_shell = TerraformShell(context, tf_service, logger)
             tf_shell.destroy_terraform()
