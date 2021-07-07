@@ -155,14 +155,21 @@ class TestInputOutputService(TestCase):
         # check that SetServiceAttributesValues was called with 2 AttributeNameValue values
         self.assertEqual(len(driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2]), 2)
 
-    def test_parse_and_save_outputs_with_sensitive_unmapped_attributes(self):
+    def test_parse_and_save_outputs_with_unmapped_attributes(self):
         # arrange
         driver_helper = Mock()
         tf_output_name = f"{driver_helper.tf_service.cloudshell_model_name}.Terraform Outputs"
+        tf_sensitive_output_name = f"{driver_helper.tf_service.cloudshell_model_name}.Terraform Sensitive Outputs"
         driver_helper.tf_service.attributes = {
-            tf_output_name: ""
+            tf_output_name: "",
+            tf_sensitive_output_name: ""
         }
         json_output = {
+            "MyVar1": {
+                "sensitive": False,
+                "type": "string",
+                "value": "val1"
+            },
             "MyVar2": {
                 "sensitive": True,
                 "type": "string",
@@ -181,8 +188,36 @@ class TestInputOutputService(TestCase):
 
         # assert
         driver_helper.api.SetServiceAttributesValues.assert_called_once()
-        # check that the sensitive value is masked
-        attribute_update_req = driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0]
-        self.assertIn("MyVar2=(sensitive)", attribute_update_req.Value)
-        self.assertNotIn("val2", attribute_update_req.Value)
 
+        attribute_update_req_list = driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2]
+        output_update_req = next(filter(lambda x: x.Name == tf_output_name, attribute_update_req_list))
+        sensitive_output_update_req = next(filter(lambda x: x.Name == tf_sensitive_output_name, attribute_update_req_list))
+
+        attribute_update_req = driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0]
+        self.assertEqual("MyVar2=val2", sensitive_output_update_req.Value)
+        self.assertIn("MyVar1=val1", attribute_update_req.Value)
+        self.assertIn("MyVar3=val3", attribute_update_req.Value)
+
+    def test_parse_and_save_outputs_optional_tf_outputs_attributes(self):
+        # arrange
+        driver_helper = Mock()
+        driver_helper.tf_service.attributes = {}
+        json_output = {
+            "MyVar1": {
+                "sensitive": False,
+                "type": "string",
+                "value": "val1"
+            },
+            "MyVar2": {
+                "sensitive": True,
+                "type": "string",
+                "value": "val2"
+            }
+        }
+        input_output_service = InputOutputService(driver_helper)
+
+        # act
+        input_output_service.parse_and_save_outputs(json_output)
+
+        # assert
+        driver_helper.api.SetServiceAttributesValues.assert_not_called()
