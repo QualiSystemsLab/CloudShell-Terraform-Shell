@@ -16,22 +16,21 @@ from cloudshell.iac.terraform.services.string_cleaner import StringCleaner
 
 
 class TfProcExec(object):
-    def __init__(self, driver_helper_obj: ShellHelperObject, sb_data_handler: SandboxDataHandler,
+    def __init__(self, shell_helper: ShellHelperObject, sb_data_handler: SandboxDataHandler,
                  input_output_service: InputOutputService):
-        self._driver_helper = driver_helper_obj
+        self._shell_helper = shell_helper
         self._sb_data_handler = sb_data_handler
         self._input_output_service = input_output_service
         self._tf_workingdir = sb_data_handler.get_tf_working_dir()
 
         dt = datetime.now().strftime("%d_%m_%y-%H_%M_%S")
         self._exec_output_log = _create_logger(
-            log_group=driver_helper_obj.sandbox_id, log_category="QS", log_file_prefix=f"TF_EXEC_LOG_{dt}"
+            log_group=shell_helper.sandbox_id, log_category="QS", log_file_prefix=f"TF_EXEC_LOG_{dt}"
         )
 
     def init_terraform(self):
-        self._driver_helper.logger.info("Performing Terraform Init")
-        self._driver_helper.api.WriteMessageToReservationOutput(self._driver_helper.sandbox_id,
-                                                                "Performing Terraform Init...")
+        self._shell_helper.logger.info("Performing Terraform Init")
+        self._shell_helper.sandbox_messages.write_message("running Terraform Init...")
         vars = ["init", "-no-color"]
         try:
             self._set_service_status("Progress 10", "Executing Terraform Init...")
@@ -43,9 +42,8 @@ class TfProcExec(object):
             raise
 
     def destroy_terraform(self):
-        self._driver_helper.logger.info("Performing Terraform Destroy")
-        self._driver_helper.api.WriteMessageToReservationOutput(self._driver_helper.sandbox_id,
-                                                                "Performing Terraform Destroy...")
+        self._shell_helper.logger.info("Performing Terraform Destroy")
+        self._shell_helper.sandbox_messages.write_message("running Terraform Destroy...")
         cmd = ["destroy", "-auto-approve", "-no-color"]
 
         # get variables from attributes that should be mapped to TF variables
@@ -70,9 +68,8 @@ class TfProcExec(object):
             raise
 
     def plan_terraform(self) -> None:
-        self._driver_helper.logger.info("Running Terraform Plan")
-        self._driver_helper.api.WriteMessageToReservationOutput(self._driver_helper.sandbox_id,
-                                                                "Generating Terraform Plan...")
+        self._shell_helper.logger.info("Running Terraform Plan")
+        self._shell_helper.sandbox_messages.write_message("generating Terraform Plan...")
 
         cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
 
@@ -96,9 +93,8 @@ class TfProcExec(object):
             raise
 
     def apply_terraform(self):
-        self._driver_helper.logger.info("Running Terraform Apply")
-        self._driver_helper.api.WriteMessageToReservationOutput(self._driver_helper.sandbox_id,
-                                                                "Executing Terraform Apply...")
+        self._shell_helper.logger.info("Running Terraform Apply")
+        self._shell_helper.sandbox_messages.write_message("executing Terraform Apply...")
         cmd = ["apply", "--auto-approve", "-no-color", "planfile"]
 
         try:
@@ -113,7 +109,7 @@ class TfProcExec(object):
 
     def save_terraform_outputs(self):
         try:
-            self._driver_helper.logger.info("Running 'terraform output -json'")
+            self._shell_helper.logger.info("Running 'terraform output -json'")
 
             # get all TF outputs in json format
             cmd = ["output", "-json"]
@@ -123,7 +119,7 @@ class TfProcExec(object):
             self._input_output_service.parse_and_save_outputs(unparsed_output_json)
 
         except Exception as e:
-            self._driver_helper.logger.error(f"Error occurred while trying to parse Terraform outputs -> {str(e)}")
+            self._shell_helper.logger.error(f"Error occurred while trying to parse Terraform outputs -> {str(e)}")
             raise
 
     def can_execute_run(self) -> bool:
@@ -155,7 +151,7 @@ class TfProcExec(object):
 
         except CalledProcessError as e:
             clean_output = StringCleaner.get_clean_string(e.output.decode('utf-8'))
-            self._driver_helper.logger.error(
+            self._shell_helper.logger.error(
                 f"Error occurred while trying to execute Terraform | Output = {clean_output}"
             )
             if command in ALLOWED_LOGGING_CMDS:
@@ -164,7 +160,7 @@ class TfProcExec(object):
                                           clean_output)
         except Exception as e:
             clean_output = StringCleaner.get_clean_string(str(e))
-            self._driver_helper.logger.error(f"Error Running Terraform plan {clean_output}")
+            self._shell_helper.logger.error(f"Error Running Terraform plan {clean_output}")
             raise TerraformExecutionError("Error during Terraform Plan. For more information please look at the logs.")
 
     def _write_to_exec_log(self, command: str, log_data: str, log_level: int) -> None:
@@ -182,9 +178,8 @@ class TfProcExec(object):
         )
 
     def _set_service_status(self, status: str, description: str):
-        self._driver_helper.api.SetServiceLiveStatus(
-            self._driver_helper.sandbox_id,
-            self._driver_helper.tf_service.name,
+        self._shell_helper.live_status_updater.set_service_live_status(
+            self._shell_helper.tf_service.name,
             status,
             description
         )

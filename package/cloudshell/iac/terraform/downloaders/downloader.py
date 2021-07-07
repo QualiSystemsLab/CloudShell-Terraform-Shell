@@ -4,29 +4,27 @@ from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
 
 class Downloader(object):
-    def __init__(self, driver_helper_obj: ShellHelperObject):
-        self._driver_helper_obj = driver_helper_obj
+    def __init__(self, shell_helper: ShellHelperObject):
+        self._shell_helper = shell_helper
 
     def download_terraform_module(self) -> str:
-        url = self._driver_helper_obj.tf_service.github_terraform_module_url
-        token = self._driver_helper_obj.api.DecryptPassword(self._driver_helper_obj.tf_service.github_token).Value
+        url = self._shell_helper.tf_service.github_terraform_module_url
+        token = self._shell_helper.api.DecryptPassword(self._shell_helper.tf_service.github_token).Value
 
-        self._driver_helper_obj.api.WriteMessageToReservationOutput(self._driver_helper_obj.sandbox_id,
-                                                                    "Downloading Terraform from repository...")
-        self._driver_helper_obj.logger.info("Downloading Terraform Repo from Github")
+        self._shell_helper.sandbox_messages.write_message("downloading Terraform module from repository...")
+        self._shell_helper.logger.info("Downloading Terraform Repo from Github")
 
-        downloader = GitHubScriptDownloader(self._driver_helper_obj.logger)
+        downloader = GitHubScriptDownloader(self._shell_helper.logger)
         return downloader.download_repo(url, token)
 
     def download_terraform_executable(self, tf_workingdir: str) -> None:
         try:
-            self._driver_helper_obj.logger.info("Downloading Terraform executable")
-            self._driver_helper_obj.api.WriteMessageToReservationOutput(self._driver_helper_obj.sandbox_id,
-                                                                        "Downloading Terraform executable...")
+            self._shell_helper.logger.info("Downloading Terraform executable")
+            self._shell_helper.sandbox_messages.write_message("downloading Terraform executable...")
 
             TfExecDownloader.download_terraform_executable(tf_workingdir,
-                                                           self._driver_helper_obj.tf_service.terraform_version)
+                                                           self._shell_helper.tf_service.terraform_version)
 
         except Exception as e:
-            self._driver_helper_obj.logger.error(f"Failed downloading Terraform Repo from Github {str(e)}")
+            self._shell_helper.logger.error(f"Failed downloading Terraform Repo from Github {str(e)}")
             raise
