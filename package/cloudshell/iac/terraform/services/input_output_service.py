@@ -3,6 +3,7 @@ from typing import List, Dict
 
 from cloudshell.api.cloudshell_api import AttributeNameValue
 
+from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
 TFVar = namedtuple('TFVar', ['name', 'value'])
@@ -45,7 +46,7 @@ class InputOutputService:
         """
         'Terraform Inputs' is an optional attribute. The attribute is tests_helper_files CSV list of key=value.
         """
-        tf_inputs_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.Terraform Inputs"
+        tf_inputs_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.{ATTRIBUTE_NAMES.TF_INPUTS}"
         result = []
 
         if tf_inputs_attr in self._driver_helper.tf_service.attributes and \
@@ -67,32 +68,44 @@ class InputOutputService:
         Parse the raw json from "terraform output -json" and update service attributes that are mapped to specific outputs.
         If "Terraform Outputs" attribute exist then save all unmapped outputs on this attribute
         """
-        # check if output exists in driver data model and if it does create an attribute update request
+        # check if mapped output attributes exist in driver data model and if it does create an attribute update request
         attr_update_req = []
         unmaped_outputs = {}
+        unmaped_sensitive_outputs = {}
         for output in unparsed_output_json:
             attr_name = f"{self._driver_helper.tf_service.cloudshell_model_name}.out_{output}"
             if attr_name in self._driver_helper.tf_service.attributes:
                 attr_update_req.append(AttributeNameValue(attr_name, unparsed_output_json[output]['value']))
+            elif unparsed_output_json[output]['sensitive']:
+                unmaped_sensitive_outputs[output] = unparsed_output_json[output]
             else:
                 unmaped_outputs[output] = unparsed_output_json[output]
 
-        # if "Terraform Outputs" attribute exists then we want to save all unmapped outputs to this attribute
-        tf_out_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.Terraform Outputs"
+        # if TF OUTPUTS or TF SENSITIVE OUTPUTS attributes exists then we want to save all unmapped outputs
+        # to this attributes
+        tf_out_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.{ATTRIBUTE_NAMES.TF_OUTPUTS}"
+        tf_sensitive_out_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}." \
+                                f"{ATTRIBUTE_NAMES.TF_SENSIITVE_OUTPUTS}"
+
         if tf_out_attr in self._driver_helper.tf_service.attributes:
             # parse unmapped outputs
-            output_string = []
-            for output in unmaped_outputs:
-                if unmaped_outputs[output]['sensitive']:
-                    # mask sensitive output for unmapped outputs
-                    unmaped_outputs[output]['value'] = '(sensitive)'
-
-                output_string += [(output + '=' + str(unmaped_outputs[output]['value']))]
-
+            output_string = self._parse_outputs_to_csv(unmaped_outputs)
             # prepare update request for unmapped attributes
-            attr_update_req.append(AttributeNameValue(tf_out_attr, ",".join(output_string)))
+            attr_update_req.append(AttributeNameValue(tf_out_attr, output_string))
+
+        if tf_sensitive_out_attr in self._driver_helper.tf_service.attributes:
+            # parse sensitive unmapped outputs
+            sensitive_output_string = self._parse_outputs_to_csv(unmaped_sensitive_outputs)
+            # prepare update request for sensitive unmapped attributes
+            attr_update_req.append(AttributeNameValue(tf_sensitive_out_attr, sensitive_output_string))
 
         # send attribute update request using CS API
         if attr_update_req:
             self._driver_helper.api.SetServiceAttributesValues(self._driver_helper.sandbox_id,
                                                                self._driver_helper.tf_service.name, attr_update_req)
+
+    def _parse_outputs_to_csv(self, outputs: Dict) -> str:
+        output_string = []
+        for output in outputs:
+            output_string += [(output + '=' + str(outputs[output]['value']))]
+        return ",".join(output_string)

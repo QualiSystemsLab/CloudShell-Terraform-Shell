@@ -32,8 +32,11 @@ OUTPUT = "OUTPUT"
 DESTROY = "DESTROY"
 ALLOWED_LOGGING_CMDS = [INIT, PLAN, APPLY, DESTROY]
 
-# Sanbox data keys
+# Sandbox data keys
 TF_WORKING_DIR = "TF_WORKING_DIR"
+
+# CLP models
+AZURE2G_MODEL = "Microsoft Azure Cloud Provider 2G"
 
 # Misc
 DIRTY_CHARS = r'''
@@ -47,4 +50,9 @@ DIRTY_CHARS = r'''
                     [@-~]   # Final byte
                 )
             '''
-AZURE2G_MODEL = "Microsoft Azure Cloud Provider 2G"
+
+
+class ATTRIBUTE_NAMES:
+    TF_OUTPUTS = "Terraform Outputs"
+    TF_SENSIITVE_OUTPUTS = "Terraform Sensitive Outputs"
+    TF_INPUTS = "Terraform Inputs"

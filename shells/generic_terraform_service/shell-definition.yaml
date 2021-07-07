@@ -34,8 +34,12 @@ node_types:
         tags: [ user_input ]
 
       Terraform Outputs:
-        description: Outputs from Terraform apply. All unmapped outputs will be stored here. Sensitive data will be omited.
+        description: Non-sensitive outputs from Terraform apply. All unmapped outputs will be stored here.
         type: string
+        tags: [ user_input ]
+      Terraform Sensitive Outputs:
+        description: Sensitive outputs from Terraform apply. All unmapped outputs will be stored here.
+        type: cloudshell.datatypes.Password
         tags: [ user_input ]
       Terraform Inputs:
         description: Comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
