@@ -10,7 +10,7 @@ __pycache__/
 .Python
 .idea/
 venv/
-tests/.env
+package/tests/.env
 env/
 build/
 develop-eggs/
