@@ -117,7 +117,7 @@ class TfProcExec(object):
 
             # get all TF outputs in json format
             cmd = ["output", "-json"]
-            tf_exec_output = self._run_tf_proc_with_command(cmd, OUTPUT)
+            tf_exec_output = self._run_tf_proc_with_command(cmd, OUTPUT, write_to_log=False)
             unparsed_output_json = json.loads(tf_exec_output)
 
             self._input_output_service.parse_and_save_outputs(unparsed_output_json)
@@ -141,7 +141,7 @@ class TfProcExec(object):
             return False
         return True
 
-    def _run_tf_proc_with_command(self, cmd: list, command: str) -> str:
+    def _run_tf_proc_with_command(self, cmd: list, command: str, write_to_log: bool = True) -> str:
         tform_command = [f"{os.path.join(self._tf_workingdir, 'terraform.exe')}"]
         tform_command.extend(cmd)
 
@@ -149,7 +149,8 @@ class TfProcExec(object):
             output = check_output(tform_command, cwd=self._tf_workingdir, stderr=STDOUT).decode('utf-8')
 
             clean_output = StringCleaner.get_clean_string(output)
-            self._write_to_to_exec_log(command, clean_output, INFO_LOG_LEVEL)
+            if write_to_log:
+                self._write_to_exec_log(command, clean_output, INFO_LOG_LEVEL)
             return output
 
         except CalledProcessError as e:
@@ -158,7 +159,7 @@ class TfProcExec(object):
                 f"Error occurred while trying to execute Terraform | Output = {clean_output}"
             )
             if command in ALLOWED_LOGGING_CMDS:
-                self._write_to_to_exec_log(command, clean_output, ERROR_LOG_LEVEL)
+                self._write_to_exec_log(command, clean_output, ERROR_LOG_LEVEL)
             raise TerraformExecutionError("Error during Terraform Plan. For more information please look at the logs.",
                                           clean_output)
         except Exception as e:
@@ -166,7 +167,7 @@ class TfProcExec(object):
             self._driver_helper.logger.error(f"Error Running Terraform plan {clean_output}")
             raise TerraformExecutionError("Error during Terraform Plan. For more information please look at the logs.")
 
-    def _write_to_to_exec_log(self, command: str, log_data: str, log_level: int) -> None:
+    def _write_to_exec_log(self, command: str, log_data: str, log_level: int) -> None:
         clean_output = StringCleaner.get_clean_string(log_data)
         self._exec_output_log.log(
             log_level,
