@@ -9,6 +9,9 @@ from logging import Logger
 from urllib.request import Request, urlopen
 from zipfile import ZipFile
 
+from retry import retry
+from urllib.error import HTTPError, URLError
+
 from cloudshell.iac.terraform.constants import TERRAFORM_LATEST_URL, OS_TYPES, TERRAFORM_URL
 
 
@@ -16,8 +19,9 @@ class TfExecDownloader(object):
     def __init__(self, logger: Logger):
         self.logger = logger
 
+    @staticmethod
+    @retry((HTTPError, URLError), delay=1, backoff=2, tries=5)
     def download_terraform_executable(tf_workingdir: str, version='latest'):
-
         # Used to prevent missing certificates in python 3 from failing to download terraform exe
         ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -28,12 +32,9 @@ class TfExecDownloader(object):
             version = 'latest'
         # Grabs the latest version of terraform from the hashicorp site
         if version == 'latest':
-            try:
-                tfurl = TERRAFORM_LATEST_URL
-                req = Request(tfurl)
-                tfresponse = urlopen(req).read()
-            except Exception:
-                raise ValueError('generic exception: ' + traceback.format_exc())
+            tfurl = TERRAFORM_LATEST_URL
+            req = Request(tfurl)
+            tfresponse = urlopen(req).read()
             cont = json.loads(tfresponse.decode('utf-8'))
             if 'current_version' in cont.keys():
                 version = cont['current_version']
@@ -50,13 +51,10 @@ class TfExecDownloader(object):
 
         os_type = OS_TYPES[sys.platform]
         # Downloads and unzips files in memory, then outputs exe to path
-        try:
-            zipurl = f'{TERRAFORM_URL}/{version}/terraform_{version}_{os_type}.zip'
-            with urlopen(zipurl) as zipresp:
-                with ZipFile(BytesIO(zipresp.read())) as zfile:
-                    zfile.extractall(tf_workingdir)
-        except Exception as e:
-            raise ValueError('generic exception: ' + str(e))
+        zipurl = f'{TERRAFORM_URL}/{version}/terraform_{version}_{os_type}.zip'
+        with urlopen(zipurl) as zipresp:
+            with ZipFile(BytesIO(zipresp.read())) as zfile:
+                zfile.extractall(tf_workingdir)
 
         # Linux systems do not add .exe but windows does, adding .exe so commands will be the same on all OS's
         if os.path.exists(f'{tf_workingdir}/terraform'):
