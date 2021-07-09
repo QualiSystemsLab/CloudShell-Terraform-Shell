@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import nullcontext
 
 from cloudshell.shell.core.driver_context import ResourceCommandContext
@@ -30,13 +31,20 @@ class TerraformShell:
         with nullcontext(self._logger) if self._logger else LoggingSessionContext(self._context) as logger:
 
             shell_helper = self._create_shell_helper(logger)
+            sandbox_data_handler = SandboxDataHandler(shell_helper)
+            tf_working_dir = sandbox_data_handler.get_tf_working_dir()
 
-            downloader = Downloader(shell_helper)
-            tf_workingdir = downloader.download_terraform_module()
-            downloader.download_terraform_executable(tf_workingdir)
+            if not self._does_working_dir_exists(tf_working_dir):
+                # working dir doesnt exist - need to download repo and tf exec
+                downloader = Downloader(shell_helper)
+                tf_workingdir = downloader.download_terraform_module()
+                downloader.download_terraform_executable(tf_workingdir)
+                sandbox_data_handler.set_tf_working_dir(tf_workingdir)
+            else:
+                logger.info(f"Using existing working dir = {tf_working_dir}")
 
             tf_proc_executer = TfProcExec(shell_helper,
-                                          SandboxDataHandler(shell_helper, tf_workingdir),
+                                          sandbox_data_handler,
                                           InputOutputService(shell_helper))
             if tf_proc_executer.can_execute_run():
                 ProviderHandler.initialize_provider(shell_helper)
@@ -65,7 +73,7 @@ class TerraformShell:
                 else:
                     raise Exception("Destroy blocked because APPLY was not yet executed")
             else:
-                raise Exception("Destroy blocked due to missing state file")
+                raise Exception("Destroy failed due to missing state file")
 
     def _create_shell_helper(self, logger: logging.Logger) -> ShellHelperObject:
         api = CloudShellSessionContext(self._context).get_api()
@@ -76,3 +84,6 @@ class TerraformShell:
 
         return ShellHelperObject(api, sandbox_id, self._tf_service, logger, sandbox_message_service,
                                  live_status_updater)
+
+    def _does_working_dir_exists(self, dir: str) -> bool:
+        return dir and os.path.isdir(dir)
