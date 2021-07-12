@@ -1,0 +1,76 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+metadata:
+  template_name: Generic Terraform Service
+  template_author: Quali CS
+  template_version: 1.0.0
+  template_icon: shell-icon.png
+
+description: >
+  TOSCA based service shell
+imports:
+  - cloudshell_standard: cloudshell_custom_service_standard_1_0_0.yaml
+
+node_types:
+  # todo: change the service name "generic_terraform_service"
+  vendor.resource.Generic Terraform Service:
+    derived_from: cloudshell.nodes.CustomService
+    properties:
+      Github Terraform Module URL:
+        description: "Github url to the Terraform module. Supports the same URL format from a browser. The entire repo will be downloaded. Url to a folder: https://github.com/<ACCOUNT>/<REPO>/tree/<BRANCH>/<PATH_TO_FOLDER> or url to a TF file: https://github.com/<ACCOUNT>/<REPO>/blob/<BRANCH>/<PATH>/filename.tf"
+        type: string
+        tags: [ user_input ]
+      Terraform Version:
+        description: The version of terraform needed (empty=latest). E.g. '1.0.0'
+        type: string
+        tags: [ user_input ]
+      Github Token:
+        description: Github Token
+        type: cloudshell.datatypes.Password
+        tags: [ user_input ]
+      Cloud Provider:
+        description: Cloud provider name to be used for cloud access
+        type: string
+        tags: [ user_input ]
+      UUID:
+        description: UUID for the driver instance. Used internally by the Terraform Shell, should not be a user input.
+        type: string
+        tags: [ ]
+
+      Terraform Outputs:
+        description: Non-sensitive outputs from Terraform apply. All unmapped outputs will be stored here.
+        type: string
+        tags: [ user_input ]
+      Terraform Sensitive Outputs:
+        description: Sensitive outputs from Terraform apply. All unmapped outputs will be stored here.
+        type: cloudshell.datatypes.Password
+        tags: [ user_input ]
+      Terraform Inputs:
+        description: Comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
+        type: string
+        tags: [ user_input ]
+
+      Service Categories:
+        type: list
+        default: [ Infra As Code ]
+
+      # Terraform module variables mapping
+      # attributes that start with "var_" prefix will be mapped to Terraform variables automatically
+#      var_MY_VAR:
+#        description:
+#        type: string
+#        tags: [ user_input ]
+
+      # Terraform module outputs mapping
+      # attributes that start with "out_" prefix will be mapped to Terraform outputs automatically
+#      out_MY_OUTPUT:
+#        description:
+#        type: string
+#        tags: [ user_input ]
+    artifacts:
+      icon:
+        file: shell-icon.png
+        type: tosca.artifacts.File
+      driver:
+        file: GenericTerraformServiceDriver.zip
+        type: tosca.artifacts.File
