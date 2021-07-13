@@ -1,0 +1,63 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+metadata:
+  template_name: Azure Tf Backend
+  template_author: Anonymous
+  template_version: 0.1.0
+  template_icon: shell-icon.png
+
+description: >
+  TOSCA based resource shell
+
+imports:
+  - cloudshell_standard: cloudshell_resource_standard_2_0_3.yaml
+
+node_types:
+
+  vendor.resource.Azure Tf Backend:
+    derived_from: cloudshell.nodes.GenericResource
+    properties:
+      Storage Account Name:
+        description: The name of the storage account to be used in order to save the state file
+        type: string
+        tags: [ setting, user_input ]
+      Container Name:
+        description: The name of the storage container to be used in order to save the state file
+        type: string
+        tags: [ setting, user_input ]
+      Access Key:
+        description: Azure storage account access key
+        type: cloudshell.datatypes.Password
+        tags: [ setting, user_input ]
+
+      User:
+        type: string
+        tags: []
+
+    capabilities:
+      auto_discovery_capability:
+        type: cloudshell.capabilities.AutoDiscovery
+        properties:        
+          enable_auto_discovery:
+            type: boolean
+            default: true
+          auto_discovery_description:
+            type: string
+            default: Describe the auto discovery
+          inventory_description:
+            type: string
+            default: Describe the resource shell template
+          Storage Account Name:
+            type: string
+          Container Name:
+            type: string
+          Access Key:
+            type: cloudshell.datatypes.Password
+
+    artifacts:
+      icon:
+        file: shell-icon.png
+        type: tosca.artifacts.File
+      driver:
+        file: AzureTfBackendDriver.zip
+        type: tosca.artifacts.File
