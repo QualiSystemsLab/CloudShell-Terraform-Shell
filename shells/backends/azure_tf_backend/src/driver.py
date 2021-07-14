@@ -142,66 +142,23 @@ class AzureTfBackendDriver (ResourceDriverInterface):
     def return_backend_data(self, context, tf_state_unique_name):
         with LoggingSessionContext(context) as logger:
             azure_backend_resource = AzureTfBackend.create_from_context(context)
-            tf_state_file_string = '''terraform {
-backend "azurerm" {
-    storage_account_name = AAA
-    container_name       = BBB
-    key                  = CCC
-    }
-}'''
-            azure_backend_resource.storage_account_name = "BLA"
-            tf_state_file_string1 = tf_state_file_string.replace("AAA", azure_backend_resource.storage_account_name)
-            azure_backend_resource.container_name = "BLA"
-            tf_state_file_string2 = tf_state_file_string1.replace("BBB", azure_backend_resource.container_name)
-            tf_state_file_string3 = tf_state_file_string2.replace("CCC", tf_state_unique_name)
+            tf_state_file_string = f'terraform {{\n\
+\tbackend "azurerm" {{\n\
+\t\tstorage_account_name = {azure_backend_resource.storage_account_name}\n\
+\t\tcontainer_name       = {azure_backend_resource.container_name}\n\
+\t\tkey                  = {tf_state_unique_name}\n\
+\t}}\n\
+}}'
 
-            backend_data = {"tf_state_file_string": tf_state_file_string3}
-            '''
+            backend_data = {"tf_state_file_string": tf_state_file_string}
+
             api = CloudShellSessionContext(context).get_api()
             dec_access_key = api.DecryptPassword(azure_backend_resource.access_key).Value
             backend_env_vars = {
                 "access_key": dec_access_key
             }
-            api.WriteMessageToReservationOutput(context.reservation.reservation_id, os.getcwd())
-            '''
-            f = open("test.tf", "a")
-            f.write(tf_state_file_string3)
-            f.close()
-            backend_env_vars = "BLA"
+            api.WriteMessageToReservationOutput(context.reservation.reservation_id, tf_state_file_string)
+            logger.info(f"Returning backend data for creating provider file :\n{backend_data}")
             response = json.dumps({"backend_data": backend_data , "backend_env_vars": backend_env_vars})
             return response
 
-
-if __name__ == "__main__":
-    import mock
-    from cloudshell.shell.core.driver_context import CancellationContext
-
-    shell_name = "AzureTfBackend"
-
-    cancellation_context = mock.create_autospec(CancellationContext)
-    context = mock.create_autospec(ResourceCommandContext)
-    context.resource = mock.MagicMock()
-    context.reservation = mock.MagicMock()
-    context.connectivity = mock.MagicMock()
-    # context.reservation.reservation_id = "<RESERVATION_ID>"
-    # context.resource.address = "<RESOURCE_ADDRESS>"
-    context.resource.name = "RESOURCE_NAME"
-    context.resource.resource_name = "RESOURCE_NAME"
-    context.reservation.reservation_id = "d9bfd604-64e8-4923-9e93-bef05db397d2"
-    context.resource.storage_account_name = "1"
-    context.resource.container_name = "2"
-    context.resource.access_key = "3"
-
-
-
-    context.resource.attributes = dict()
-    context.resource.attributes["{}.Storage Account Name".format(shell_name)] = "<Storage Account Name>"
-    context.resource.attributes["{}.Container Name".format(shell_name)] = "<Container Name>"
-    context.resource.attributes["{}.Access Key".format(shell_name)] = "3M3u7nkDzxWb0aJ/IZYeWw=="
-
-    driver = AzureTfBackendDriver()
-    # print driver.run_custom_command(context, custom_command="sh run", cancellation_context=cancellation_context)
-    driver.initialize(context)
-    result = driver.return_backend_data(context, "a")
-
-    print("done")
