@@ -1,13 +1,18 @@
+import os
 from unittest import mock
+from unittest.mock import Mock
 
 from cloudshell.api.cloudshell_api import CloudShellAPISession
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
-from data_model import GenericTerraformService
-from driver import GenericTerraformServiceDriver
+from dotenv import load_dotenv
+
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
-from tests.integration_tests import EnvVars
+from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpdater
+from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
+from tests.integration_tests.helper_objects.env_vars import EnvVars
+from shells.generic_terraform_service.src.driver import GenericTerraformServiceDriver
 
 
 class IntegrationData(object):
@@ -20,15 +25,35 @@ class IntegrationData(object):
             self._env_vars.cs_domain
         )
         self._set_context()
-        self._logger = get_qs_logger(log_group=self.context.resource.name)
+        self.logger = get_qs_logger(log_group=self.context.resource.name)
 
-        service_resource = GenericTerraformService.create_from_context(self.context)
-        self._driver_helper = ShellHelperObject(
+        self.sandbox_messages = SandboxMessagesService(
+            self.real_api,
+            self.context.reservation.reservation_id,
+            self.context.resource.name,
+            True,
+        )
+
+        self.live_status_updater = LiveStatusUpdater(
+            self.real_api,
+            self.context.reservation.reservation_id,
+            True
+        )
+
+        # service_resource = GenericTerraformService.create_from_context(self.context)
+        service_resource = Mock()
+        load_dotenv()
+        service_resource.github_token = os.environ.get("GITHUB_TOKEN_ENC")
+
+        self.driver_helper = ShellHelperObject(
             self.real_api,
             self.context.reservation.reservation_id,
             service_resource,
-            self._logger
+            self.logger,
+            self.sandbox_messages,
+            self.live_status_updater
         )
+
         self._create_driver()
 
     def _set_context(self):
@@ -54,5 +79,5 @@ class IntegrationData(object):
                     self.context.resource.attributes[attribute.Name] = attribute.Value
 
     def _create_driver(self) :
-        self.driver = GenericTerraformServiceDriver()
-        self.driver.initialize(self.context)
+      self.driver = GenericTerraformServiceDriver()
+      self.driver.initialize(self.context)
