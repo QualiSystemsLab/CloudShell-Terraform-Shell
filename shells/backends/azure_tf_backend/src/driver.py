@@ -139,7 +139,7 @@ class AzureTfBackendDriver (ResourceDriverInterface):
         '''
         pass
 
-    def return_backend_data(self, context, tf_state_unique_name):
+    def get_backend_data(self, context, tf_state_unique_name: str):
         with LoggingSessionContext(context) as logger:
             azure_backend_resource = AzureTfBackend.create_from_context(context)
             tf_state_file_string = f'terraform {{\n\

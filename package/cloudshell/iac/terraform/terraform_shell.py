@@ -9,12 +9,14 @@ from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 from cloudshell.iac.terraform import TerraformShellConfig
 from cloudshell.iac.terraform.downloaders.downloader import Downloader
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
+from cloudshell.iac.terraform.services.backend_handler import BackendHandler
 from cloudshell.iac.terraform.services.input_output_service import InputOutputService
 from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpdater
 from cloudshell.iac.terraform.services.provider_handler import ProviderHandler
 from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
 from cloudshell.iac.terraform.services.tf_proc_exec import TfProcExec
+from shells.generic_terraform_service.src.data_model import GenericTerraformService
 
 
 class TerraformShell:
@@ -33,12 +35,30 @@ class TerraformShell:
             shell_helper = self._create_shell_helper(logger)
             sandbox_data_handler = SandboxDataHandler(shell_helper)
             tf_working_dir = sandbox_data_handler.get_tf_working_dir()
+            api = CloudShellSessionContext(self._context).get_api()
 
+            # todo: basically needs to return to download each time but clean at the end(remove the temp dir(only if remote backened provided))
             if not self._does_working_dir_exists(tf_working_dir):
                 # working dir doesnt exist - need to download repo and tf exec
                 downloader = Downloader(shell_helper)
                 tf_workingdir = downloader.download_terraform_module()
                 downloader.download_terraform_executable(tf_workingdir)
+                #todo: check if attribute exists
+
+                backend_attribute_name = f"{self._tf_service.cloudshell_model_name}.Remote State Provider"
+                if backend_attribute_name in self._tf_service.attributes.keys():
+                    remote_state_provider = self._tf_service.attributes[backend_attribute_name]
+                    if remote_state_provider:
+                        backend_handler = BackendHandler(
+                            logger,
+                            api,
+                            remote_state_provider,
+                            tf_workingdir,
+                            self._context.reservation.reservation_id,
+                            sandbox_data_handler._get_tf_uuid()
+                        )
+                        backend_handler.generate_backend_module()
+
                 sandbox_data_handler.set_tf_working_dir(tf_workingdir)
             else:
                 logger.info(f"Using existing working dir = {tf_working_dir}")

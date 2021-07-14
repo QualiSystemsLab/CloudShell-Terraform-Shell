@@ -1,0 +1,49 @@
+import json
+import os
+from logging import Logger
+
+from cloudshell.api.cloudshell_api import CloudShellAPISession, InputNameValue
+
+from tests.constants import GET_BACKEND_DATA_COMMAND
+
+
+class BackendHandler(object):
+    def __init__(
+        self,
+        logger: Logger,
+        api: CloudShellAPISession,
+        backend_resource: str,
+        working_dir: str,
+        reservation_id: str,
+        uuid: str
+    ):
+        try:
+            if api.GetResourceDetails(backend_resource):
+                self._logger = logger
+                self._api = api
+                self._backend_resource = backend_resource
+                self._working_dir = working_dir
+                self._reservation_id = reservation_id
+                self._uuid = uuid
+
+        except Exception as e:
+            logger.exception("Backend resource not found")
+            #todo: write right msg
+            raise ValueError("Resource ")
+
+    def generate_backend_module(self):
+        params = [InputNameValue("tf_state_unique_name", f"{self._reservation_id}_{self._uuid}.tf.state")]
+
+        backend_data = self._api.ExecuteCommand(
+            self._reservation_id,
+            self._backend_resource,
+            "Resource",
+            GET_BACKEND_DATA_COMMAND,
+            params
+        )
+        backend_data_json = json.loads(backend_data.Output)
+
+        with open(os.path.join(self._working_dir, "backend.tf"), "w") as backend_file:
+            backend_file.write(backend_data_json['backend_data']['tf_state_file_string'])
+        for key in backend_data_json['backend_env_vars'].keys():
+            os.environ[key] = backend_data_json['backend_env_vars'][key]

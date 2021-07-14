@@ -4,10 +4,17 @@ from cloudshell.api.cloudshell_api import CloudShellAPISession
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
-from data_model import GenericTerraformService
-from driver import GenericTerraformServiceDriver
+
+# from data_model import GenericTerraformService
+from shells.generic_terraform_service.src.data_model import GenericTerraformService
+
+# from driver import GenericTerraformServiceDriver
+from shells.generic_terraform_service.src.driver import GenericTerraformServiceDriver
+
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
-from tests.integration_tests import EnvVars
+from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpdater
+from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
+from package.tests.integration_tests.helper_objects.env_vars import EnvVars
 
 
 class IntegrationData(object):
@@ -22,13 +29,6 @@ class IntegrationData(object):
         self._set_context()
         self._logger = get_qs_logger(log_group=self.context.resource.name)
 
-        service_resource = GenericTerraformService.create_from_context(self.context)
-        self._driver_helper = ShellHelperObject(
-            self.real_api,
-            self.context.reservation.reservation_id,
-            service_resource,
-            self._logger
-        )
         self._create_driver()
 
     def _set_context(self):
