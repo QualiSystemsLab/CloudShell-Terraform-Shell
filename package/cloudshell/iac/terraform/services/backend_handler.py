@@ -25,13 +25,14 @@ class BackendHandler(object):
                 self._working_dir = working_dir
                 self._reservation_id = reservation_id
                 self._uuid = uuid
+                self._backend_secret_vars = ""
 
         except Exception as e:
             logger.exception("Backend resource not found")
             #todo: write right msg
             raise ValueError("Resource ")
 
-    def generate_backend_module(self):
+    def generate_backend_cfg_file(self):
         params = [InputNameValue("tf_state_unique_name", f"{self._reservation_id}_{self._uuid}.tf.state")]
 
         backend_data = self._api.ExecuteCommand(
@@ -45,5 +46,7 @@ class BackendHandler(object):
 
         with open(os.path.join(self._working_dir, "backend.tf"), "w") as backend_file:
             backend_file.write(backend_data_json['backend_data']['tf_state_file_string'])
-        for key in backend_data_json['backend_env_vars'].keys():
-            os.environ[key] = backend_data_json['backend_env_vars'][key]
+        self._backend_secret_vars = backend_data_json["backend_secret_vars"]
+
+    def get_backend_secret_vars(self):
+        return self._backend_secret_vars

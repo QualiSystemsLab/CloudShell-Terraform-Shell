@@ -1,5 +1,4 @@
 import json
-import os
 
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadResource, \
@@ -10,6 +9,7 @@ from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
 from data_model import AzureTfBackend
 
+AZURE2G_MODEL = "Microsoft Azure Cloud Provider 2G"
 
 class AzureTfBackendDriver (ResourceDriverInterface):
 
@@ -144,21 +144,56 @@ class AzureTfBackendDriver (ResourceDriverInterface):
             azure_backend_resource = AzureTfBackend.create_from_context(context)
             tf_state_file_string = f'terraform {{\n\
 \tbackend "azurerm" {{\n\
-\t\tstorage_account_name = {azure_backend_resource.storage_account_name}\n\
-\t\tcontainer_name       = {azure_backend_resource.container_name}\n\
-\t\tkey                  = {tf_state_unique_name}\n\
+\t\tstorage_account_name = "{azure_backend_resource.storage_account_name}"\n\
+\t\tcontainer_name       = "{azure_backend_resource.container_name}"\n\
+\t\tkey                  = "{tf_state_unique_name}"\n\
 \t}}\n\
 }}'
 
             backend_data = {"tf_state_file_string": tf_state_file_string}
+            try:
+                api = CloudShellSessionContext(context).get_api()
 
-            api = CloudShellSessionContext(context).get_api()
-            dec_access_key = api.DecryptPassword(azure_backend_resource.access_key).Value
-            backend_env_vars = {
-                "access_key": dec_access_key
-            }
+                if azure_backend_resource.access_key:
+                    dec_access_key = api.DecryptPassword(azure_backend_resource.access_key).Value
+                    self._backend_secret_vars = {
+                        "access_key": dec_access_key
+                    }
+                else:
+                    if azure_backend_resource.cloud_provider:
+                        clp_resource_name = azure_backend_resource.cloud_provider
+                        clp_res_model = api.GetResourceDetails(clp_resource_name).ResourceModelName
+                        clpr_res_fam = api.GetResourceDetails(clp_resource_name).ResourceFamilyName
+                        clp_resource_attributes = \
+                            api.GetResourceDetails(azure_backend_resource.cloud_provider).ResourceAttributes
+
+                        if clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider':
+                            logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
+                            raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
+
+                        azure_attr_name_prefix = ""
+                        if clp_res_model == AZURE2G_MODEL:
+                            azure_attr_name_prefix = AZURE2G_MODEL + "."
+                        self._backend_secret_vars = {}
+                        for attr in clp_resource_attributes:
+                            if attr.Name == azure_attr_name_prefix + "Azure Subscription ID":
+                               self._backend_secret_vars["subscription_id"] = attr.Value
+                            if attr.Name == azure_attr_name_prefix + "Azure Tenant ID":
+                                self._backend_secret_vars["tenant_id"] = attr.Value
+                            if attr.Name == azure_attr_name_prefix + "Azure Application ID":
+                                self._backend_secret_vars["client_id"] = attr.Value
+                            if attr.Name == azure_attr_name_prefix + "Azure Application Key":
+                                dec_client_secret = api.DecryptPassword(attr.Value).Value
+                                self._backend_secret_vars["client_secret"] = dec_client_secret
+                    else:
+                        logger.exception("Inputs for Cloud Backend Access missing")
+                        raise ValueError("Inputs for Cloud Backend Access missing")
+
+            except Exception as e:
+                logger.exception("Inputs for Cloud Backend Access missing or incorrect")
+                raise ValueError("Inputs for Cloud Backend Access missing or incorrect")
+
             api.WriteMessageToReservationOutput(context.reservation.reservation_id, tf_state_file_string)
             logger.info(f"Returning backend data for creating provider file :\n{backend_data}")
-            response = json.dumps({"backend_data": backend_data , "backend_env_vars": backend_env_vars})
+            response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
             return response
-

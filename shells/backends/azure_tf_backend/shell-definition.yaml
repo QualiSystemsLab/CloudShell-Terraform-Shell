@@ -29,6 +29,9 @@ node_types:
         description: Azure storage account access key
         type: cloudshell.datatypes.Password
         tags: [ setting, user_input ]
+      Cloud Provider:
+        description: In case Access Key has not been filled - the keys from the cloud provider will be used.
+        type: string
 
       User:
         type: string
@@ -53,6 +56,8 @@ node_types:
             type: string
           Access Key:
             type: cloudshell.datatypes.Password
+
+
 
     artifacts:
       icon:

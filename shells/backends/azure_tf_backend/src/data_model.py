@@ -200,6 +200,21 @@ class AzureTfBackend(object):
         self.attributes['Azure Tf Backend.Access Key'] = value
 
     @property
+    def cloud_provider(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Azure Tf Backend.Cloud Provider'] if 'Azure Tf Backend.Cloud Provider' in self.attributes else None
+
+    @cloud_provider.setter
+    def cloud_provider(self, value):
+        """
+        In case Access Key has not been filled - the keys from the cloud provider will be used.
+        :type value: str
+        """
+        self.attributes['Azure Tf Backend.Cloud Provider'] = value
+
+    @property
     def user(self):
         """
         :rtype: str

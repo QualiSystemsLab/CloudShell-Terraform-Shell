@@ -51,7 +51,9 @@ class GitHubScriptDownloader(object):
                     commit_folder_in_zip = ZipFile(repo_zip_path, 'r').namelist()[0][:-1]
                     os.chdir(repo_temp_dir)
                     os.rename(commit_folder_in_zip, "REPO")
-                    working_dir = os.path.join(repo_temp_dir, "REPO", path_in_repo)
+                    working_dir = os.path.join(repo_temp_dir, "REPO")
+                    for path_in_repo_dir in path_in_repo.split("/"):
+                        working_dir = os.path.join(working_dir, path_in_repo_dir)
                     self.logger.info(f"Working dir = {working_dir}")
                     return working_dir
                 else:
