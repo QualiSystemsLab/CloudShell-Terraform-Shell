@@ -52,7 +52,7 @@ class InputOutputService:
         if tf_inputs_attr in self._driver_helper.tf_service.attributes and \
                 self._driver_helper.tf_service.attributes[tf_inputs_attr].strip():
             for kvp in self._driver_helper.tf_service.attributes[tf_inputs_attr].split(","):
-                name, value = kvp.strip().split("=", 2)
+                name, value = kvp.strip().split("=", 1)
                 result.append(TFVar(name.strip(), value.strip()))
 
         return result
