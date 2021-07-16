@@ -43,7 +43,8 @@ class TestTerraformDownloader(TestCase):
     def _test_download_terraform_module(self, url: str):
         self.integration_data.context.resource.attributes[
             f"{SHELL_NAME}.Github Terraform Module URL"] = url
-
+        self._driver_helper.tf_service.attributes[
+            f"{SHELL_NAME}.Github Terraform Module URL"] = url
 
         downloader = Downloader(self._driver_helper)
         tf_workingdir = downloader.download_terraform_module()

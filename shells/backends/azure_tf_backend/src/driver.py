@@ -193,7 +193,6 @@ class AzureTfBackendDriver (ResourceDriverInterface):
                 logger.exception("Inputs for Cloud Backend Access missing or incorrect")
                 raise ValueError("Inputs for Cloud Backend Access missing or incorrect")
 
-            api.WriteMessageToReservationOutput(context.reservation.reservation_id, tf_state_file_string)
             logger.info(f"Returning backend data for creating provider file :\n{backend_data}")
             response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
             return response

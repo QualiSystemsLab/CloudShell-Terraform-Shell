@@ -4,7 +4,7 @@ from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
 from cloudshell.iac.terraform import TerraformShell, TerraformShellConfig
 # from data_model import *  # run 'shellfoundry generate' to generate data model classes
-from shells.generic_terraform_service.src.data_model import *
+from data_model import *
 
 
 class GenericTerraformServiceDriver (ResourceDriverInterface):

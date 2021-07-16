@@ -60,7 +60,7 @@ class GitHubScriptDownloader(object):
                     raise Exception(f'Error Downloading/Extracting - Download code for repo '
                                     f'{repo_response.status_code}')
             else:
-                raise Exception(f'Error Downloading/Extracting - Download code for path '
+                raise Exception(f'Error Downloading/Extracting - Download code for module url (Check Token and URL) '
                                 f'{tf_response.status_code}')
         except Exception as e:
             self.logger.error(f'There was an error downloading and extracting the repo. {str(e)}')

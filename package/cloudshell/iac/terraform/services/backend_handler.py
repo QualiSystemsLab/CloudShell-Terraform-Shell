@@ -4,8 +4,8 @@ from logging import Logger
 
 from cloudshell.api.cloudshell_api import CloudShellAPISession, InputNameValue
 
-from tests.constants import GET_BACKEND_DATA_COMMAND
-
+# from tests.constants import GET_BACKEND_DATA_COMMAND
+from cloudshell.iac.terraform.constants import GET_BACKEND_DATA_COMMAND
 
 class BackendHandler(object):
     def __init__(
@@ -40,7 +40,8 @@ class BackendHandler(object):
             self._backend_resource,
             "Resource",
             GET_BACKEND_DATA_COMMAND,
-            params
+            params,
+            False
         )
         backend_data_json = json.loads(backend_data.Output)
 

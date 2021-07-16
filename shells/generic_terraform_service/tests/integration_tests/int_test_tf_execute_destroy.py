@@ -1,9 +1,8 @@
 import os
 from unittest import TestCase
 
-from tests.constants import SHELL_NAME
+SHELL_NAME = "Generic Terraform Service"
 from tests.integration_tests.helper_objects.integration_context import IntegrationData
-
 
 class TestTerraformExecuteDestroy(TestCase):
     def setUp(self) -> None:

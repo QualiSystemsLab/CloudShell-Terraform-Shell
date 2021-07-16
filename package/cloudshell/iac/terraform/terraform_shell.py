@@ -50,11 +50,7 @@ class TerraformShell:
                                           InputOutputService(shell_helper))
             if tf_proc_executer.can_execute_run():
                 ProviderHandler.initialize_provider(shell_helper)
-                sb = CloudShellSessionContext(self._context).get_api().GetSandboxData(
-                    self._context.reservation.reservation_id)
                 tf_proc_executer.init_terraform()
-                sb = CloudShellSessionContext(self._context).get_api().GetSandboxData(
-                    self._context.reservation.reservation_id)
                 tf_proc_executer.plan_terraform()
                 tf_proc_executer.apply_terraform()
 
