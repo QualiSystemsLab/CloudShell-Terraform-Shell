@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 from subprocess import check_output, STDOUT, CalledProcessError
 from cloudshell.logging.qs_logger import _create_logger
-from cloudshell.cp.core.reservation_info import ReservationInfo
 
 from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, EXECUTE_STATUS, APPLY_PASSED, PLAN_FAILED, INIT_FAILED, \
     DESTROY_STATUS, DESTROY_FAILED, APPLY_FAILED, DESTROY_PASSED, INIT, DESTROY, PLAN, OUTPUT, APPLY, \
@@ -72,8 +71,13 @@ class TfProcExec(object):
 
     def tag_terraform(self) -> None:
 
+        if not self._input_output_service.get_apply_tag_attribute():
+            self._shell_helper.logger.info("Skipping Adding Tags to Terraform Resources")
+            self._shell_helper.sandbox_messages.write_message("apply tags is false, skipping adding tags...")
+            return
+
         self._shell_helper.logger.info("Adding Tags to Terraform Resources")
-        self._shell_helper.sandbox_messages.write_message("generating tags...")
+        self._shell_helper.sandbox_messages.write_message("apply tags is true, generating tags...")
 
         # get variables from attributes that should be mapped to TF variables
         tf_vars = self._input_output_service.get_variables_from_var_attributes()
@@ -94,11 +98,10 @@ class TfProcExec(object):
         tags_dict = {**custom_tags_inputs, **default_tags_dict}
 
         if len(tags_dict) > 50:
-            raise ValueError("AWS and Azure have a limit of 50 tags per resource, you are over that limit")
+            raise ValueError("AWS and Azure have a limit of 50 tags per resource, you have " + str(len(tags_dict)))
 
         self._shell_helper.logger.info(self._tf_workingdir)
         self._shell_helper.logger.info(tags_dict)
-        self._shell_helper.logger.info(inputs_dict)
 
         start_tagging_terraform_resources(self._tf_workingdir, self._shell_helper.logger, tags_dict, inputs_dict)
 

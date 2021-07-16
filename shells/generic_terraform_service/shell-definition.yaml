@@ -51,9 +51,9 @@ node_types:
         type: string
         tags: [ user_input ]
       Apply Tags:
-        description: Should tags be applied? Yes=true (Default True)
+        description: Should tags be applied? Yes=true, No=false (Default True)
         default: true
-        type: string
+        type: boolean
         tags: [ user_input ]
 
       UUID:

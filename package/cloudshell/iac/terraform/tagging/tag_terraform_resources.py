@@ -99,7 +99,7 @@ class LoggerHelper:
             elif log_type == "error":
                 logger.error(f" Line {code_line}]:  {msg}")
             else:
-                raise ValueError('got unknown logtype')
+                raise ValueError('unknown logtype')
 
         # logging is nice to have but we don't want an error with the log to interfere with the code flow
         except Exception as e:
@@ -108,15 +108,6 @@ class LoggerHelper:
     @staticmethod
     def write_info(msg: str, code_line: int = None):
         LoggerHelper.actual_write("info", LoggerHelper.log_instance, msg, code_line)
-        # try:
-        #     if code_line is None:
-        #         caller = getframeinfo(stack()[1][0])
-        #         code_line = caller.lineno
-        #     LoggerHelper.
-        #     logging.info(f" Line {code_line}]:  {msg}")
-        # # logging is nice to have but we don't want an error with the log to interfere with the code flow
-        # except Exception as e:
-        #     print(e)
 
     @staticmethod
     def write_warning(msg: str, code_line: int = None):
@@ -661,49 +652,3 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
         LoggerHelper.write_info("No errors founds in plan output")
 
     LoggerHelper.write_info("Successfully finish creating override files to tf files\n\n\n\n")
-
-
-# if __name__ == '__main__':
-#     if len(sys.argv) > 1:
-#         main_dir_path = sys.argv[1]
-#         if not os.path.isdir(main_dir_path):
-#             print("\n========================= ERROR ========================================================")
-#             print("usage: python tag_terraform_resources.py <main_dir_path>")
-#             print("")
-#             print("<main_dir_path>")
-#             print("       |                                                                                  ")
-#             print("       |-----> colony_tags.json   |file|        (mandatory)                               ")
-#             print("       |-----> override_log       |file|        (will be created)                         ")
-#             print("       |-----> terraform          |directory|   (mandatory - the folder of the tf files)  ")
-#             print("       |                                                                                  ")
-#             print("\n========================================================================================")
-#             exit(1)
-#     else:
-#         main_dir_path = os.path.expanduser("~")  # get the user home folder path
-
-#     start_tagging_terraform_resources(main_dir_path)
-
-# if __name__ == '__main__':
-#     print(sys.argv)
-#     print(len(sys.argv))
-#     if len(sys.argv) not in [3, 4]:
-#         raise ValueError("Must have arguments in the order of path to terraform, tags, then inputs. Must have path and tags, inputs optional.")
-#
-#     main_dir_path = sys.argv[1]
-#     if not os.path.exists(main_dir_path):
-#         raise ValueError(f"Path {main_dir_path} does not exist")
-#
-#     tags_dict = parse_comma_separated_string(sys.argv[2])
-#     if len(sys.argv) == 4:
-#         inputs_dict = parse_comma_separated_string(sys.argv[3])
-#     else:
-#         inputs_dict = dict()
-#     print(tags_dict)
-#     print(inputs_dict)
-#
-#
-#
-#     start_tagging_terraform_resources(main_dir_path, tags_dict, inputs_dict)
-
-
-
