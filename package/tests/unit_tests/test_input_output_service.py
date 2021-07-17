@@ -40,7 +40,7 @@ class TestInputOutputService(TestCase):
         # arrange
         driver_helper = Mock()
         driver_helper.tf_service.cloudshell_model_name = "TF Service"
-        var_name = f"{driver_helper.tf_service.cloudshell_model_name}.var_MyVar"
+        var_name = f"{driver_helper.tf_service.cloudshell_model_name}.MyVar_tfvar"
         driver_helper.tf_service.attributes = {"attribute1": "val1",
                                                "attribute2": "val2",
                                                var_name: "val3"}
@@ -48,7 +48,7 @@ class TestInputOutputService(TestCase):
         input_output_service.try_decrypt_password = Mock(side_effect=return_original_val)
 
         # act
-        result = input_output_service.get_variables_from_var_attributes()
+        result = input_output_service.get_variables_from_tfvar_attributes()
 
         # assert
         self.assertEqual(len(result), 1)
@@ -98,7 +98,7 @@ class TestInputOutputService(TestCase):
     def test_parse_and_save_outputs_with_mapped_attributes(self):
         # arrange
         driver_helper = Mock()
-        var_name = f"{driver_helper.tf_service.cloudshell_model_name}.out_MyVar"
+        var_name = f"{driver_helper.tf_service.cloudshell_model_name}.MyVar_tfout"
         driver_helper.tf_service.attributes = {
             var_name: "val1"
         }
@@ -122,7 +122,7 @@ class TestInputOutputService(TestCase):
     def test_parse_and_save_outputs_with_mapped_attributes_and_outputs_attribute(self):
         # arrange
         driver_helper = Mock()
-        var_name = f"{driver_helper.tf_service.cloudshell_model_name}.out_MyVar1"
+        var_name = f"{driver_helper.tf_service.cloudshell_model_name}.MyVar1_tfout"
         tf_output_name = f"{driver_helper.tf_service.cloudshell_model_name}.Terraform Outputs"
         driver_helper.tf_service.attributes = {
             var_name: "val1",

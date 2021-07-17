@@ -36,7 +36,7 @@ class ProviderHandler(object):
                         os.environ["ARM_SUBSCRIPTION_ID"] = attr.Value
                     if attr.Name == azure_attr_name_prefix+"Azure Tenant ID":
                         os.environ["ARM_TENANT_ID"] = attr.Value
-                    if attr.Name== azure_attr_name_prefix+"Azure Application ID":
+                    if attr.Name == azure_attr_name_prefix+"Azure Application ID":
                         os.environ["ARM_CLIENT_ID"] = attr.Value
                     if attr.Name == azure_attr_name_prefix+"Azure Application Key":
                         dec_client_secret = shell_helper.api.DecryptPassword(attr.Value).Value

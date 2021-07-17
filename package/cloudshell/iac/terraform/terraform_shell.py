@@ -26,6 +26,10 @@ class TerraformShell:
         self._logger = logger
         self._config = config or TerraformShellConfig()
 
+        api.GetReservationDetails("sandbox_id", True)
+        # find our service using the name form the context
+        # create an object that will match terraform_service_shell
+
     def execute_terraform(self):
         # initialize a logger if logger wasn't passed during init
         with nullcontext(self._logger) if self._logger else LoggingSessionContext(self._context) as logger:

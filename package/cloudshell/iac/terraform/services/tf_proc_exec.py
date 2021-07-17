@@ -47,7 +47,7 @@ class TfProcExec(object):
         cmd = ["destroy", "-auto-approve", "-no-color"]
 
         # get variables from attributes that should be mapped to TF variables
-        tf_vars = self._input_output_service.get_variables_from_var_attributes()
+        tf_vars = self._input_output_service.get_variables_from_tfvar_attributes()
         # get any additional TF variables from "Terraform Inputs" variable
         tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
 
@@ -74,7 +74,7 @@ class TfProcExec(object):
         cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
 
         # get variables from attributes that should be mapped to TF variables
-        tf_vars = self._input_output_service.get_variables_from_var_attributes()
+        tf_vars = self._input_output_service.get_variables_from_tfvar_attributes()
         # get any additional TF variables from "Terraform Inputs" variable
         tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
 
