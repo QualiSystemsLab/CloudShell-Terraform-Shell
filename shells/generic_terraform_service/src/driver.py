@@ -32,13 +32,6 @@ class GenericTerraformServiceDriver (ResourceDriverInterface):
 
     def execute_terraform(self, context: ResourceCommandContext):
         with LoggingSessionContext(context) as logger:
-
-            # doing stuff
-            # context.resource.attributes = [{name='n',val='a'}]
-
-            api.SetServiceAttibutes('sdsd')
-            tf_service.attributes('')
-
             tf_service = GenericTerraformService.create_from_context(context)
             config = TerraformShellConfig(write_sandbox_messages=True, update_live_status=True)
             tf_shell = TerraformShell(context, tf_service, logger, config)

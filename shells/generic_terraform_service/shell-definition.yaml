@@ -62,7 +62,7 @@ node_types:
 #        tags: [ user_input ]
 
       # Terraform module outputs mapping
-      # attributes that end with "_tfout" prefix will be mapped to Terraform outputs automatically
+      # attributes that end with "_tfout" postfix will be mapped to Terraform outputs automatically
 #      MY_OUTPUT_tfvar:
 #        description:
 #        type: string

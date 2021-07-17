@@ -59,7 +59,7 @@ class InputOutputService:
         if attribute_name in self._driver_helper.tf_service.attributes:
             return attribute_name
         elif (att := f"{self._driver_helper.tf_service.cloudshell_model_name}.{attribute_name}") in \
-            self._driver_helper.tf_service.attributes:
+                self._driver_helper.tf_service.attributes:
             return att
         else:
             return None
