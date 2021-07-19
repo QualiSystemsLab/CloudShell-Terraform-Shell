@@ -73,7 +73,7 @@ class SandboxDataHandler(object):
     def get_tf_working_dir(self) -> str:
         return self._get_value_for_key(TF_WORKING_DIR)
 
-    def _set_value_for_key(self, key: str, new_value: str):
+    def _set_value_for_key(self, key: str, new_value: str = ""):
         uuid_sdkv_value = self._check_for_uuid_data()
         uuid_sdkv_value[key] = new_value
         updated_sdkv = SandboxDataKeyValue(self._uuid, json.dumps(uuid_sdkv_value))
