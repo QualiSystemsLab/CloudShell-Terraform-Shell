@@ -17,7 +17,7 @@ REPO_FILE_NAME = "repo.zip"
 
 
 class GitHubScriptDownloader(object):
-    GITHUB_REPO_PATTERN = "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/(?:blob|tree)/(?P<branch_id>.+?)/(?P<path>.*?)$"
+    GITHUB_REPO_PATTERN = "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/(?:blob|tree|/?)/(?P<branch_id>.+?)/(?P<path>.*?)$"
 
     def __init__(self, logger: Logger):
         self.logger = logger
