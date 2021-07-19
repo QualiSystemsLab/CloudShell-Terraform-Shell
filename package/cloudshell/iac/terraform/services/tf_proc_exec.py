@@ -4,9 +4,10 @@ from datetime import datetime
 from subprocess import check_output, STDOUT, CalledProcessError
 from cloudshell.logging.qs_logger import _create_logger
 
-from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, EXECUTE_STATUS, APPLY_PASSED, PLAN_FAILED, INIT_FAILED, \
+from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, EXECUTE_STATUS, APPLY_PASSED, \
+    PLAN_FAILED, INIT_FAILED, \
     DESTROY_STATUS, DESTROY_FAILED, APPLY_FAILED, DESTROY_PASSED, INIT, DESTROY, PLAN, OUTPUT, APPLY, \
-    ALLOWED_LOGGING_CMDS
+    ALLOWED_LOGGING_CMDS, ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from cloudshell.iac.terraform.models.exceptions import TerraformExecutionError
 from cloudshell.iac.terraform.services.backend_handler import BackendHandler
@@ -226,9 +227,11 @@ class TfProcExec(object):
             description
         )
 
-    def _init_backend_config(self):
-        backend_attribute_name = f"{self._shell_helper.tf_service.cloudshell_model_name}.Remote State Provider"
-        if backend_attribute_name in self._shell_helper.tf_service.attributes.keys():
+    def _init_backend_config(self) -> str:
+        backend_attribute_name = \
+            f"{self._shell_helper.tf_service.cloudshell_model_name}.{ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER}"
+
+        if backend_attribute_name in self._shell_helper.tf_service.attributes:
             remote_state_provider = self._shell_helper.tf_service.attributes[backend_attribute_name]
             if remote_state_provider:
                 backend_handler = BackendHandler(

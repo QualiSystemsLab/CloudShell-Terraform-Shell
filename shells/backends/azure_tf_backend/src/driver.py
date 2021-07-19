@@ -162,10 +162,10 @@ class AzureTfBackendDriver (ResourceDriverInterface):
                 else:
                     if azure_backend_resource.cloud_provider:
                         clp_resource_name = azure_backend_resource.cloud_provider
-                        clp_res_model = api.GetResourceDetails(clp_resource_name).ResourceModelName
-                        clpr_res_fam = api.GetResourceDetails(clp_resource_name).ResourceFamilyName
-                        clp_resource_attributes = \
-                            api.GetResourceDetails(azure_backend_resource.cloud_provider).ResourceAttributes
+                        res_details = api.GetResourceDetails(clp_resource_name)
+                        clp_res_model = res_details.ResourceModelName
+                        clpr_res_fam = res_details.ResourceFamilyName
+                        clp_resource_attributes = res_details.ResourceAttributes
 
                         if clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider':
                             logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
