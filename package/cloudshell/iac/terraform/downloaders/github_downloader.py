@@ -43,7 +43,6 @@ class GitHubScriptDownloader(object):
                         path_in_repo = os.sep.join(url_data.path.split("/")[:-1])
 
                     repo_temp_dir = tempfile.mkdtemp()
-                    tempfile.TemporaryDirectory
                     self.logger.info(f"Temp repo dir = {repo_temp_dir}")
                     repo_zip_path = os.path.join(repo_temp_dir, REPO_FILE_NAME)
                     with open(os.path.join(repo_temp_dir, REPO_FILE_NAME), 'wb+') as file:
