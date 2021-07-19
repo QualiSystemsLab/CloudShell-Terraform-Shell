@@ -56,5 +56,7 @@ class ATTRIBUTE_NAMES:
     TF_OUTPUTS = "Terraform Outputs"
     TF_SENSIITVE_OUTPUTS = "Terraform Sensitive Outputs"
     TF_INPUTS = "Terraform Inputs"
+    CT_INPUTS = "Custom Tags"
+    APPLY_TAGS = "Apply Tags"
 
 GET_BACKEND_DATA_COMMAND = "get_backend_data"

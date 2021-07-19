@@ -2,3 +2,4 @@ cloudshell-shell-core==5.0.5
 requests==2.25.1
 cloudshell-automation-api==2021.1.0.181140
 retry==0.9.2
+python-hcl2==2.0.1

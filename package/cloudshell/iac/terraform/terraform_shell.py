@@ -47,10 +47,13 @@ class TerraformShell:
 
             tf_proc_executer = TfProcExec(shell_helper,
                                           sandbox_data_handler,
-                                          InputOutputService(shell_helper))
+                                          InputOutputService(shell_helper),
+                                          self._context.reservation)
+
             if tf_proc_executer.can_execute_run():
                 ProviderHandler.initialize_provider(shell_helper)
                 tf_proc_executer.init_terraform()
+                tf_proc_executer.tag_terraform()
                 tf_proc_executer.plan_terraform()
                 tf_proc_executer.apply_terraform()
 
@@ -70,7 +73,8 @@ class TerraformShell:
 
             if sandbox_data_handler.get_tf_working_dir():
                 ProviderHandler.initialize_provider(shell_model)
-                tf_proc_executer = TfProcExec(shell_model, sandbox_data_handler, InputOutputService(shell_model))
+                tf_proc_executer = TfProcExec(shell_model, sandbox_data_handler, InputOutputService(shell_model),
+                                              self._context.reservation)
                 if tf_proc_executer.can_destroy_run():
                     tf_proc_executer.destroy_terraform()
                 else:
