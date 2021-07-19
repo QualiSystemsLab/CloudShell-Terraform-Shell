@@ -5,16 +5,16 @@ from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
 
-# from data_model import GenericTerraformService
+# from src.data_model import GenericTerraformService
 # from shells.generic_terraform_service.src.data_model import GenericTerraformService
 
 # from driver import GenericTerraformServiceDriver
-# from shells.generic_terraform_service.src.driver import GenericTerraformServiceDriver
+from src.driver import GenericTerraformServiceDriver
 
 # from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 # from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpdater
 # from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
-from package.tests.integration_tests.helper_objects.env_vars import EnvVars
+from tests.integration_tests.helper_objects.env_vars import EnvVars
 
 
 class IntegrationData(object):
@@ -29,7 +29,7 @@ class IntegrationData(object):
         self._set_context()
         self._logger = get_qs_logger(log_group=self.context.resource.name)
 
-        # self._create_driver()
+        self._create_driver()
 
     def _set_context(self):
         self.context = mock.create_autospec(ResourceCommandContext)
@@ -52,8 +52,7 @@ class IntegrationData(object):
             if service.Alias == self._env_vars.sb_service_alias:
                 for attribute in service.Attributes:
                     self.context.resource.attributes[attribute.Name] = attribute.Value
-    '''
+
     def _create_driver(self) :
         self.driver = GenericTerraformServiceDriver()
         self.driver.initialize(self.context)
-    '''

@@ -8,9 +8,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-.idea/
-venv/
-package/tests/.env
 env/
 build/
 develop-eggs/
@@ -61,4 +58,3 @@ docs/_build/
 # PyBuilder
 target/
 cloudshell_config.yml
-shells/generic_terraform_service/tests/.env

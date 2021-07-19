@@ -51,14 +51,16 @@ class GitHubScriptDownloader(object):
                     commit_folder_in_zip = ZipFile(repo_zip_path, 'r').namelist()[0][:-1]
                     os.chdir(repo_temp_dir)
                     os.rename(commit_folder_in_zip, "REPO")
-                    working_dir = os.path.join(repo_temp_dir, "REPO", path_in_repo)
+                    working_dir = os.path.join(repo_temp_dir, "REPO")
+                    for path_in_repo_dir in path_in_repo.split("/"):
+                        working_dir = os.path.join(working_dir, path_in_repo_dir)
                     self.logger.info(f"Working dir = {working_dir}")
                     return working_dir
                 else:
                     raise Exception(f'Error Downloading/Extracting - Download code for repo '
                                     f'{repo_response.status_code}')
             else:
-                raise Exception(f'Error Downloading/Extracting - Download code for path '
+                raise Exception(f'Error Downloading/Extracting - Download code for module url (Check Token and URL) '
                                 f'{tf_response.status_code}')
         except Exception as e:
             self.logger.error(f'There was an error downloading and extracting the repo. {str(e)}')

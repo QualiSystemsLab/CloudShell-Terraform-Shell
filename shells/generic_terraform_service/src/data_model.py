@@ -215,6 +215,21 @@ class GenericTerraformService(object):
         self.attributes['Generic Terraform Service.Cloud Provider'] = value
 
     @property
+    def uuid(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Generic Terraform Service.UUID'] if 'Generic Terraform Service.UUID' in self.attributes else None
+
+    @uuid.setter
+    def uuid(self, value):
+        """
+        UUID for the driver instance. Used internally by the Terraform Shell, should not be a user input.
+        :type value: str
+        """
+        self.attributes['Generic Terraform Service.UUID'] = value
+
+    @property
     def terraform_outputs(self):
         """
         :rtype: str
@@ -224,10 +239,25 @@ class GenericTerraformService(object):
     @terraform_outputs.setter
     def terraform_outputs(self, value):
         """
-        Outputs from Terraform apply. All unmapped outputs will be stored here. Sensitive data will be omited.
+        Non-sensitive outputs from Terraform apply. All unmapped outputs will be stored here.
         :type value: str
         """
         self.attributes['Generic Terraform Service.Terraform Outputs'] = value
+
+    @property
+    def terraform_sensitive_outputs(self):
+        """
+        :rtype: string
+        """
+        return self.attributes['Generic Terraform Service.Terraform Sensitive Outputs'] if 'Generic Terraform Service.Terraform Sensitive Outputs' in self.attributes else None
+
+    @terraform_sensitive_outputs.setter
+    def terraform_sensitive_outputs(self, value):
+        """
+        Sensitive outputs from Terraform apply. All unmapped outputs will be stored here.
+        :type value: string
+        """
+        self.attributes['Generic Terraform Service.Terraform Sensitive Outputs'] = value
 
     @property
     def terraform_inputs(self):
@@ -245,19 +275,49 @@ class GenericTerraformService(object):
         self.attributes['Generic Terraform Service.Terraform Inputs'] = value
 
     @property
-    def uuid(self):
+    def remote_state_provider(self):
         """
         :rtype: str
         """
-        return self.attributes['Generic Terraform Service.UUID'] if 'Generic Terraform Service.UUID' in self.attributes else None
+        return self.attributes['Generic Terraform Service.Remote State Provider'] if 'Generic Terraform Service.Remote State Provider' in self.attributes else None
 
-    @uuid.setter
-    def uuid(self, value):
+    @remote_state_provider.setter
+    def remote_state_provider(self, value):
         """
-        UUID for the driver instance. Used internally by the Terraform Shell, should not be a user input.
+        Remote State provider resource name (only used if filled)
         :type value: str
         """
-        self.attributes['Generic Terraform Service.UUID'] = value
+        self.attributes['Generic Terraform Service.Remote State Provider'] = value
+
+    @property
+    def custom_tags(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Generic Terraform Service.Custom Tags'] if 'Generic Terraform Service.Custom Tags' in self.attributes else None
+
+    @custom_tags.setter
+    def custom_tags(self, value):
+        """
+        Comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
+        :type value: str
+        """
+        self.attributes['Generic Terraform Service.Custom Tags'] = value
+
+    @property
+    def apply_tags(self):
+        """
+        :rtype: bool
+        """
+        return self.attributes['Generic Terraform Service.Apply Tags'] if 'Generic Terraform Service.Apply Tags' in self.attributes else None
+
+    @apply_tags.setter
+    def apply_tags(self, value=True):
+        """
+        Should tags be applied? Yes=true, No=false (Default True)
+        :type value: bool
+        """
+        self.attributes['Generic Terraform Service.Apply Tags'] = value
 
     @property
     def name(self):

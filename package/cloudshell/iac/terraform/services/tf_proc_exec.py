@@ -4,11 +4,13 @@ from datetime import datetime
 from subprocess import check_output, STDOUT, CalledProcessError
 from cloudshell.logging.qs_logger import _create_logger
 
-from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, EXECUTE_STATUS, APPLY_PASSED, PLAN_FAILED, INIT_FAILED, \
+from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, EXECUTE_STATUS, APPLY_PASSED, \
+    PLAN_FAILED, INIT_FAILED, \
     DESTROY_STATUS, DESTROY_FAILED, APPLY_FAILED, DESTROY_PASSED, INIT, DESTROY, PLAN, OUTPUT, APPLY, \
-    ALLOWED_LOGGING_CMDS
+    ALLOWED_LOGGING_CMDS, ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from cloudshell.iac.terraform.models.exceptions import TerraformExecutionError
+from cloudshell.iac.terraform.services.backend_handler import BackendHandler
 from cloudshell.iac.terraform.services.input_output_service import InputOutputService
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
 from cloudshell.iac.terraform.services.string_cleaner import StringCleaner
@@ -33,7 +35,10 @@ class TfProcExec(object):
     def init_terraform(self):
         self._shell_helper.logger.info("Performing Terraform Init")
         self._shell_helper.sandbox_messages.write_message("running Terraform Init...")
+        backend_config_vars = self._init_backend_config()
         vars = ["init", "-no-color"]
+        for key in backend_config_vars.keys():
+            vars.append(f'-backend-config={key}={backend_config_vars[key]}')
         try:
             self._set_service_status("Progress 10", "Executing Terraform Init...")
             self._run_tf_proc_with_command(vars, INIT)
@@ -180,7 +185,7 @@ class TfProcExec(object):
         tform_command.extend(cmd)
 
         try:
-            output = check_output(tform_command, cwd=self._tf_workingdir, stderr=STDOUT).decode('utf-8')
+            output = check_output(tform_command, shell=True, cwd=self._tf_workingdir, stderr=STDOUT).decode('utf-8')
 
             clean_output = StringCleaner.get_clean_string(output)
             if write_to_log:
@@ -221,3 +226,23 @@ class TfProcExec(object):
             status,
             description
         )
+
+    def _init_backend_config(self) -> str:
+        backend_attribute_name = \
+            f"{self._shell_helper.tf_service.cloudshell_model_name}.{ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER}"
+
+        if backend_attribute_name in self._shell_helper.tf_service.attributes:
+            remote_state_provider = self._shell_helper.tf_service.attributes[backend_attribute_name]
+            if remote_state_provider:
+                backend_handler = BackendHandler(
+                    self._shell_helper.logger,
+                    self._shell_helper.api,
+                    remote_state_provider,
+                    self._tf_workingdir,
+                    self._shell_helper.sandbox_id,
+                    self._sb_data_handler._get_tf_uuid()
+                )
+                backend_handler.generate_backend_cfg_file()
+                return backend_handler.get_backend_secret_vars()
+        else:
+            return ""
