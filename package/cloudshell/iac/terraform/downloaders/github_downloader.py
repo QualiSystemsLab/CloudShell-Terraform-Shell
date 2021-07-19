@@ -78,7 +78,8 @@ class GitHubScriptDownloader(object):
     def _raise_url_syntax_error(self) -> None:
         raise ValueError("Provided GitHub URL is not in the correct format. "
                          "Expected format is the GitHub API syntax. "
-                         "Example: 'https://github.com/:account_id/:repo/blob/:branch/:path'")
+                         "Example: 'https://github.com/:account_id/:repo/blob/:branch/:path' or "
+                         "Example: 'https://raw.githubusercontent.com/:account_id/:repo/:branch/:path'"   )
 
     def _extract_data_from_url(self, url: str):
         """
