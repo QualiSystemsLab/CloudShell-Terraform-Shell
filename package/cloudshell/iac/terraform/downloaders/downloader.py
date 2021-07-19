@@ -9,15 +9,19 @@ class Downloader(object):
 
     def download_terraform_module(self) -> str:
         url = self._shell_helper.tf_service.github_terraform_module_url
+
+        token = ""
         if hasattr(self._shell_helper.tf_service, 'github_token'):
             token = self._shell_helper.api.DecryptPassword(self._shell_helper.tf_service.github_token).Value
-        else:
-            token = ""
+        branch = ""
+        if hasattr(self._shell_helper.tf_service, 'branch'):
+            branch = self._shell_helper.tf_service.branch
+
         self._shell_helper.sandbox_messages.write_message("downloading Terraform module from repository...")
         self._shell_helper.logger.info("Downloading Terraform Repo from Github")
 
         downloader = GitHubScriptDownloader(self._shell_helper.logger)
-        return downloader.download_repo(url, token)
+        return downloader.download_repo(url, token, branch)
 
     def download_terraform_executable(self, tf_workingdir: str) -> None:
         try:

@@ -230,6 +230,21 @@ class GenericTerraformService(object):
         self.attributes['Generic Terraform Service.UUID'] = value
 
     @property
+    def branch(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Generic Terraform Service.Branch'] if 'Generic Terraform Service.Branch' in self.attributes else None
+
+    @branch.setter
+    def branch(self, value):
+        """
+        Overrides the branch in the the Module URL.
+        :type value: str
+        """
+        self.attributes['Generic Terraform Service.Branch'] = value
+
+    @property
     def terraform_outputs(self):
         """
         :rtype: str

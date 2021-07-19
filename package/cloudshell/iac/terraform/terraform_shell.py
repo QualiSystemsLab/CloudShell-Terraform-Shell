@@ -34,13 +34,12 @@ class TerraformShell:
             sandbox_data_handler = SandboxDataHandler(shell_helper)
             tf_working_dir = sandbox_data_handler.get_tf_working_dir()
 
-            # todo: basically needs to return to download each time but clean at the end(remove the temp dir(only if remote backened provided))
             if not self._does_working_dir_exists(tf_working_dir):
                 # working dir doesnt exist - need to download repo and tf exec
                 downloader = Downloader(shell_helper)
                 tf_workingdir = downloader.download_terraform_module()
-                downloader.download_terraform_executable(tf_workingdir)
 
+                downloader.download_terraform_executable(tf_workingdir)
                 sandbox_data_handler.set_tf_working_dir(tf_workingdir)
             else:
                 logger.info(f"Using existing working dir = {tf_working_dir}")
