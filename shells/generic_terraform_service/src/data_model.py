@@ -290,6 +290,36 @@ class GenericTerraformService(object):
         self.attributes['Generic Terraform Service.Remote State Provider'] = value
 
     @property
+    def custom_tags(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Generic Terraform Service.Custom Tags'] if 'Generic Terraform Service.Custom Tags' in self.attributes else None
+
+    @custom_tags.setter
+    def custom_tags(self, value):
+        """
+        Comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
+        :type value: str
+        """
+        self.attributes['Generic Terraform Service.Custom Tags'] = value
+
+    @property
+    def apply_tags(self):
+        """
+        :rtype: bool
+        """
+        return self.attributes['Generic Terraform Service.Apply Tags'] if 'Generic Terraform Service.Apply Tags' in self.attributes else None
+
+    @apply_tags.setter
+    def apply_tags(self, value=True):
+        """
+        Should tags be applied? Yes=true, No=false (Default True)
+        :type value: bool
+        """
+        self.attributes['Generic Terraform Service.Apply Tags'] = value
+
+    @property
     def name(self):
         """
         :rtype: str
