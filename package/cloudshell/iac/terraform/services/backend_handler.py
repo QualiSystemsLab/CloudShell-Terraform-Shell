@@ -30,7 +30,7 @@ class BackendHandler(object):
         except Exception as e:
             logger.exception("Backend resource not found")
             #todo: write right msg
-            raise ValueError("Resource ")
+            raise ValueError("Was not able to execute ")
 
     def generate_backend_cfg_file(self):
         params = [InputNameValue("tf_state_unique_name", f"{self._reservation_id}_{self._uuid}.tf.state")]

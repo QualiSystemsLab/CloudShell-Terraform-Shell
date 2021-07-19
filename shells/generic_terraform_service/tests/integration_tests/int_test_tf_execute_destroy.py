@@ -9,6 +9,7 @@ class TestTerraformExecuteDestroy(TestCase):
         self.integration_data = IntegrationData()
 
     def test_execute_and_destroy(self):
+        data =   self.integration_data.real_api.GetSandboxData(self.integration_data.context.reservation.reservation_id)
         self.integration_data.context.resource.attributes[f"{SHELL_NAME}.Terraform Inputs"] = \
             os.environ.get("AZUREAPP_TF_INPUTS")
         self.integration_data.context.resource.attributes[
