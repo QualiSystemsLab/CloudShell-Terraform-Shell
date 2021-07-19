@@ -5,6 +5,7 @@ from cloudshell.api.cloudshell_api import AttributeNameValue
 
 from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
+from distutils.util import strtobool
 
 TFVar = namedtuple('TFVar', ['name', 'value'])
 
@@ -54,6 +55,40 @@ class InputOutputService:
             for kvp in self._driver_helper.tf_service.attributes[tf_inputs_attr].split(","):
                 name, value = kvp.strip().split("=", 1)
                 result.append(TFVar(name.strip(), value.strip()))
+
+        return result
+
+    def get_variables_from_custom_tags_attribute(self) -> dict:
+        """
+        'Custom Tags' is an optional attribute. The attribute is tests_helper_files CSV list of key=value.
+        """
+        ct_inputs_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.{ATTRIBUTE_NAMES.CT_INPUTS}"
+        ct_inputs = self._driver_helper.tf_service.attributes[ct_inputs_attr]
+        result = {}
+
+        if not ct_inputs:
+            return result
+        key_values = ct_inputs.split(",")
+
+        for item in key_values:
+            parts = item.split("=")
+            if len(parts) != 2:
+                raise ValueError("Line must be comma-separated list of key=values: key1=val1,key2=val2...")
+
+            key = parts[0].strip()
+            val = parts[1].strip()
+
+            result[key] = val
+
+        return result
+
+    def get_apply_tag_attribute(self) -> bool:
+        """
+        'Apply Tags' is an mandatory attribute. The attribute is a boolean used to decide if tags get applied to tf
+        resources.
+        """
+        at_inputs_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.{ATTRIBUTE_NAMES.APPLY_TAGS}"
+        result = strtobool(self._driver_helper.tf_service.attributes[at_inputs_attr])
 
         return result
 

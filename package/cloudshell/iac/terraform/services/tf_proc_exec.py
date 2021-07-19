@@ -2,7 +2,6 @@ import json
 import os
 from datetime import datetime
 from subprocess import check_output, STDOUT, CalledProcessError
-
 from cloudshell.logging.qs_logger import _create_logger
 
 from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, EXECUTE_STATUS, APPLY_PASSED, PLAN_FAILED, INIT_FAILED, \
@@ -13,15 +12,18 @@ from cloudshell.iac.terraform.models.exceptions import TerraformExecutionError
 from cloudshell.iac.terraform.services.input_output_service import InputOutputService
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
 from cloudshell.iac.terraform.services.string_cleaner import StringCleaner
+from cloudshell.iac.terraform.tagging.tag_terraform_resources import start_tagging_terraform_resources
+from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 
 class TfProcExec(object):
     def __init__(self, shell_helper: ShellHelperObject, sb_data_handler: SandboxDataHandler,
-                 input_output_service: InputOutputService):
+                 input_output_service: InputOutputService, reservation):
         self._shell_helper = shell_helper
         self._sb_data_handler = sb_data_handler
         self._input_output_service = input_output_service
         self._tf_workingdir = sb_data_handler.get_tf_working_dir()
+        self._reservation = reservation
 
         dt = datetime.now().strftime("%d_%m_%y-%H_%M_%S")
         self._exec_output_log = _create_logger(
@@ -66,6 +68,42 @@ class TfProcExec(object):
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
             self._set_service_status("Error", "Destroy Failed")
             raise
+
+    def tag_terraform(self) -> None:
+
+        if not self._input_output_service.get_apply_tag_attribute():
+            self._shell_helper.logger.info("Skipping Adding Tags to Terraform Resources")
+            self._shell_helper.sandbox_messages.write_message("apply tags is false, skipping adding tags...")
+            return
+
+        self._shell_helper.logger.info("Adding Tags to Terraform Resources")
+        self._shell_helper.sandbox_messages.write_message("apply tags is true, generating tags...")
+
+        # get variables from attributes that should be mapped to TF variables
+        tf_vars = self._input_output_service.get_variables_from_var_attributes()
+        # get any additional TF variables from "Terraform Inputs" variable
+        tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
+
+        inputs_dict = dict()
+
+        # add all TF variables to command
+        for tf_var in tf_vars:
+            inputs_dict[tf_var.name] = tf_var.value
+
+        default_tags = TagsManager(self._reservation)
+        default_tags_dict: dict = default_tags.get_default_tags()
+
+        custom_tags_inputs = self._input_output_service.get_variables_from_custom_tags_attribute()
+
+        tags_dict = {**custom_tags_inputs, **default_tags_dict}
+
+        if len(tags_dict) > 50:
+            raise ValueError("AWS and Azure have a limit of 50 tags per resource, you have " + str(len(tags_dict)))
+
+        self._shell_helper.logger.info(self._tf_workingdir)
+        self._shell_helper.logger.info(tags_dict)
+
+        start_tagging_terraform_resources(self._tf_workingdir, self._shell_helper.logger, tags_dict, inputs_dict)
 
     def plan_terraform(self) -> None:
         self._shell_helper.logger.info("Running Terraform Plan")
