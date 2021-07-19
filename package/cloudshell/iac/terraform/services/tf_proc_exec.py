@@ -228,7 +228,7 @@ class TfProcExec(object):
 
     def _init_backend_config(self):
         backend_attribute_name = f"{self._shell_helper.tf_service.cloudshell_model_name}.Remote State Provider"
-        if backend_attribute_name in self._shell_helper.tf_service.attributes.keys():
+        if backend_attribute_name in self._shell_helper.tf_service.attributes:
             remote_state_provider = self._shell_helper.tf_service.attributes[backend_attribute_name]
             if remote_state_provider:
                 backend_handler = BackendHandler(
