@@ -92,7 +92,6 @@ class TerraformShell:
                                 tmp_folder_found = True
                         tf_path = Path(tf_path.parent.absolute())
                     tf_path_str = str(tf_path)
-                    tf_path = Path(tf_path.parent.absolute())
                     shutil.rmtree(tf_path_str)
 
                     sandbox_data_handler.set_tf_working_dir("")
@@ -100,7 +99,7 @@ class TerraformShell:
                 else:
                     raise Exception("Destroy blocked because APPLY was not yet executed")
             else:
-                raise Exception("Destroy failed due to missing state file")
+                raise Exception("Destroy failed due to missing local directory")
 
     def _create_shell_helper(self, logger: logging.Logger) -> ShellHelperObject:
         api = CloudShellSessionContext(self._context).get_api()
