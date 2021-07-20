@@ -28,8 +28,10 @@ class BackendHandler(object):
                 self._backend_secret_vars = {}
 
         except Exception as e:
+
             logger.exception(f"Backend provider specified:[{backend_resource}] was not found in the inventory")
             raise ValueError(f"Backend provider specified:[{backend_resource}] was not found in the inventory")
+
 
     def generate_backend_cfg_file(self):
         params = [InputNameValue("tf_state_unique_name", f"{self._reservation_id}_{self._uuid}.tf.state")]

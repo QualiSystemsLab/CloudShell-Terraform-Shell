@@ -17,7 +17,7 @@ REPO_FILE_NAME = "repo.zip"
 
 
 class GitHubScriptDownloader(object):
-    GITHUB_REPO_PATTERN = "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/(?:blob|tree)/(?P<branch_id>.+?)/(?P<path>.*?)$"
+    GITHUB_REPO_PATTERN = "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/(?:blob|tree|/?)/(?P<branch_id>.+?)/(?P<path>.*?)$"
 
     def __init__(self, logger: Logger):
         self.logger = logger
@@ -49,8 +49,7 @@ class GitHubScriptDownloader(object):
                         file.write(repo_response.content)
                     self._extract_repo(repo_zip_path, repo_temp_dir)
                     commit_folder_in_zip = ZipFile(repo_zip_path, 'r').namelist()[0][:-1]
-                    os.chdir(repo_temp_dir)
-                    os.rename(commit_folder_in_zip, "REPO")
+                    os.rename(os.path.join(repo_temp_dir, commit_folder_in_zip), os.path.join(repo_temp_dir, "REPO"))
                     working_dir = os.path.join(repo_temp_dir, "REPO")
                     for path_in_repo_dir in path_in_repo.split("/"):
                         working_dir = os.path.join(working_dir, path_in_repo_dir)
@@ -79,7 +78,8 @@ class GitHubScriptDownloader(object):
     def _raise_url_syntax_error(self) -> None:
         raise ValueError("Provided GitHub URL is not in the correct format. "
                          "Expected format is the GitHub API syntax. "
-                         "Example: 'https://github.com/:account_id/:repo/blob/:branch/:path'")
+                         "Example: 'https://github.com/:account_id/:repo/blob/:branch/:path' or "
+                         "Example: 'https://raw.githubusercontent.com/:account_id/:repo/:branch/:path'"   )
 
     def _extract_data_from_url(self, url: str, branch_attr: str = ""):
         """

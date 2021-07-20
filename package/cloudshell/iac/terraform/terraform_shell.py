@@ -1,6 +1,10 @@
 import logging
 import os
+import shutil
+import stat
+import tempfile
 from contextlib import nullcontext
+from pathlib import Path
 
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
@@ -70,13 +74,29 @@ class TerraformShell:
 
             shell_model = self._create_shell_helper(logger)
             sandbox_data_handler = SandboxDataHandler(shell_model)
+            tf_working_dir = sandbox_data_handler.get_tf_working_dir()
 
-            if sandbox_data_handler.get_tf_working_dir():
+            if tf_working_dir:
                 ProviderHandler.initialize_provider(shell_model)
                 tf_proc_executer = TfProcExec(shell_model, sandbox_data_handler, InputOutputService(shell_model),
                                               self._context.reservation)
                 if tf_proc_executer.can_destroy_run():
                     tf_proc_executer.destroy_terraform()
+
+                    tf_path = Path(tf_working_dir)
+                    tmp_folder_found = False
+                    while not tmp_folder_found:
+                        objects_in_folder = os.listdir(tf_path.parent.absolute())
+                        if len(objects_in_folder) == 2:
+                            if objects_in_folder[0] == 'REPO' and objects_in_folder[1] == 'repo.zip':
+                                tmp_folder_found = True
+                        tf_path = Path(tf_path.parent.absolute())
+                    tf_path_str = str(tf_path)
+                    tf_path = Path(tf_path.parent.absolute())
+                    shutil.rmtree(tf_path_str)
+
+                    sandbox_data_handler.set_tf_working_dir("")
+
                 else:
                     raise Exception("Destroy blocked because APPLY was not yet executed")
             else:
