@@ -12,7 +12,8 @@ class Downloader(object):
     def download_terraform_module(self) -> str:
         url = self._shell_helper.tf_service.github_terraform_module_url
 
-        token = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GITHUB_TOKEN)
+        token_enc = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GITHUB_TOKEN)
+        token = self._shell_helper.api.DecryptPassword(token_enc).Value
         branch = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.BRANCH)
 
         self._shell_helper.sandbox_messages.write_message("downloading Terraform module from repository...")
