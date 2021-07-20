@@ -60,4 +60,7 @@ class ATTRIBUTE_NAMES:
     APPLY_TAGS = "Apply Tags"
     REMOTE_STATE_PROVIDER = "Remote State Provider"
 
+    GITHUB_TOKEN = "Github Token"
+    BRANCH = "Branch"
+
 GET_BACKEND_DATA_COMMAND = "get_backend_data"

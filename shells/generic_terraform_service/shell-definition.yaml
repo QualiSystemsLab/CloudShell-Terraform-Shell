@@ -36,7 +36,10 @@ node_types:
         description: UUID for the driver instance. Used internally by the Terraform Shell, should not be a user input.
         type: string
         tags: [ ]
-
+      Branch:
+        description: Overrides the branch in the the Module URL.
+        type: string
+        tags: [ user_input ]
       Terraform Outputs:
         description: Non-sensitive outputs from Terraform apply. All unmapped outputs will be stored here.
         type: string

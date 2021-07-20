@@ -228,22 +228,18 @@ class TfProcExec(object):
             description
         )
 
-    def _init_backend_config(self) -> str:
-        backend_attribute_name = \
-            f"{self._shell_helper.tf_service.cloudshell_model_name}.{ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER}"
+    def _init_backend_config(self) -> dict:
 
-        if backend_attribute_name in self._shell_helper.tf_service.attributes:
-            remote_state_provider = self._shell_helper.tf_service.attributes[backend_attribute_name]
-            if remote_state_provider:
-                backend_handler = BackendHandler(
-                    self._shell_helper.logger,
-                    self._shell_helper.api,
-                    remote_state_provider,
-                    self._tf_workingdir,
-                    self._shell_helper.sandbox_id,
-                    self._sb_data_handler._get_tf_uuid()
-                )
-                backend_handler.generate_backend_cfg_file()
-                return backend_handler.get_backend_secret_vars()
-        else:
-            return ""
+        remote_state_provider = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER)
+        if remote_state_provider:
+            backend_handler = BackendHandler(
+                self._shell_helper.logger,
+                self._shell_helper.api,
+                remote_state_provider,
+                self._tf_workingdir,
+                self._shell_helper.sandbox_id,
+                self._sb_data_handler._get_tf_uuid()
+            )
+            backend_handler.generate_backend_cfg_file()
+            return backend_handler.get_backend_secret_vars()
+        return {}

@@ -25,7 +25,7 @@ class BackendHandler(object):
                 self._working_dir = working_dir
                 self._reservation_id = reservation_id
                 self._uuid = uuid
-                self._backend_secret_vars = ""
+                self._backend_secret_vars = {}
 
         except Exception as e:
             logger.exception(f"Backend provider specified:[{backend_resource}] was not found in the inventory")
@@ -48,5 +48,5 @@ class BackendHandler(object):
             backend_file.write(backend_data_json['backend_data']['tf_state_file_string'])
         self._backend_secret_vars = backend_data_json["backend_secret_vars"]
 
-    def get_backend_secret_vars(self) -> str:
+    def get_backend_secret_vars(self) -> dict:
         return self._backend_secret_vars
