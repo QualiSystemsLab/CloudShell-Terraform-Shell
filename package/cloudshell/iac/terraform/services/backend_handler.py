@@ -28,9 +28,10 @@ class BackendHandler(object):
                 self._backend_secret_vars = ""
 
         except Exception as e:
-            logger.exception("Backend resource not found")
-            #todo: write right msg
-            raise ValueError("Was not able to execute ")
+
+            logger.exception(f"Backend provider specified:[{backend_resource}] was not found in the inventory")
+            raise ValueError(f"Backend provider specified:[{backend_resource}] was not found in the inventory")
+
 
     def generate_backend_cfg_file(self):
         params = [InputNameValue("tf_state_unique_name", f"{self._reservation_id}_{self._uuid}.tf.state")]
@@ -49,5 +50,5 @@ class BackendHandler(object):
             backend_file.write(backend_data_json['backend_data']['tf_state_file_string'])
         self._backend_secret_vars = backend_data_json["backend_secret_vars"]
 
-    def get_backend_secret_vars(self):
+    def get_backend_secret_vars(self) -> str:
         return self._backend_secret_vars
