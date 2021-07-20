@@ -14,6 +14,7 @@ from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpda
 from cloudshell.iac.terraform.services.provider_handler import ProviderHandler
 from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
+from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 from cloudshell.iac.terraform.services.tf_proc_exec import TfProcExec
 
 
@@ -88,8 +89,10 @@ class TerraformShell:
                                                          self._config.write_sandbox_messages)
         live_status_updater = LiveStatusUpdater(api, sandbox_id, self._config.update_live_status)
 
+        attr_handler = ServiceAttrHandler(api, sandbox_id, self._tf_service)
+
         return ShellHelperObject(api, sandbox_id, self._tf_service, logger, sandbox_message_service,
-                                 live_status_updater)
+                                 live_status_updater, attr_handler)
 
     def _does_working_dir_exists(self, dir: str) -> bool:
         return dir and os.path.isdir(dir)

@@ -10,7 +10,8 @@ from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrH
 class ShellHelperObject(object):
 
     def __init__(self, api: CloudShellAPISession, res_id: str, tf_service: any, logger: Logger,
-                 sandbox_messages: SandboxMessagesService, live_status_updater: LiveStatusUpdater):
+                 sandbox_messages: SandboxMessagesService, live_status_updater: LiveStatusUpdater,
+                 attr_handler: ServiceAttrHandler):
         self.api = api
         self.sandbox_id = res_id
         self.tf_service = tf_service
@@ -18,8 +19,4 @@ class ShellHelperObject(object):
         self.sandbox_messages = sandbox_messages
         self.live_status_updater = live_status_updater
 
-        self.attr_handler = ServiceAttrHandler(
-            self.api,
-            self.sandbox_id,
-            self.tf_service
-        )
+        self.attr_handler = attr_handler
