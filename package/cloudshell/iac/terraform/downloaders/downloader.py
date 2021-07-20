@@ -1,3 +1,4 @@
+from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.downloaders.github_downloader import GitHubScriptDownloader
 from cloudshell.iac.terraform.downloaders.tf_exec_downloader import TfExecDownloader
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
@@ -11,8 +12,8 @@ class Downloader(object):
     def download_terraform_module(self) -> str:
         url = self._shell_helper.tf_service.github_terraform_module_url
 
-        token = self._shell_helper.attr_handler.get_attribute('github_token')
-        branch = self._shell_helper.attr_handler.get_attribute('branch')
+        token = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GITHUB_TOKEN)
+        branch = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.BRANCH)
 
         self._shell_helper.sandbox_messages.write_message("downloading Terraform module from repository...")
         self._shell_helper.logger.info("Downloading Terraform Repo from Github")
