@@ -28,6 +28,7 @@ class BackendHandler(object):
                 self._backend_secret_vars = {}
 
         except Exception as e:
+
             logger.exception(f"Backend provider specified:[{backend_resource}] was not found in the inventory")
             raise ValueError(f"Backend provider specified:[{backend_resource}] was not found in the inventory")
 
