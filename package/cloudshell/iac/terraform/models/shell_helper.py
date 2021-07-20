@@ -4,6 +4,7 @@ from cloudshell.api.cloudshell_api import CloudShellAPISession
 
 from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpdater
 from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
+from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 
 
 class ShellHelperObject(object):
@@ -16,3 +17,9 @@ class ShellHelperObject(object):
         self.logger = logger
         self.sandbox_messages = sandbox_messages
         self.live_status_updater = live_status_updater
+
+        self.attr_handler = ServiceAttrHandler(
+            self.api,
+            self.sandbox_id,
+            self.tf_service
+        )

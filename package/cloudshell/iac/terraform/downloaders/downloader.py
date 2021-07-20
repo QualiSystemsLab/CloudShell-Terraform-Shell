@@ -10,14 +10,9 @@ class Downloader(object):
 
     def download_terraform_module(self) -> str:
         url = self._shell_helper.tf_service.github_terraform_module_url
-        attr_handler = ServiceAttrHandler(
-            self._shell_helper.api,
-            self._shell_helper.sandbox_id,
-            self._shell_helper.tf_service
-        )
 
-        token = attr_handler.get_attribute('github_token')
-        branch = attr_handler.get_attribute('branch')
+        token = self._shell_helper.attr_handler.get_attribute('github_token')
+        branch = self._shell_helper.attr_handler.get_attribute('branch')
 
         self._shell_helper.sandbox_messages.write_message("downloading Terraform module from repository...")
         self._shell_helper.logger.info("Downloading Terraform Repo from Github")
