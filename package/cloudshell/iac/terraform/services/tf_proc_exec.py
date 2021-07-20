@@ -37,8 +37,9 @@ class TfProcExec(object):
         self._shell_helper.sandbox_messages.write_message("running Terraform Init...")
         backend_config_vars = self._init_backend_config()
         vars = ["init", "-no-color"]
-        for key in backend_config_vars.keys():
-            vars.append(f'-backend-config={key}={backend_config_vars[key]}')
+        if backend_config_vars:
+            for key in backend_config_vars.keys():
+                vars.append(f'-backend-config={key}={backend_config_vars[key]}')
         try:
             self._set_service_status("Progress 10", "Executing Terraform Init...")
             self._run_tf_proc_with_command(vars, INIT)
