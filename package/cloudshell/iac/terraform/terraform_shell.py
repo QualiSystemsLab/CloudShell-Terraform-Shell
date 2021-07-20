@@ -18,6 +18,7 @@ from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpda
 from cloudshell.iac.terraform.services.provider_handler import ProviderHandler
 from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
+from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 from cloudshell.iac.terraform.services.tf_proc_exec import TfProcExec
 
 
@@ -42,18 +43,21 @@ class TerraformShell:
                 # working dir doesnt exist - need to download repo and tf exec
                 downloader = Downloader(shell_helper)
                 tf_workingdir = downloader.download_terraform_module()
-                downloader.download_terraform_executable(tf_workingdir)
 
+                downloader.download_terraform_executable(tf_workingdir)
                 sandbox_data_handler.set_tf_working_dir(tf_workingdir)
             else:
                 logger.info(f"Using existing working dir = {tf_working_dir}")
 
             tf_proc_executer = TfProcExec(shell_helper,
                                           sandbox_data_handler,
-                                          InputOutputService(shell_helper))
+                                          InputOutputService(shell_helper),
+                                          self._context.reservation)
+
             if tf_proc_executer.can_execute_run():
                 ProviderHandler.initialize_provider(shell_helper)
                 tf_proc_executer.init_terraform()
+                tf_proc_executer.tag_terraform()
                 tf_proc_executer.plan_terraform()
                 tf_proc_executer.apply_terraform()
 
@@ -74,7 +78,8 @@ class TerraformShell:
 
             if tf_working_dir:
                 ProviderHandler.initialize_provider(shell_model)
-                tf_proc_executer = TfProcExec(shell_model, sandbox_data_handler, InputOutputService(shell_model))
+                tf_proc_executer = TfProcExec(shell_model, sandbox_data_handler, InputOutputService(shell_model),
+                                              self._context.reservation)
                 if tf_proc_executer.can_destroy_run():
                     tf_proc_executer.destroy_terraform()
 
@@ -103,8 +108,10 @@ class TerraformShell:
                                                          self._config.write_sandbox_messages)
         live_status_updater = LiveStatusUpdater(api, sandbox_id, self._config.update_live_status)
 
+        attr_handler = ServiceAttrHandler(api, sandbox_id, self._tf_service)
+
         return ShellHelperObject(api, sandbox_id, self._tf_service, logger, sandbox_message_service,
-                                 live_status_updater)
+                                 live_status_updater, attr_handler)
 
     def _does_working_dir_exists(self, dir: str) -> bool:
         return dir and os.path.isdir(dir)

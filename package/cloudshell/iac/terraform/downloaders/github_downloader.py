@@ -23,10 +23,10 @@ class GitHubScriptDownloader(object):
         self.logger = logger
 
     @retry((HTTPError, URLError), delay=1, backoff=2, tries=5)
-    def download_repo(self, url: str, token: str) -> str:
+    def download_repo(self, url: str, token: str, branch: str = "") -> str:
         headers = {'Authorization': f'token {token}'}
         self._validate_github_url(url)
-        url_data = self._extract_data_from_url(url)
+        url_data = self._extract_data_from_url(url, branch)
         try:
             # Downloading the path provided to check if it exists
             tf_response = requests.get(url_data.api_tf_dl_url, headers=headers)
@@ -80,7 +80,7 @@ class GitHubScriptDownloader(object):
                          "Expected format is the GitHub API syntax. "
                          "Example: 'https://github.com/:account_id/:repo/blob/:branch/:path'")
 
-    def _extract_data_from_url(self, url: str):
+    def _extract_data_from_url(self, url: str, branch_attr: str = ""):
         """
         :param str url:
         :rtype: GitHubFileData
@@ -96,11 +96,13 @@ class GitHubScriptDownloader(object):
             branch_id = matched_groups['branch_id']
             path = matched_groups['path']
 
+            if branch_attr:
+                branch_id = branch_attr
+
             api_zip_dl_url = f'https://api.github.com/repos/{account_id}/{repo_id}/zipball/{branch_id}'
             # API to get metadata about file/dir
             api_tf_dl_url = f'https://api.github.com/repos/{account_id}/{repo_id}/contents/{path}?ref={branch_id}'
 
-            # self.logger.info(msg=f'API Call will use the following address {api_zip_dl_url}')
             return GitHubFileData(account_id, repo_id, branch_id, path, api_zip_dl_url, api_tf_dl_url)
         else:
             self._raise_url_syntax_error()

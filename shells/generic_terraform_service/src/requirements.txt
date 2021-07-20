@@ -1,2 +1,1 @@
 cloudshell-iac-terraform==0.1.0
-python-dotenv==0.18.0

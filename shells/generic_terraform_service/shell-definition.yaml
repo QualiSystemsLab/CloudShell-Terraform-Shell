@@ -36,7 +36,10 @@ node_types:
         description: UUID for the driver instance. Used internally by the Terraform Shell, should not be a user input.
         type: string
         tags: [ ]
-
+      Branch:
+        description: Overrides the branch in the the Module URL.
+        type: string
+        tags: [ user_input ]
       Terraform Outputs:
         description: Non-sensitive outputs from Terraform apply. All unmapped outputs will be stored here.
         type: string
@@ -52,6 +55,15 @@ node_types:
       Remote State Provider:
         description: Remote State provider resource name (only used if filled)
         type: string
+        tags: [ user_input ]
+      Custom Tags:
+        description: Comma separated name=value list (e.g. varname1=varvalue1,varname2=varvalue2...)
+        type: string
+        tags: [ user_input ]
+      Apply Tags:
+        description: Should tags be applied? Yes=true, No=false (Default True)
+        default: true
+        type: boolean
         tags: [ user_input ]
       Service Categories:
         type: list

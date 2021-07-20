@@ -1,8 +1,10 @@
+from tests.integration_tests.helper_objects.integration_context import IntegrationData
+
 import os
 from unittest import TestCase
 
 SHELL_NAME = "Generic Terraform Service"
-from tests.integration_tests.helper_objects.integration_context import IntegrationData
+
 
 class TestTerraformExecuteDestroy(TestCase):
     def setUp(self) -> None:
@@ -30,4 +32,3 @@ class TestTerraformExecuteDestroy(TestCase):
             f"{SHELL_NAME}.Github Terraform Module URL"] = os.environ.get("GITHUB_TF_PRIVATE_VAULT_URL")
 
         self.integration_data.driver.destroy_terraform(self.integration_data.context)
-
