@@ -51,6 +51,9 @@ DIRTY_CHARS = r'''
                 )
             '''
 
+GITHUB_REPO_PATTERN = \
+    "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/(?:blob|tree|/?)/(?P<branch_id>.+?)/(?P<path>.*?)$"
+
 
 class ATTRIBUTE_NAMES:
     TF_OUTPUTS = "Terraform Outputs"
@@ -62,5 +65,8 @@ class ATTRIBUTE_NAMES:
 
     GITHUB_TOKEN = "Github Token"
     BRANCH = "Branch"
+    CLOUD_PROVIDER = "Cloud Provider"
+    UUID = "UUID"
+
 
 GET_BACKEND_DATA_COMMAND = "get_backend_data"

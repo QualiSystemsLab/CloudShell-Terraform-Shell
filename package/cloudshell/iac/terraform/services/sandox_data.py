@@ -3,7 +3,7 @@ import uuid
 
 from cloudshell.api.cloudshell_api import SandboxDataKeyValue, AttributeNameValue, GetSandboxDataInfo
 
-from cloudshell.iac.terraform.constants import EXECUTE_STATUS, DESTROY_STATUS, NONE, TF_WORKING_DIR
+from cloudshell.iac.terraform.constants import EXECUTE_STATUS, DESTROY_STATUS, NONE, TF_WORKING_DIR, ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
 
@@ -15,8 +15,9 @@ class SandboxDataHandler(object):
 
     def _get_tf_uuid(self) -> str:
         # if uuid exists as attribute just return it
-        if self._driver_helper_obj.tf_service.uuid:
-            return self._driver_helper_obj.tf_service.uuid
+        current_uuid = self._driver_helper_obj.attr_handler.get_attribute(ATTRIBUTE_NAMES.UUID)
+        if current_uuid:
+            return current_uuid
         else:
             # Create new uuid and set it on the the attribute
             new_uuid = uuid.uuid4().hex

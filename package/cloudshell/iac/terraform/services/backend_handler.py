@@ -7,6 +7,7 @@ from cloudshell.api.cloudshell_api import CloudShellAPISession, InputNameValue
 # from tests.constants import GET_BACKEND_DATA_COMMAND
 from cloudshell.iac.terraform.constants import GET_BACKEND_DATA_COMMAND
 
+
 class BackendHandler(object):
     def __init__(
         self,
@@ -31,7 +32,6 @@ class BackendHandler(object):
 
             logger.exception(f"Backend provider specified:[{backend_resource}] was not found in the inventory")
             raise ValueError(f"Backend provider specified:[{backend_resource}] was not found in the inventory")
-
 
     def generate_backend_cfg_file(self):
         params = [InputNameValue("tf_state_unique_name", f"{self._reservation_id}_{self._uuid}.tf.state")]
