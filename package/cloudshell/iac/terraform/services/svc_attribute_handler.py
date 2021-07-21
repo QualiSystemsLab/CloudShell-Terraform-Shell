@@ -10,7 +10,8 @@ class ServiceAttrHandler(object):
         self._populate_attr_list()
 
     def get_attribute(self, attribute_name: str) -> str:
-        if attribute_name in self._attributes:
+        if attribute_name in self._attributes or \
+                f"{self._tf_service.cloudshell_model_name}.{attribute_name}" in self._attributes:
             return self._attributes[attribute_name]
         return ""
 
@@ -19,7 +20,4 @@ class ServiceAttrHandler(object):
         for service in services:
             if service.Alias == self._tf_service.name:
                 for attribute in service.Attributes:
-                    if "." in attribute.Name:
-                        self._attributes[attribute.Name.split(".")[1]] = attribute.Value
-                    else:
-                        self._attributes[attribute.Name] = attribute.Value
+                    self._attributes[attribute.Name] = attribute.Value

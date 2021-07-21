@@ -16,8 +16,8 @@ class ProviderHandler(object):
             return
         clp_details = shell_helper.api.GetResourceDetails(clp_resource_name)
         clp_res_model = clp_details.ResourceModelName
-        clpr_res_fam = clp_details.ResourceFamilyName
 
+        clpr_res_fam = clp_details.ResourceFamilyName
         if clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider':
             shell_helper.logger.error(f"{clpr_res_fam} currently not supported")
             raise ValueError(f"{clpr_res_fam} currently not supported")
