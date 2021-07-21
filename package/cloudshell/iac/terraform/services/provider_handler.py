@@ -32,8 +32,8 @@ class ProviderHandler(object):
                 if clp_res_model == AZURE2G_MODEL:
                     azure_attr_name_prefix = AZURE2G_MODEL + "."
 
-                ProviderHandler._set_env_vars_based_on_clp(azure_attr_name_prefix, clp_resource_attributes,
-                                                           shell_helper)
+                ProviderHandler._set_azure_env_vars_based_on_clp(azure_attr_name_prefix, clp_resource_attributes,
+                                                                 shell_helper)
             else:
                 shell_helper.logger.error(f"{clp_res_model} currently not supported")
                 raise ValueError(f"{clp_res_model} currently not supported")
@@ -43,7 +43,7 @@ class ProviderHandler(object):
             raise
 
     @staticmethod
-    def _set_env_vars_based_on_clp(azure_attr_name_prefix, clp_resource_attributes, shell_helper):
+    def _set_azure_env_vars_based_on_clp(azure_attr_name_prefix, clp_resource_attributes, shell_helper):
         for attr in clp_resource_attributes:
             if attr.Name == azure_attr_name_prefix + "Azure Subscription ID":
                 os.environ["ARM_SUBSCRIPTION_ID"] = attr.Value
