@@ -2,9 +2,7 @@ from cloudshell.api.cloudshell_api import CloudShellAPISession
 
 
 class ServiceAttrHandler(object):
-    def __init__(self, api: CloudShellAPISession, sandbox_id: str, tf_service: any):
-        self._api = api
-        self._sandbox_id = sandbox_id
+    def __init__(self, tf_service: any):
         self._tf_service = tf_service
         self._attributes = self._tf_service.attributes
 
