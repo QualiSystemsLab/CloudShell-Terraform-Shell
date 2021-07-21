@@ -2,7 +2,6 @@ import json
 import os
 import re
 import sys
-import traceback
 import ssl
 from io import BytesIO
 from logging import Logger
@@ -60,4 +59,3 @@ class TfExecDownloader(object):
         if os.path.exists(f'{tf_workingdir}/terraform'):
             os.rename(f'{tf_workingdir}/terraform', f'{tf_workingdir}/terraform.exe')
         os.chmod(f'{tf_workingdir}/terraform.exe', 0o755)
-

@@ -92,7 +92,7 @@ class InputOutputService:
 
         return result
 
-    def try_decrypt_password(self, value) -> str:
+    def try_decrypt_password(self, value: str) -> str:
         try:
             return self._driver_helper.api.DecryptPassword(value).Value
         except:
