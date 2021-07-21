@@ -18,14 +18,13 @@ class TestServiceAttrHandler(unittest.TestCase):
             "attribute_name": "attribute_value1",
             "cloudshell_model_name.attribute_name": "attribute_value2"
         }
-        self.svc_attribute_handler = ServiceAttrHandler(tf_service)
+        svc_attribute_handler = ServiceAttrHandler(tf_service)
 
         # act
-        attribute_value1 = self.svc_attribute_handler.get_attribute("")
-        attribute_value2 = self.svc_attribute_handler.get_attribute("wrong_attribute_name")
-        attribute_value3 = self.svc_attribute_handler.get_attribute("attribute_name")
-        attribute_value4 = self.svc_attribute_handler.get_attribute("cloudshell_model_name.attribute_name")
-        print("")
+        attribute_value1 = svc_attribute_handler.get_attribute("")
+        attribute_value2 = svc_attribute_handler.get_attribute("wrong_attribute_name")
+        attribute_value3 = svc_attribute_handler.get_attribute("attribute_name")
+        attribute_value4 = svc_attribute_handler.get_attribute("cloudshell_model_name.attribute_name")
 
         # assert
         self.assertEqual(attribute_value1, "")
