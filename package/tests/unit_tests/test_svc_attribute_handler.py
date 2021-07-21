@@ -15,8 +15,8 @@ class TestServiceAttrHandler(unittest.TestCase):
         tf_service = Mock()
         tf_service.cloudshell_model_name = "cloudshell_model_name"
         tf_service.attributes = {
-            "attribute_name": "attribute_value1",
-            "cloudshell_model_name.attribute_name": "attribute_value2"
+            "attribute_name": "attribute_value3",
+            "cloudshell_model_name.attribute_name": "attribute_value4"
         }
         svc_attribute_handler = ServiceAttrHandler(tf_service)
 
@@ -29,5 +29,5 @@ class TestServiceAttrHandler(unittest.TestCase):
         # assert
         self.assertEqual(attribute_value1, "")
         self.assertEqual(attribute_value2, "")
-        self.assertEqual(attribute_value3, "attribute_value1")
-        self.assertEqual(attribute_value4, "attribute_value2")
+        self.assertEqual(attribute_value3, "attribute_value3")
+        self.assertEqual(attribute_value4, "attribute_value4")
