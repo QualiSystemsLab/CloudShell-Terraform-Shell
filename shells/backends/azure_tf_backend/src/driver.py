@@ -2,8 +2,7 @@ import json
 
 from azure.core.exceptions import ResourceNotFoundError, ClientAuthenticationError
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
-from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadDetails, \
-    CancellationContext
+from cloudshell.shell.core.driver_context import InitCommandContext, AutoLoadDetails
 
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
@@ -53,14 +52,15 @@ class AzureTfBackendDriver (ResourceDriverInterface):
         # run 'shellfoundry generate' in order to create classes that represent your data model
 
         with LoggingSessionContext(context) as logger:
+
             azure_backend_resource = AzureTfBackend.create_from_context(context)
+
             try:
                 api = CloudShellSessionContext(context).get_api()
 
                 if azure_backend_resource.access_key:
                     if azure_backend_resource.cloud_provider:
-                        logger.error(f"Only one method of authentication should be filled")
-                        raise ValueError("Only one method of authentication should be filled")
+                        self._handle_value_error_exception(logger, "Only one method of authentication should be filled")
                     credentials = api.DecryptPassword(azure_backend_resource.access_key).Value
 
                 else:
@@ -86,14 +86,14 @@ class AzureTfBackendDriver (ResourceDriverInterface):
 
             try:
                 blob_svc_client = BlobServiceClient(
-                    account_url=f"https://{azure_backend_resource.storage_account_name}.blob.core.windows.net/",
+                    account_url="https://{}.blob.core.windows.net/".format(azure_backend_resource.storage_account_name),
                     credential=credentials
                 )
                 blob_svc_container_client = blob_svc_client.get_container_client(azure_backend_resource.container_name)
                 blob_svc_container_client.get_container_properties()
             except ResourceNotFoundError:
                 self._handle_value_error_exception(
-                    logger, f"Was not able to locate container referenced {azure_backend_resource.container_name}"
+                    logger, "Was not able to locate container referenced {}".format(azure_backend_resource.container_name)
                 )
             except ClientAuthenticationError as e:
                 self._handle_value_error_exception(
@@ -107,85 +107,7 @@ class AzureTfBackendDriver (ResourceDriverInterface):
 
     # </editor-fold>
 
-    # <editor-fold desc="Orchestration Save and Restore Standard">
-    def orchestration_save(self, context, cancellation_context, mode, custom_params):
-      """
-      Saves the Shell state and returns a description of the saved artifacts and information
-      This command is intended for API use only by sandbox orchestration scripts to implement
-      a save and restore workflow
-      :param ResourceCommandContext context: the context object containing resource and reservation info
-      :param CancellationContext cancellation_context: Object to signal a request for cancellation. Must be enabled in drivermetadata.xml as well
-      :param str mode: Snapshot save mode, can be one of two values 'shallow' (default) or 'deep'
-      :param str custom_params: Set of custom parameters for the save operation
-      :return: SavedResults serialized as JSON
-      :rtype: OrchestrationSaveResult
-      """
-
-      # See below an example implementation, here we use jsonpickle for serialization,
-      # to use this sample, you'll need to add jsonpickle to your requirements.txt file
-      # The JSON schema is defined at:
-      # https://github.com/QualiSystems/sandbox_orchestration_standard/blob/master/save%20%26%20restore/saved_artifact_info.schema.json
-      # You can find more information and examples examples in the spec document at
-      # https://github.com/QualiSystems/sandbox_orchestration_standard/blob/master/save%20%26%20restore/save%20%26%20restore%20standard.md
-      '''
-            # By convention, all dates should be UTC
-            created_date = datetime.datetime.utcnow()
-
-            # This can be any unique identifier which can later be used to retrieve the artifact
-            # such as filepath etc.
-
-            # By convention, all dates should be UTC
-            created_date = datetime.datetime.utcnow()
-
-            # This can be any unique identifier which can later be used to retrieve the artifact
-            # such as filepath etc.
-            identifier = created_date.strftime('%y_%m_%d %H_%M_%S_%f')
-
-            orchestration_saved_artifact = OrchestrationSavedArtifact('REPLACE_WITH_ARTIFACT_TYPE', identifier)
-
-            saved_artifacts_info = OrchestrationSavedArtifactInfo(
-                resource_name="some_resource",
-                created_date=created_date,
-                restore_rules=OrchestrationRestoreRules(requires_same_resource=True),
-                saved_artifact=orchestration_saved_artifact)
-
-            return OrchestrationSaveResult(saved_artifacts_info)
-      '''
-      pass
-
-    def orchestration_restore(self, context, cancellation_context, saved_artifact_info, custom_params):
-        """
-        Restores a saved artifact previously saved by this Shell driver using the orchestration_save function
-        :param ResourceCommandContext context: The context object for the command with resource and reservation info
-        :param CancellationContext cancellation_context: Object to signal a request for cancellation. Must be enabled in drivermetadata.xml as well
-        :param str saved_artifact_info: A JSON string representing the state to restore including saved artifacts and info
-        :param str custom_params: Set of custom parameters for the restore operation
-        :return: None
-        """
-        '''
-        # The saved_details JSON will be defined according to the JSON Schema and is the same object returned via the
-        # orchestration save function.
-        # Example input:
-        # {
-        #     "saved_artifact": {
-        #      "artifact_type": "REPLACE_WITH_ARTIFACT_TYPE",
-        #      "identifier": "16_08_09 11_21_35_657000"
-        #     },
-        #     "resource_name": "some_resource",
-        #     "restore_rules": {
-        #      "requires_same_resource": true
-        #     },
-        #     "created_date": "2016-08-09T11:21:35.657000"
-        #    }
-
-        # The example code below just parses and prints the saved artifact identifier
-        saved_details_object = json.loads(saved_details)
-        return saved_details_object[u'saved_artifact'][u'identifier']
-        '''
-
-        pass
-
-    def get_backend_data(self, context, tf_state_unique_name: str) -> str:
+    def get_backend_data(self, context, tf_state_unique_name):
         with LoggingSessionContext(context) as logger:
             azure_backend_resource = AzureTfBackend.create_from_context(context)
             tf_state_file_string = self._generate_state_file_string(azure_backend_resource, tf_state_unique_name)
@@ -212,29 +134,30 @@ class AzureTfBackendDriver (ResourceDriverInterface):
             except Exception as e:
                 self._handle_value_error_exception(logger, "Inputs for Cloud Backend Access missing or incorrect")
 
-            logger.info(f"Returning backend data for creating provider file :\n{backend_data}")
+            logger.info("Returning backend data for creating provider file :\n{}".format(backend_data))
             response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
             return response
 
     def _generate_state_file_string(self, azure_backend_resource, tf_state_unique_name):
-        tf_state_file_string = f'terraform {{\n\
+        tf_state_file_string = 'terraform {{\n\
 \tbackend "azurerm" {{\n\
-\t\tstorage_account_name = "{azure_backend_resource.storage_account_name}"\n\
-\t\tcontainer_name       = "{azure_backend_resource.container_name}"\n\
-\t\tkey                  = "{tf_state_unique_name}"\n\
+\t\tstorage_account_name = "{0}"\n\
+\t\tcontainer_name       = "{1}"\n\
+\t\tkey                  = "{2}"\n\
 \t}}\n\
-}}'
+}}'.format(azure_backend_resource.storage_account_name, azure_backend_resource.container_name, tf_state_unique_name)
         return tf_state_file_string
 
     def _validate_clp(self, api, azure_backend_resource, logger):
-        clp_resource_name = azure_backend_resource.cloud_provider
+        clp_resource_name = azure_backend_resource.attributes['{0}.{1}'.
+            format(azure_backend_resource.cloudshell_model_name, "Cloud Provider")]
         clp_details = api.GetResourceDetails(clp_resource_name)
         clp_res_model = clp_details.ResourceModelName
         clpr_res_fam = clp_details.ResourceFamilyName
         if (clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider') or \
                 clp_res_model not in AZURE_MODELS:
-            logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
-            raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
+            logger.error("Cloud Provider does not have the expected type: {}".format(clpr_res_fam))
+            raise ValueError("Cloud Provider does not have the expected type: {}".format(clpr_res_fam))
         return clp_details
 
     def _fill_backend_sercret_vars_data(self, api, azure_model_prefix, clp_resource_attributes):

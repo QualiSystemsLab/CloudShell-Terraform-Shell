@@ -1,8 +1,8 @@
-from unittest import mock
-
+import mock
 from cloudshell.api.cloudshell_api import CloudShellAPISession
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
+
 
 from tests.integration_tests.helper_objects.env_vars import EnvVars
 

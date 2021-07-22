@@ -1,9 +1,8 @@
-<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.AzureTfBackendDriver" Name="AzureTfBackendDriver" Version="1.0.0" PythonVersion="3">
+<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.AzureTfBackendDriver" Name="AzureTfBackendDriver" Version="1.0.0">
     <Layout>
          <Category Name="Hidden Commands">
             <Command Description="" DisplayName="Orchestration Save" Name="orchestration_save" />
             <Command Description="" DisplayName="Orchestration Restore" Name="orchestration_restore" />
-            <Command Description="" DisplayName="Return Backend Data" Name="get_backend_data" Tags="allow_unreserved" />
         </Category>
     </Layout>
 </Driver>
