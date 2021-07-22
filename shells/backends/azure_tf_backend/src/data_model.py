@@ -215,6 +215,21 @@ class AzureTfBackend(object):
         self.attributes['Azure Tf Backend.Cloud Provider'] = value
 
     @property
+    def resource_group(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Azure Tf Backend.Resource Group'] if 'Azure Tf Backend.Resource Group' in self.attributes else None
+
+    @resource_group.setter
+    def resource_group(self, value):
+        """
+        Resource Group of the StorageAccount/Container (if Cloud Provider authentication has been filled)
+        :type value: str
+        """
+        self.attributes['Azure Tf Backend.Resource Group'] = value
+
+    @property
     def user(self):
         """
         :rtype: str
