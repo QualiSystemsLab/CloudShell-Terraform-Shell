@@ -20,14 +20,17 @@ from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesSe
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
 from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 from cloudshell.iac.terraform.services.tf_proc_exec import TfProcExec
+from cloudshell.iac.terraform.models.tf_service import TerraformServiceObject
 
 
 class TerraformShell:
     # todo: add support to provide the info needed from attributes as parameters to the init (not shell attributes)
-    def __init__(self, driver_context: ResourceCommandContext, terraform_service_shell: any,
+    def __init__(self, driver_context: ResourceCommandContext, cloudshell_model_name: str,
                  logger: logging.Logger = None, config: TerraformShellConfig = None):
         self._context = driver_context
-        self._tf_service = terraform_service_shell
+        self._cloudshell_model_name = cloudshell_model_name
+        # self._tf_service = terraform_service_shell
+        self._tf_service = self._create_tf_service()
         self._logger = logger
         self._config = config or TerraformShellConfig()
 
@@ -112,6 +115,14 @@ class TerraformShell:
 
         return ShellHelperObject(api, sandbox_id, self._tf_service, logger, sandbox_message_service,
                                  live_status_updater, attr_handler)
+
+    def _create_tf_service(self) -> TerraformServiceObject:
+        api = CloudShellSessionContext(self._context).get_api()
+        sandbox_id = self._context.reservation.reservation_id
+        cloudshell_model_name = self._cloudshell_model_name
+        name = self._context.resource.name
+
+        return TerraformServiceObject(api, sandbox_id, name, cloudshell_model_name)
 
     def _does_working_dir_exists(self, dir: str) -> bool:
         return dir and os.path.isdir(dir)
