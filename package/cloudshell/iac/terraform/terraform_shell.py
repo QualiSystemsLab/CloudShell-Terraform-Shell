@@ -106,8 +106,9 @@ class TerraformShell:
         sandbox_message_service = SandboxMessagesService(api, sandbox_id, self._tf_service.name,
                                                          self._config.write_sandbox_messages)
         live_status_updater = LiveStatusUpdater(api, sandbox_id, self._config.update_live_status)
-        attr_handler = ServiceAttrHandler(api, sandbox_id, self._tf_service)
         default_tags = TagsManager(self._context.reservation)
+        attr_handler = ServiceAttrHandler(self._tf_service)
+
 
         return ShellHelperObject(api, sandbox_id, self._tf_service, logger, sandbox_message_service,
                                  live_status_updater, attr_handler, default_tags)
