@@ -70,7 +70,7 @@ class AzureTfBackendDriver (ResourceDriverInterface):
                         account_keys = self._get_storage_keys(api, azure_backend_resource, clp_details)
                         if not account_keys.keys:
                             self._handle_exception_logging(logger, f"Unable to find access key for the storage account")
-                        credential = account_keys[0]
+                        credential = account_keys.keys[0].value
                     else:
                         self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing")
             except Exception as e:
