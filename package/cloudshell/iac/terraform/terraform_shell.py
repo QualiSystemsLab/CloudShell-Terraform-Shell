@@ -21,6 +21,7 @@ from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
 from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 from cloudshell.iac.terraform.services.tf_proc_exec import TfProcExec
 from cloudshell.iac.terraform.models.tf_service import TerraformServiceObject
+from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 
 class TerraformShell:
@@ -29,7 +30,6 @@ class TerraformShell:
                  logger: logging.Logger = None, config: TerraformShellConfig = None):
         self._context = driver_context
         self._cloudshell_model_name = cloudshell_model_name
-        # self._tf_service = terraform_service_shell
         self._tf_service = self._create_tf_service()
         self._logger = logger
         self._config = config or TerraformShellConfig()
@@ -54,8 +54,7 @@ class TerraformShell:
 
             tf_proc_executer = TfProcExec(shell_helper,
                                           sandbox_data_handler,
-                                          InputOutputService(shell_helper),
-                                          self._context.reservation)
+                                          InputOutputService(shell_helper))
 
             if tf_proc_executer.can_execute_run():
                 ProviderHandler.initialize_provider(shell_helper)
@@ -81,8 +80,7 @@ class TerraformShell:
 
             if tf_working_dir:
                 ProviderHandler.initialize_provider(shell_model)
-                tf_proc_executer = TfProcExec(shell_model, sandbox_data_handler, InputOutputService(shell_model),
-                                              self._context.reservation)
+                tf_proc_executer = TfProcExec(shell_model, sandbox_data_handler, InputOutputService(shell_model))
                 if tf_proc_executer.can_destroy_run():
                     tf_proc_executer.destroy_terraform()
 
@@ -110,19 +108,19 @@ class TerraformShell:
         sandbox_message_service = SandboxMessagesService(api, sandbox_id, self._tf_service.name,
                                                          self._config.write_sandbox_messages)
         live_status_updater = LiveStatusUpdater(api, sandbox_id, self._config.update_live_status)
-
         attr_handler = ServiceAttrHandler(api, sandbox_id, self._tf_service)
+        default_tags = TagsManager(self._context.reservation)
 
         return ShellHelperObject(api, sandbox_id, self._tf_service, logger, sandbox_message_service,
-                                 live_status_updater, attr_handler)
+                                 live_status_updater, attr_handler, default_tags)
 
     def _create_tf_service(self) -> TerraformServiceObject:
         api = CloudShellSessionContext(self._context).get_api()
-        sandbox_id = self._context.reservation.reservation_id
+        reservation_id = self._context.reservation.reservation_id
         cloudshell_model_name = self._cloudshell_model_name
         name = self._context.resource.name
 
-        return TerraformServiceObject(api, sandbox_id, name, cloudshell_model_name)
+        return TerraformServiceObject(api, reservation_id, name, cloudshell_model_name)
 
     def _does_working_dir_exists(self, dir: str) -> bool:
         return dir and os.path.isdir(dir)

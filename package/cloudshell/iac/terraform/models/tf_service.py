@@ -6,8 +6,8 @@ class TerraformServiceObject(object):
     def __init__(self, api: CloudShellAPISession, res_id: str, name: str, cloudshell_model_name: str):
         self.api = api
         self.res_id = res_id
-        self.cloudshell_model_name = cloudshell_model_name
         self.name = name
+        self.cloudshell_model_name = cloudshell_model_name
 
         self.attributes = self.set_context_resource_attributes()
 
