@@ -32,11 +32,7 @@ class TestTerraformDownloader(TestCase):
             False
         )
 
-        attr_handler = ServiceAttrHandler(
-            self.integration_data.real_api,
-            self.integration_data.context.reservation.reservation_id,
-            service_resource
-        )
+        attr_handler = ServiceAttrHandler(self.integration_data.real_api)
 
         self._driver_helper = ShellHelperObject(
             self.integration_data.real_api,
