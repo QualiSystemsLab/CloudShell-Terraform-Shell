@@ -2,9 +2,7 @@ import json
 
 from azure.core.exceptions import ResourceNotFoundError, ClientAuthenticationError
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
-from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadDetails, \
-    CancellationContext
-
+from cloudshell.shell.core.driver_context import InitCommandContext, AutoLoadDetails
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
@@ -94,6 +92,7 @@ class AzureTfBackendDriver (ResourceDriverInterface):
             credential=credential
         )
         blob_svc_container_client = blob_svc_client.get_container_client(azure_backend_resource.container_name)
+        # The following command will yield an exception in case container does not exist
         blob_svc_container_client.get_container_properties()
 
     def _get_storage_keys(self, api, azure_backend_resource, clp_details):
@@ -117,8 +116,6 @@ class AzureTfBackendDriver (ResourceDriverInterface):
     def _handle_exception_logging(self, logger, msg):
         logger.exception(msg)
         raise ValueError(msg)
-
-    # </editor-fold>
 
     def get_backend_data(self, context, tf_state_unique_name: str) -> str:
         with LoggingSessionContext(context) as logger:
