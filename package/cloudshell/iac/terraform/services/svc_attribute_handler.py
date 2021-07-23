@@ -7,7 +7,8 @@ class ServiceAttrHandler(object):
         self._attributes = self._tf_service.attributes
 
     def get_attribute(self, attribute_name: str) -> str:
-        if attribute_name in self._attributes or \
-                f"{self._tf_service.cloudshell_model_name}.{attribute_name}" in self._attributes:
+        if attribute_name in self._attributes:
             return self._attributes[attribute_name]
+        if f"{self._tf_service.cloudshell_model_name}.{attribute_name}" in self._attributes:
+            return self._attributes[f"{self._tf_service.cloudshell_model_name}.{attribute_name}"]
         return ""
