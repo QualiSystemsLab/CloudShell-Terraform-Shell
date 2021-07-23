@@ -76,11 +76,10 @@ class TfProcExec(object):
 
     def tag_terraform(self) -> None:
         apply = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.APPLY_TAGS)
-        if apply:
-            if not strtobool(apply):
-                self._shell_helper.logger.info("Skipping Adding Tags to Terraform Resources")
-                self._shell_helper.sandbox_messages.write_message("apply tags is false, skipping adding tags...")
-                return
+        if apply and not strtobool(apply):
+            self._shell_helper.logger.info("Skipping Adding Tags to Terraform Resources")
+            self._shell_helper.sandbox_messages.write_message("apply tags is false, skipping adding tags...")
+            return
 
         self._shell_helper.logger.info("Adding Tags to Terraform Resources")
         self._shell_helper.sandbox_messages.write_message("apply tags is true or not defined, generating tags...")

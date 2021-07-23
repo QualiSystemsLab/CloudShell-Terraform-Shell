@@ -10,6 +10,8 @@ from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from tests.constants import GITHUB_TF_PUBLIC_HELLO_URL_FILE, GITHUB_TF_PUBLIC_HELLO_URL_FOLDER, TERRAFORM_EXEC_FILE, \
     SHELL_NAME, TF_HELLO_FILE
 from tests.integration_tests.helper_objects.integration_context import IntegrationData
+from cloudshell.iac.terraform.tagging.tags import TagsManager
+from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 
 
 class TestTerraformDownloader(TestCase):
@@ -30,6 +32,9 @@ class TestTerraformDownloader(TestCase):
             self.integration_data.context.reservation.reservation_id,
             False
         )
+        attr_handler = ServiceAttrHandler(self.integration_data.real_api,
+                                          self.integration_data.context.reservation.reservation_id, service_resource)
+        default_tags = TagsManager(self.integration_data.context.reservation)
 
         self._driver_helper = ShellHelperObject(
             self.integration_data.real_api,
@@ -37,7 +42,9 @@ class TestTerraformDownloader(TestCase):
             service_resource,
             self.integration_data._logger,
             sandbox_messages,
-            live_status_updater
+            live_status_updater,
+            attr_handler,
+            default_tags
         )
 
     def _test_download_terraform_module(self, url: str):

@@ -15,9 +15,9 @@ class TerraformServiceObject(object):
         attr_dict = {}
         services = self.api.GetReservationDetails(self.res_id).ReservationDescription.Services
         for service in services:
-            for attribute in service.Attributes:
-                # self.context.resource.attributes[attribute.Name] = attribute.Value
-                attr_dict[attribute.Name] = attribute.Value
+            if self.name == service.Alias:
+                for attribute in service.Attributes:
+                    attr_dict[attribute.Name] = attribute.Value
         return attr_dict
 
 

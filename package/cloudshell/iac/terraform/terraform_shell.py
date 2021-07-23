@@ -26,10 +26,9 @@ from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 class TerraformShell:
     # todo: add support to provide the info needed from attributes as parameters to the init (not shell attributes)
-    def __init__(self, driver_context: ResourceCommandContext, cloudshell_model_name: str,
+    def __init__(self, driver_context: ResourceCommandContext,
                  logger: logging.Logger = None, config: TerraformShellConfig = None):
         self._context = driver_context
-        self._cloudshell_model_name = cloudshell_model_name
         self._tf_service = self._create_tf_service()
         self._logger = logger
         self._config = config or TerraformShellConfig()
@@ -37,7 +36,6 @@ class TerraformShell:
     def execute_terraform(self):
         # initialize a logger if logger wasn't passed during init
         with nullcontext(self._logger) if self._logger else LoggingSessionContext(self._context) as logger:
-
             shell_helper = self._create_shell_helper(logger)
             sandbox_data_handler = SandboxDataHandler(shell_helper)
             tf_working_dir = sandbox_data_handler.get_tf_working_dir()
@@ -117,7 +115,7 @@ class TerraformShell:
     def _create_tf_service(self) -> TerraformServiceObject:
         api = CloudShellSessionContext(self._context).get_api()
         reservation_id = self._context.reservation.reservation_id
-        cloudshell_model_name = self._cloudshell_model_name
+        cloudshell_model_name = self._context.resource.model
         name = self._context.resource.name
 
         return TerraformServiceObject(api, reservation_id, name, cloudshell_model_name)
