@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+from distutils.util import strtobool
 from subprocess import check_output, STDOUT, CalledProcessError
 from cloudshell.logging.qs_logger import _create_logger
 
@@ -15,17 +16,15 @@ from cloudshell.iac.terraform.services.input_output_service import InputOutputSe
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
 from cloudshell.iac.terraform.services.string_cleaner import StringCleaner
 from cloudshell.iac.terraform.tagging.tag_terraform_resources import start_tagging_terraform_resources
-from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 
 class TfProcExec(object):
     def __init__(self, shell_helper: ShellHelperObject, sb_data_handler: SandboxDataHandler,
-                 input_output_service: InputOutputService, reservation):
+                 input_output_service: InputOutputService):
         self._shell_helper = shell_helper
         self._sb_data_handler = sb_data_handler
         self._input_output_service = input_output_service
         self._tf_workingdir = sb_data_handler.get_tf_working_dir()
-        self._reservation = reservation
 
         dt = datetime.now().strftime("%d_%m_%y-%H_%M_%S")
         self._exec_output_log = _create_logger(
@@ -76,14 +75,14 @@ class TfProcExec(object):
             raise
 
     def tag_terraform(self) -> None:
-
-        if not self._input_output_service.get_apply_tag_attribute():
+        apply = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.APPLY_TAGS)
+        if apply and not strtobool(apply):
             self._shell_helper.logger.info("Skipping Adding Tags to Terraform Resources")
             self._shell_helper.sandbox_messages.write_message("apply tags is false, skipping adding tags...")
             return
 
         self._shell_helper.logger.info("Adding Tags to Terraform Resources")
-        self._shell_helper.sandbox_messages.write_message("apply tags is true, generating tags...")
+        self._shell_helper.sandbox_messages.write_message("apply tags is true or not defined, generating tags...")
 
         # get variables from attributes that should be mapped to TF variables
         tf_vars = self._input_output_service.get_variables_from_var_attributes()
@@ -96,10 +95,13 @@ class TfProcExec(object):
         for tf_var in tf_vars:
             inputs_dict[tf_var.name] = tf_var.value
 
-        default_tags = TagsManager(self._reservation)
-        default_tags_dict: dict = default_tags.get_default_tags()
+        default_tags_dict: dict = self._shell_helper.default_tags.get_default_tags()
 
-        custom_tags_inputs = self._input_output_service.get_variables_from_custom_tags_attribute()
+        check_tag_input = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.CT_INPUTS)
+        if check_tag_input:
+            custom_tags_inputs = self._input_output_service.get_variables_from_custom_tags_attribute()
+        else:
+            custom_tags_inputs = {}
 
         tags_dict = {**custom_tags_inputs, **default_tags_dict}
 

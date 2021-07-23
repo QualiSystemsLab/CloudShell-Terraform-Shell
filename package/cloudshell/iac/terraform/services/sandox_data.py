@@ -21,7 +21,6 @@ class SandboxDataHandler(object):
         else:
             # Create new uuid and set it on the the attribute
             new_uuid = uuid.uuid4().hex
-            self._driver_helper_obj.tf_service.uuid = new_uuid
             attr_name = f"{self._driver_helper_obj.tf_service.cloudshell_model_name}.UUID"
             attr_req = [AttributeNameValue(attr_name, new_uuid)]
             self._driver_helper_obj.api.SetServiceAttributesValues(self._driver_helper_obj.sandbox_id,

@@ -5,7 +5,6 @@ from cloudshell.api.cloudshell_api import AttributeNameValue
 
 from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
-from distutils.util import strtobool
 
 TFVar = namedtuple('TFVar', ['name', 'value'])
 
@@ -79,16 +78,6 @@ class InputOutputService:
             val = parts[1].strip()
 
             result[key] = val
-
-        return result
-
-    def get_apply_tag_attribute(self) -> bool:
-        """
-        'Apply Tags' is an mandatory attribute. The attribute is a boolean used to decide if tags get applied to tf
-        resources.
-        """
-        at_inputs_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.{ATTRIBUTE_NAMES.APPLY_TAGS}"
-        result = strtobool(self._driver_helper.tf_service.attributes[at_inputs_attr])
 
         return result
 
