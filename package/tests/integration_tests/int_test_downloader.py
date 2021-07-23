@@ -32,7 +32,11 @@ class TestTerraformDownloader(TestCase):
             False
         )
 
-        attr_handler = ServiceAttrHandler()
+        attr_handler = ServiceAttrHandler(
+            self.integration_data.real_api,
+            self.integration_data.context.reservation.reservation_id,
+            service_resource
+        )
 
         self._driver_helper = ShellHelperObject(
             self.integration_data.real_api,
@@ -40,7 +44,8 @@ class TestTerraformDownloader(TestCase):
             service_resource,
             self.integration_data._logger,
             sandbox_messages,
-            live_status_updater
+            live_status_updater,
+            attr_handler
         )
 
     def _test_download_terraform_module(self, url: str):
