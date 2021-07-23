@@ -51,8 +51,24 @@ DIRTY_CHARS = r'''
                 )
             '''
 
+GITHUB_REPO_PATTERN = \
+    "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/(?:blob|tree|/?)/(?P<branch_id>.+?)/(?P<path>.*?)$"
+
 
 class ATTRIBUTE_NAMES:
     TF_OUTPUTS = "Terraform Outputs"
     TF_SENSIITVE_OUTPUTS = "Terraform Sensitive Outputs"
     TF_INPUTS = "Terraform Inputs"
+    CT_INPUTS = "Custom Tags"
+    APPLY_TAGS = "Apply Tags"
+    REMOTE_STATE_PROVIDER = "Remote State Provider"
+    TF_VERSION = "Terraform Version"
+
+    GITHUB_TOKEN = "Github Token"
+    GITHUB_URL = "Github Terraform Module URL"
+    BRANCH = "Branch"
+    CLOUD_PROVIDER = "Cloud Provider"
+    UUID = "UUID"
+
+
+GET_BACKEND_DATA_COMMAND = "get_backend_data"

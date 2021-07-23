@@ -1,8 +1,9 @@
+from tests.integration_tests.helper_objects.integration_context import IntegrationData
+
 import os
 from unittest import TestCase
 
-from tests.constants import SHELL_NAME
-from tests.integration_tests.helper_objects.integration_context import IntegrationData
+SHELL_NAME = "Generic Terraform Service"
 
 
 class TestTerraformExecuteDestroy(TestCase):
@@ -10,6 +11,7 @@ class TestTerraformExecuteDestroy(TestCase):
         self.integration_data = IntegrationData()
 
     def test_execute_and_destroy(self):
+
         self.integration_data.context.resource.attributes[f"{SHELL_NAME}.Terraform Inputs"] = \
             os.environ.get("AZUREAPP_TF_INPUTS")
         self.integration_data.context.resource.attributes[
@@ -17,7 +19,7 @@ class TestTerraformExecuteDestroy(TestCase):
         self.integration_data.context.resource.attributes[
             f"{SHELL_NAME}.UUID"] = ""
 
-        self.integration_data.real_api.ClearSandboxData(self.integration_data.driver_helper.sandbox_id)
+        self.integration_data.real_api.ClearSandboxData(self.integration_data.context.reservation.reservation_id)
 
         self.integration_data.driver.execute_terraform(self.integration_data.context)
 

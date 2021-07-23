@@ -1,18 +1,21 @@
 import json
 import os
 from datetime import datetime
+from distutils.util import strtobool
 from subprocess import check_output, STDOUT, CalledProcessError
-
 from cloudshell.logging.qs_logger import _create_logger
 
-from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, EXECUTE_STATUS, APPLY_PASSED, PLAN_FAILED, INIT_FAILED, \
+from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, EXECUTE_STATUS, APPLY_PASSED, \
+    PLAN_FAILED, INIT_FAILED, \
     DESTROY_STATUS, DESTROY_FAILED, APPLY_FAILED, DESTROY_PASSED, INIT, DESTROY, PLAN, OUTPUT, APPLY, \
-    ALLOWED_LOGGING_CMDS
+    ALLOWED_LOGGING_CMDS, ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from cloudshell.iac.terraform.models.exceptions import TerraformExecutionError
+from cloudshell.iac.terraform.services.backend_handler import BackendHandler
 from cloudshell.iac.terraform.services.input_output_service import InputOutputService
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
 from cloudshell.iac.terraform.services.string_cleaner import StringCleaner
+from cloudshell.iac.terraform.tagging.tag_terraform_resources import start_tagging_terraform_resources
 
 
 class TfProcExec(object):
@@ -31,7 +34,11 @@ class TfProcExec(object):
     def init_terraform(self):
         self._shell_helper.logger.info("Performing Terraform Init")
         self._shell_helper.sandbox_messages.write_message("running Terraform Init...")
+        backend_config_vars = self._init_backend_config()
         vars = ["init", "-no-color"]
+        if backend_config_vars:
+            for key in backend_config_vars.keys():
+                vars.append(f'-backend-config={key}={backend_config_vars[key]}')
         try:
             self._set_service_status("Progress 10", "Executing Terraform Init...")
             self._run_tf_proc_with_command(vars, INIT)
@@ -66,6 +73,45 @@ class TfProcExec(object):
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
             self._set_service_status("Error", "Destroy Failed")
             raise
+
+    def tag_terraform(self) -> None:
+        apply = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.APPLY_TAGS)
+        if apply and not strtobool(apply):
+            self._shell_helper.logger.info("Skipping Adding Tags to Terraform Resources")
+            self._shell_helper.sandbox_messages.write_message("apply tags is false, skipping adding tags...")
+            return
+
+        self._shell_helper.logger.info("Adding Tags to Terraform Resources")
+        self._shell_helper.sandbox_messages.write_message("apply tags is true or not defined, generating tags...")
+
+        # get variables from attributes that should be mapped to TF variables
+        tf_vars = self._input_output_service.get_variables_from_var_attributes()
+        # get any additional TF variables from "Terraform Inputs" variable
+        tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
+
+        inputs_dict = dict()
+
+        # add all TF variables to command
+        for tf_var in tf_vars:
+            inputs_dict[tf_var.name] = tf_var.value
+
+        default_tags_dict: dict = self._shell_helper.default_tags.get_default_tags()
+
+        check_tag_input = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.CT_INPUTS)
+        if check_tag_input:
+            custom_tags_inputs = self._input_output_service.get_variables_from_custom_tags_attribute()
+        else:
+            custom_tags_inputs = {}
+
+        tags_dict = {**custom_tags_inputs, **default_tags_dict}
+
+        if len(tags_dict) > 50:
+            raise ValueError("AWS and Azure have a limit of 50 tags per resource, you have " + str(len(tags_dict)))
+
+        self._shell_helper.logger.info(self._tf_workingdir)
+        self._shell_helper.logger.info(tags_dict)
+
+        start_tagging_terraform_resources(self._tf_workingdir, self._shell_helper.logger, tags_dict, inputs_dict)
 
     def plan_terraform(self) -> None:
         self._shell_helper.logger.info("Running Terraform Plan")
@@ -142,7 +188,7 @@ class TfProcExec(object):
         tform_command.extend(cmd)
 
         try:
-            output = check_output(tform_command, cwd=self._tf_workingdir, stderr=STDOUT).decode('utf-8')
+            output = check_output(tform_command, shell=True, cwd=self._tf_workingdir, stderr=STDOUT).decode('utf-8')
 
             clean_output = StringCleaner.get_clean_string(output)
             if write_to_log:
@@ -183,3 +229,19 @@ class TfProcExec(object):
             status,
             description
         )
+
+    def _init_backend_config(self) -> dict:
+
+        remote_state_provider = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER)
+        if remote_state_provider:
+            backend_handler = BackendHandler(
+                self._shell_helper.logger,
+                self._shell_helper.api,
+                remote_state_provider,
+                self._tf_workingdir,
+                self._shell_helper.sandbox_id,
+                self._sb_data_handler._get_tf_uuid()
+            )
+            backend_handler.generate_backend_cfg_file()
+            return backend_handler.get_backend_secret_vars()
+        return {}

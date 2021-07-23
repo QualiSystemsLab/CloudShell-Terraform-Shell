@@ -79,7 +79,31 @@ class InputOutputService:
 
         return result
 
-    def try_decrypt_password(self, value) -> str:
+    def get_variables_from_custom_tags_attribute(self) -> dict:
+        """
+        'Custom Tags' is an optional attribute. The attribute is tests_helper_files CSV list of key=value.
+        """
+        ct_inputs_attr = f"{self._driver_helper.tf_service.cloudshell_model_name}.{ATTRIBUTE_NAMES.CT_INPUTS}"
+        ct_inputs = self._driver_helper.tf_service.attributes[ct_inputs_attr]
+        result = {}
+
+        if not ct_inputs:
+            return result
+        key_values = ct_inputs.split(",")
+
+        for item in key_values:
+            parts = item.split("=")
+            if len(parts) != 2:
+                raise ValueError("Line must be comma-separated list of key=values: key1=val1,key2=val2...")
+
+            key = parts[0].strip()
+            val = parts[1].strip()
+
+            result[key] = val
+
+        return result
+
+    def try_decrypt_password(self, value: str) -> str:
         try:
             return self._driver_helper.api.DecryptPassword(value).Value
         except:
