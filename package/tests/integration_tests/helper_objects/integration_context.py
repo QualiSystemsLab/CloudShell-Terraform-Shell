@@ -5,15 +5,6 @@ from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
 
-# from data_model import GenericTerraformService
-# from shells.generic_terraform_service.src.data_model import GenericTerraformService
-
-# from driver import GenericTerraformServiceDriver
-# from shells.generic_terraform_service.src.driver import GenericTerraformServiceDriver
-
-# from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
-# from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpdater
-# from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
 from package.tests.integration_tests.helper_objects.env_vars import EnvVars
 
 
@@ -40,6 +31,7 @@ class IntegrationData(object):
         self.context.resource = mock.MagicMock()
         self.context.resource.attributes = dict()
         self.context.resource.name = self._env_vars.sb_service_alias
+        self.context.resource.model = 'Generic Terraform Service'
         self.set_context_resource_attributes()
 
         self.context.reservation = mock.MagicMock()

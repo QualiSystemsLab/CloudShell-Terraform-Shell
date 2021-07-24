@@ -1,5 +1,4 @@
 import json
-import uuid
 
 from cloudshell.api.cloudshell_api import SandboxDataKeyValue, AttributeNameValue, GetSandboxDataInfo
 
@@ -10,26 +9,13 @@ from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 class SandboxDataHandler(object):
     def __init__(self, driver_helper_obj: ShellHelperObject, tf_working_dir: str = None):
         self._driver_helper_obj = driver_helper_obj
-        self._uuid = self._get_tf_uuid()
+        self._uuid = self._driver_helper_obj.attr_handler.get_attribute(ATTRIBUTE_NAMES.UUID)
+        if not self._ged_uuid_data_as_str():
+            self._create_tf_exec_state_data_entry(self._uuid)
         self._tf_working_dir = self._get_tf_working_dir(tf_working_dir)
 
-    def _get_tf_uuid(self) -> str:
-        # if uuid exists as attribute just return it
-        current_uuid = self._driver_helper_obj.attr_handler.get_attribute(ATTRIBUTE_NAMES.UUID)
-        if current_uuid:
-            return current_uuid
-        else:
-            # Create new uuid and set it on the the attribute
-            new_uuid = uuid.uuid4().hex
-            # self._driver_helper_obj.tf_service.uuid = new_uuid
-            attr_name = f"{self._driver_helper_obj.tf_service.cloudshell_model_name}.UUID"
-            attr_req = [AttributeNameValue(attr_name, new_uuid)]
-            self._driver_helper_obj.api.SetServiceAttributesValues(self._driver_helper_obj.sandbox_id,
-                                                                   self._driver_helper_obj.tf_service.name, attr_req)
-
-            # As uuid has just been created for the first time it also created a fresh entry of TF_EXEC_STATE_DATA
-            self._create_tf_exec_state_data_entry(new_uuid)
-            return new_uuid
+    def get_tf_uuid(self) -> str:
+        return self._uuid
 
     def _get_tf_working_dir(self, tf_working_dir: str) -> str:
         # if tf_working_dir was not provided we need to get the information from the SB DATA
@@ -85,8 +71,12 @@ class SandboxDataHandler(object):
         return uuid_sdkv_value[key]
 
     def _check_for_uuid_data(self) -> dict:
-        current_data = self._driver_helper_obj.api.GetSandboxData(self._driver_helper_obj.sandbox_id)
-        uuid_sdkv = self._get_sb_data_val_by_key(current_data, self._uuid)
-        if not self._get_sb_data_val_by_key(current_data, self._uuid):
+        uuid_sdkv = self._ged_uuid_data_as_str()
+        if not uuid_sdkv:
             raise Exception("Missing uuid data in sandbox data")
         return json.loads(uuid_sdkv)
+
+    def _ged_uuid_data_as_str(self) -> str:
+        current_data = self._driver_helper_obj.api.GetSandboxData(self._driver_helper_obj.sandbox_id)
+        uuid_sdkv = self._get_sb_data_val_by_key(current_data, self._uuid)
+        return uuid_sdkv

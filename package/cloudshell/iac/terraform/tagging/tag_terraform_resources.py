@@ -530,12 +530,12 @@ def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
     for inputkey, inputvalue in inputs_dict.items():
         inputs = inputs + f" -var {inputkey}={inputvalue}"
 
-    os.chdir(main_tf_dir_path)
+    # os.chdir(main_tf_dir_path)
 
     init_command = 'terraform.exe init -no-color'
     plan_command = f'terraform.exe plan -no-color -input=false {inputs}'
 
-    init = subprocess.Popen(init_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    init = subprocess.Popen(init_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             universal_newlines=True, shell=True)
     init_stdout, init_stderr = init.communicate()
 
@@ -543,7 +543,7 @@ def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
         return init_stdout, init_stderr, init.returncode
 
     # Save the output to a var proc_stdout
-    plan = subprocess.Popen(plan_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    plan = subprocess.Popen(plan_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             universal_newlines=True, shell=True)
     plan_stdout, plan_stderr = plan.communicate()
     return plan_stdout, plan_stderr, plan.returncode

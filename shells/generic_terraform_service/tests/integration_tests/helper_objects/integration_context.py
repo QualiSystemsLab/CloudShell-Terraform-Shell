@@ -40,6 +40,7 @@ class IntegrationData(object):
         self.context.resource = mock.MagicMock()
         self.context.resource.attributes = dict()
         self.context.resource.name = self._env_vars.sb_service_alias
+        self.context.resource.model = 'Generic Terraform Service'
         self.set_context_resource_attributes()
 
         self.context.reservation = mock.MagicMock()
