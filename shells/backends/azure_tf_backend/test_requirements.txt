@@ -7,5 +7,3 @@ jsonpickle
 nose-exclude
 mock==4.0.3
 python-dotenv==0.18.0
-azure-identity==1.6.0
-azure-storage-blob==12.8.1
