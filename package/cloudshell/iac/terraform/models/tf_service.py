@@ -15,13 +15,13 @@ class TerraformServiceObject(object):
         self._check_uuid()
 
     def _check_uuid(self):
-        if f"{self.cloudshell_model_name}.{ATTRIBUTE_NAMES.UUID}" not in self.attributes:
+        uuid_attr_name = f"{self.cloudshell_model_name}.{ATTRIBUTE_NAMES.UUID}"
+        if uuid_attr_name not in self.attributes:
             raise ValueError(f"{ATTRIBUTE_NAMES.UUID} attribute was not found")
-        if not self.attributes[f"{self.cloudshell_model_name}.{ATTRIBUTE_NAMES.UUID}"]:
+        if not self.attributes[uuid_attr_name]:
             new_uuid = uuid.uuid4().hex
-            self.attributes[ATTRIBUTE_NAMES.UUID] = new_uuid
-            attr_name = f"{self.cloudshell_model_name}.{ATTRIBUTE_NAMES.UUID}"
-            attr_req = [AttributeNameValue(attr_name, new_uuid)]
+            self.attributes[uuid_attr_name] = new_uuid
+            attr_req = [AttributeNameValue(uuid_attr_name, new_uuid)]
             self.api.SetServiceAttributesValues(self.res_id, self.name, attr_req)
 
     def _set_context_resource_attributes(self) -> dict:
