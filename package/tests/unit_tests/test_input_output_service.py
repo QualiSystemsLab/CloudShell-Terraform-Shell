@@ -1,6 +1,7 @@
 from unittest import TestCase
 from unittest.mock import Mock, MagicMock
 
+from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.services.input_output_service import InputOutputService, TFVar
 
 
@@ -34,9 +35,6 @@ class TestInputOutputService(TestCase):
         self.assertEqual(api_result.Value, result)
 
     def test_get_variables_from_var_attributes_model_name_contains_uppercase(self):
-        def return_original_val(*args, **kwargs):
-            return args[0]
-
         # arrange
         driver_helper = Mock()
         driver_helper.tf_service.cloudshell_model_name = "TF Service"
@@ -45,7 +43,7 @@ class TestInputOutputService(TestCase):
                                                "attribute2": "val2",
                                                var_name: "val3"}
         input_output_service = InputOutputService(driver_helper)
-        input_output_service.try_decrypt_password = Mock(side_effect=return_original_val)
+        input_output_service.try_decrypt_password = Mock(side_effect=TestHelper.return_original_val)
 
         # act
         result = input_output_service.get_variables_from_tfvar_attributes()
@@ -56,10 +54,14 @@ class TestInputOutputService(TestCase):
         self.assertEqual(result[0].value, "val3")
 
     def test_get_variables_from_terraform_input_attribute(self):
+        def get_tf_inputs_attribute(*args, **kwargs):
+            if args[0] == ATTRIBUTE_NAMES.TF_INPUTS:
+                return "key1=val1,key2 = val2, key3=val3"
+            return ""
+
         # arrange
         driver_helper = Mock()
-        tf_inputs_attr = f"{driver_helper.tf_service.cloudshell_model_name}.Terraform Inputs"
-        driver_helper.tf_service.attributes = {tf_inputs_attr: "key1=val1,key2 = val2, key3=val3"}
+        driver_helper.attr_handler.get_attribute.side_effect = get_tf_inputs_attribute
         input_output_service = InputOutputService(driver_helper)
 
         # act
@@ -74,7 +76,7 @@ class TestInputOutputService(TestCase):
     def test_get_variables_from_terraform_input_attribute_doesnt_exist(self):
         # arrange
         driver_helper = Mock()
-        driver_helper.tf_service.attributes = MagicMock()
+        driver_helper.attr_handler.get_attribute.return_value = ""
         input_output_service = InputOutputService(driver_helper)
 
         # act
@@ -103,11 +105,11 @@ class TestInputOutputService(TestCase):
             var_name: "val1"
         }
         json_output = {
-          "MyVar": {
-            "sensitive": False,
-            "type": "string",
-            "value": "val1"
-          }
+            "MyVar": {
+                "sensitive": False,
+                "type": "string",
+                "value": "val1"
+            }
         }
         input_output_service = InputOutputService(driver_helper)
 
@@ -191,7 +193,8 @@ class TestInputOutputService(TestCase):
 
         attribute_update_req_list = driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2]
         output_update_req = next(filter(lambda x: x.Name == tf_output_name, attribute_update_req_list))
-        sensitive_output_update_req = next(filter(lambda x: x.Name == tf_sensitive_output_name, attribute_update_req_list))
+        sensitive_output_update_req = next(
+            filter(lambda x: x.Name == tf_sensitive_output_name, attribute_update_req_list))
 
         attribute_update_req = driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0]
         self.assertEqual("MyVar2=val2", sensitive_output_update_req.Value)
@@ -221,3 +224,78 @@ class TestInputOutputService(TestCase):
 
         # assert
         driver_helper.api.SetServiceAttributesValues.assert_not_called()
+
+    def test_parse_and_save_outputs_with_explicitly_mapped_outputs(self):
+        # arrange
+        def check_2nd_gen_attribute_exist(*args, **kwargs):
+            return args[0] in driver_helper.tf_service.attributes
+
+        driver_helper = Mock()
+        driver_helper.attr_handler.check_2nd_gen_attribute_exist.side_effect = check_2nd_gen_attribute_exist
+        driver_helper.attr_handler.get_2nd_gen_attribute_full_name.side_effect = TestHelper.return_original_val
+        driver_helper.tf_service.attributes = {
+            "attribute1": "",
+            "attribute2": ""
+        }
+        json_output = {
+            "MyVar": {
+                "sensitive": False,
+                "type": "string",
+                "value": "val1"
+            }
+        }
+        outputs_map = {
+            "MyVar": "attribute1"
+        }
+        input_output_service = InputOutputService(driver_helper, outputs_map=outputs_map)
+
+        # act
+        input_output_service.parse_and_save_outputs(json_output)
+
+        # assert
+        driver_helper.api.SetServiceAttributesValues.assert_called_once()
+        self.assertEqual(driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0].Name, "attribute1")
+        self.assertEqual(driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0].Value, "val1")
+
+    def test_get_variables_from_explicitly_mapped_attributes(self):
+        # arrange
+        def attribute_exists_mock(*args, **kwargs):
+            return args[0] in attributes
+
+        def get_attribute_mock(*args, **kwargs):
+            return attributes.get(args[0], "")
+
+        attributes = {"attribute1": "val1",
+                      "attribute2": "val2",
+                      "attribute3": "val3",
+                      "attribute4": "val4"}
+        driver_helper = Mock()
+        driver_helper.attr_handler.check_attribute_exist.side_effect = attribute_exists_mock
+        driver_helper.attr_handler.get_attribute.side_effect = get_attribute_mock
+        inputs_map = {"attribute2": "tfvar1",
+                      "attribute4": "tfvar2"}
+        input_output_service = InputOutputService(driver_helper, inputs_map)
+        input_output_service.try_decrypt_password = Mock(side_effect=TestHelper.return_original_val)
+
+        # act
+        result = input_output_service.get_variables_from_explicitly_mapped_attributes()
+
+        # assert
+        self.assertIn(TFVar("tfvar1", "val2"), result)
+        self.assertIn(TFVar("tfvar2", "val4"), result)
+
+    def test_get_variables_from_explicitly_mapped_attributes_no_map(self):
+        # arrange
+        input_output_service = InputOutputService(Mock(), None)
+
+        # act
+        result = input_output_service.get_variables_from_explicitly_mapped_attributes()
+
+        # assert
+        self.assertEqual(result, [])
+
+
+class TestHelper:
+    @staticmethod
+    def return_original_val(*args, **kwargs):
+        return args[0]

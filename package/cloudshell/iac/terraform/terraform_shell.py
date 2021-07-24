@@ -109,7 +109,6 @@ class TerraformShell:
         default_tags = TagsManager(self._context.reservation)
         attr_handler = ServiceAttrHandler(self._tf_service)
 
-
         return ShellHelperObject(api, sandbox_id, self._tf_service, logger, sandbox_message_service,
                                  live_status_updater, attr_handler, default_tags)
 

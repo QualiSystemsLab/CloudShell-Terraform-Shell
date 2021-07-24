@@ -53,10 +53,7 @@ class TfProcExec(object):
         self._shell_helper.sandbox_messages.write_message("running Terraform Destroy...")
         cmd = ["destroy", "-auto-approve", "-no-color"]
 
-        # get variables from attributes that should be mapped to TF variables
-        tf_vars = self._input_output_service.get_variables_from_tfvar_attributes()
-        # get any additional TF variables from "Terraform Inputs" variable
-        tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
+        tf_vars = self._input_output_service.get_all_terrafrom_variables()
 
         # add all TF variables to command
         for tf_var in tf_vars:
@@ -84,10 +81,7 @@ class TfProcExec(object):
         self._shell_helper.logger.info("Adding Tags to Terraform Resources")
         self._shell_helper.sandbox_messages.write_message("apply tags is true or not defined, generating tags...")
 
-        # get variables from attributes that should be mapped to TF variables
-        tf_vars = self._input_output_service.get_variables_from_var_attributes()
-        # get any additional TF variables from "Terraform Inputs" variable
-        tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
+        tf_vars = self._input_output_service.get_all_terrafrom_variables()
 
         inputs_dict = dict()
 
@@ -99,7 +93,7 @@ class TfProcExec(object):
 
         check_tag_input = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.CT_INPUTS)
         if check_tag_input:
-            custom_tags_inputs = self._input_output_service.get_variables_from_custom_tags_attribute()
+            custom_tags_inputs = self._input_output_service.get_tags_from_custom_tags_attribute()
         else:
             custom_tags_inputs = {}
 
@@ -119,10 +113,7 @@ class TfProcExec(object):
 
         cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
 
-        # get variables from attributes that should be mapped to TF variables
-        tf_vars = self._input_output_service.get_variables_from_tfvar_attributes()
-        # get any additional TF variables from "Terraform Inputs" variable
-        tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
+        tf_vars = self._input_output_service.get_all_terrafrom_variables()
 
         # add all TF variables to command
         for tf_var in tf_vars:
