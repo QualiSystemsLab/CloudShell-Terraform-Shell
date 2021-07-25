@@ -1,6 +1,3 @@
-from cloudshell.api.cloudshell_api import CloudShellAPISession
-
-
 class ServiceAttrHandler(object):
     def __init__(self, tf_service: any):
         self._tf_service = tf_service

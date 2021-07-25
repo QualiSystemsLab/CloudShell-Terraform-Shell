@@ -72,13 +72,14 @@ class TerraformShell:
         # initialize a logger if logger wasn't passed during init
         with nullcontext(self._logger) if self._logger else LoggingSessionContext(self._context) as logger:
 
-            shell_model = self._create_shell_helper(logger)
-            sandbox_data_handler = SandboxDataHandler(shell_model)
+            shell_helper = self._create_shell_helper(logger)
+            sandbox_data_handler = SandboxDataHandler(shell_helper)
             tf_working_dir = sandbox_data_handler.get_tf_working_dir()
 
             if tf_working_dir:
-                ProviderHandler.initialize_provider(shell_model)
-                tf_proc_executer = TfProcExec(shell_model, sandbox_data_handler, InputOutputService(shell_model))
+                ProviderHandler.initialize_provider(shell_helper)
+                tf_proc_executer = TfProcExec(shell_helper, sandbox_data_handler, InputOutputService(shell_helper))
+
                 if tf_proc_executer.can_destroy_run():
                     tf_proc_executer.destroy_terraform()
 

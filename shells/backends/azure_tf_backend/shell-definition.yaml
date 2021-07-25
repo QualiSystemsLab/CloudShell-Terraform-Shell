@@ -32,10 +32,9 @@ node_types:
       Cloud Provider:
         description: In case Access Key has not been filled - the keys from the cloud provider will be used.
         type: string
-
-      User:
+      Resource Group:
+        description: Resource Group of the StorageAccount/Container (if Cloud Provider authentication has been filled)
         type: string
-        tags: []
 
     capabilities:
       auto_discovery_capability:
@@ -56,7 +55,10 @@ node_types:
             type: string
           Access Key:
             type: cloudshell.datatypes.Password
-
+          Cloud Provider:
+            type: string
+          Resource Group:
+            type: string
 
 
     artifacts:

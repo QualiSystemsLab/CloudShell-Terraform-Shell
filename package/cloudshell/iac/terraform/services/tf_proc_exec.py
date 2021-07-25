@@ -240,7 +240,7 @@ class TfProcExec(object):
                 remote_state_provider,
                 self._tf_workingdir,
                 self._shell_helper.sandbox_id,
-                self._sb_data_handler._get_tf_uuid()
+                self._sb_data_handler.get_tf_uuid()
             )
             backend_handler.generate_backend_cfg_file()
             return backend_handler.get_backend_secret_vars()

@@ -4,8 +4,9 @@ from cloudshell.api.cloudshell_api import CloudShellAPISession
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
+from tests.integration_tests.helper_objects.env_vars import EnvVars
 
-from package.tests.integration_tests.helper_objects.env_vars import EnvVars
+from driver import AzureTfBackendDriver
 
 
 class IntegrationData(object):
@@ -20,7 +21,7 @@ class IntegrationData(object):
         self._set_context()
         self._logger = get_qs_logger(log_group=self.context.resource.name)
 
-        # self._create_driver()
+        self._create_driver()
 
     def _set_context(self):
         self.context = mock.create_autospec(ResourceCommandContext)
@@ -30,8 +31,7 @@ class IntegrationData(object):
 
         self.context.resource = mock.MagicMock()
         self.context.resource.attributes = dict()
-        self.context.resource.name = self._env_vars.sb_service_alias
-        self.context.resource.model = 'Generic Terraform Service'
+        self.context.resource.name = self._env_vars.cs_resource
         self.set_context_resource_attributes()
 
         self.context.reservation = mock.MagicMock()
@@ -39,13 +39,9 @@ class IntegrationData(object):
         self.context.reservation.domain = self._env_vars.cs_domain
 
     def set_context_resource_attributes(self):
-        services = self.real_api.GetReservationDetails(self._env_vars.cs_res_id).ReservationDescription.Services
-        for service in services:
-            if service.Alias == self._env_vars.sb_service_alias:
-                for attribute in service.Attributes:
-                    self.context.resource.attributes[attribute.Name] = attribute.Value
-    '''
-    def _create_driver(self) :
-        self.driver = GenericTerraformServiceDriver()
+        for attribute in self.real_api.GetResourceDetails(self._env_vars.cs_resource).ResourceAttributes:
+            self.context.resource.attributes[attribute.Name] = attribute.Value
+
+    def _create_driver(self):
+        self.driver = AzureTfBackendDriver()
         self.driver.initialize(self.context)
-    '''

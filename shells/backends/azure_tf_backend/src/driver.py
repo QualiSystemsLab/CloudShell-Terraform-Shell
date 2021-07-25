@@ -1,15 +1,19 @@
 import json
 
+from azure.core.exceptions import ResourceNotFoundError, ClientAuthenticationError
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
-from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadResource, \
-    AutoLoadAttribute, AutoLoadDetails, CancellationContext
-#from data_model import *  # run 'shellfoundry generate' to generate data model classes
+from cloudshell.shell.core.driver_context import InitCommandContext, AutoLoadDetails
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
+from constants import AZURE2G_MODEL, AZURE_MODELS
 from data_model import AzureTfBackend
 
-AZURE2G_MODEL = "Microsoft Azure Cloud Provider 2G"
+from azure.storage.blob import BlobServiceClient
+
+from msrestazure.azure_active_directory import ServicePrincipalCredentials
+from azure.mgmt.storage import StorageManagementClient
+
 
 class AzureTfBackendDriver (ResourceDriverInterface):
 
@@ -17,6 +21,7 @@ class AzureTfBackendDriver (ResourceDriverInterface):
         """
         ctor must be without arguments, it is created with reflection at run time
         """
+        self._backend_secret_vars = {}
         pass
 
     def initialize(self, context):
@@ -47,108 +52,75 @@ class AzureTfBackendDriver (ResourceDriverInterface):
         # In real life, this code will be preceded by SNMP/other calls to the resource details and will not be static
         # run 'shellfoundry generate' in order to create classes that represent your data model
 
-        '''
-        resource = AzureTfBackend.create_from_context(context)
-        resource.vendor = 'specify the shell vendor'
-        resource.model = 'specify the shell model'
-
-        port1 = ResourcePort('Port 1')
-        port1.ipv4_address = '192.168.10.7'
-        resource.add_sub_resource('1', port1)
-
-        return resource.create_autoload_details()
-        '''
-        return AutoLoadDetails([], [])
-
-    # </editor-fold>
-
-    # <editor-fold desc="Orchestration Save and Restore Standard">
-    def orchestration_save(self, context, cancellation_context, mode, custom_params):
-      """
-      Saves the Shell state and returns a description of the saved artifacts and information
-      This command is intended for API use only by sandbox orchestration scripts to implement
-      a save and restore workflow
-      :param ResourceCommandContext context: the context object containing resource and reservation info
-      :param CancellationContext cancellation_context: Object to signal a request for cancellation. Must be enabled in drivermetadata.xml as well
-      :param str mode: Snapshot save mode, can be one of two values 'shallow' (default) or 'deep'
-      :param str custom_params: Set of custom parameters for the save operation
-      :return: SavedResults serialized as JSON
-      :rtype: OrchestrationSaveResult
-      """
-
-      # See below an example implementation, here we use jsonpickle for serialization,
-      # to use this sample, you'll need to add jsonpickle to your requirements.txt file
-      # The JSON schema is defined at:
-      # https://github.com/QualiSystems/sandbox_orchestration_standard/blob/master/save%20%26%20restore/saved_artifact_info.schema.json
-      # You can find more information and examples examples in the spec document at
-      # https://github.com/QualiSystems/sandbox_orchestration_standard/blob/master/save%20%26%20restore/save%20%26%20restore%20standard.md
-      '''
-            # By convention, all dates should be UTC
-            created_date = datetime.datetime.utcnow()
-
-            # This can be any unique identifier which can later be used to retrieve the artifact
-            # such as filepath etc.
-
-            # By convention, all dates should be UTC
-            created_date = datetime.datetime.utcnow()
-
-            # This can be any unique identifier which can later be used to retrieve the artifact
-            # such as filepath etc.
-            identifier = created_date.strftime('%y_%m_%d %H_%M_%S_%f')
-
-            orchestration_saved_artifact = OrchestrationSavedArtifact('REPLACE_WITH_ARTIFACT_TYPE', identifier)
-
-            saved_artifacts_info = OrchestrationSavedArtifactInfo(
-                resource_name="some_resource",
-                created_date=created_date,
-                restore_rules=OrchestrationRestoreRules(requires_same_resource=True),
-                saved_artifact=orchestration_saved_artifact)
-
-            return OrchestrationSaveResult(saved_artifacts_info)
-      '''
-      pass
-
-    def orchestration_restore(self, context, cancellation_context, saved_artifact_info, custom_params):
-        """
-        Restores a saved artifact previously saved by this Shell driver using the orchestration_save function
-        :param ResourceCommandContext context: The context object for the command with resource and reservation info
-        :param CancellationContext cancellation_context: Object to signal a request for cancellation. Must be enabled in drivermetadata.xml as well
-        :param str saved_artifact_info: A JSON string representing the state to restore including saved artifacts and info
-        :param str custom_params: Set of custom parameters for the restore operation
-        :return: None
-        """
-        '''
-        # The saved_details JSON will be defined according to the JSON Schema and is the same object returned via the
-        # orchestration save function.
-        # Example input:
-        # {
-        #     "saved_artifact": {
-        #      "artifact_type": "REPLACE_WITH_ARTIFACT_TYPE",
-        #      "identifier": "16_08_09 11_21_35_657000"
-        #     },
-        #     "resource_name": "some_resource",
-        #     "restore_rules": {
-        #      "requires_same_resource": true
-        #     },
-        #     "created_date": "2016-08-09T11:21:35.657000"
-        #    }
-
-        # The example code below just parses and prints the saved artifact identifier
-        saved_details_object = json.loads(saved_details)
-        return saved_details_object[u'saved_artifact'][u'identifier']
-        '''
-        pass
-
-    def get_backend_data(self, context, tf_state_unique_name: str):
         with LoggingSessionContext(context) as logger:
             azure_backend_resource = AzureTfBackend.create_from_context(context)
-            tf_state_file_string = f'terraform {{\n\
-\tbackend "azurerm" {{\n\
-\t\tstorage_account_name = "{azure_backend_resource.storage_account_name}"\n\
-\t\tcontainer_name       = "{azure_backend_resource.container_name}"\n\
-\t\tkey                  = "{tf_state_unique_name}"\n\
-\t}}\n\
-}}'
+            try:
+                api = CloudShellSessionContext(context).get_api()
+
+                if api.DecryptPassword(azure_backend_resource.access_key).Value:
+                    if azure_backend_resource.cloud_provider:
+                        self._handle_exception_logging(logger, "Only one method of authentication should be filled")
+                    credential = api.DecryptPassword(azure_backend_resource.access_key).Value
+                else:
+                    if azure_backend_resource.cloud_provider:
+                        clp_details = self._validate_clp(api, azure_backend_resource, logger)
+
+                        account_keys = self._get_storage_keys(api, azure_backend_resource, clp_details)
+                        if not account_keys.keys:
+                            self._handle_exception_logging(logger, f"Unable to find access key for the storage account")
+                        credential = account_keys.keys[0].value
+                    else:
+                        self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing")
+            except Exception as e:
+                self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
+
+            try:
+                self._validate_container_exists(azure_backend_resource, credential)
+            except ResourceNotFoundError:
+                self._handle_exception_logging(
+                    logger, f"Was not able to locate container referenced {azure_backend_resource.container_name}"
+                )
+            except ClientAuthenticationError as e:
+                self._handle_exception_logging(
+                    logger, "Was not able to Authenticate in order to validate azure backend storage"
+                )
+        return AutoLoadDetails([], [])
+
+    def _validate_container_exists(self, azure_backend_resource, credential):
+        blob_svc_client = BlobServiceClient(
+            account_url=f"https://{azure_backend_resource.storage_account_name}.blob.core.windows.net/",
+            credential=credential
+        )
+        blob_svc_container_client = blob_svc_client.get_container_client(azure_backend_resource.container_name)
+        # The following command will yield an exception in case container does not exist
+        blob_svc_container_client.get_container_properties()
+
+    def _get_storage_keys(self, api, azure_backend_resource, clp_details):
+        azure_model_prefix = ""
+        if clp_details.ResourceModelName == AZURE2G_MODEL:
+            azure_model_prefix = AZURE2G_MODEL + "."
+        self._fill_backend_sercret_vars_data(api, azure_model_prefix, clp_details.ResourceAttributes)
+        credentials = ServicePrincipalCredentials(
+            tenant=self._backend_secret_vars["tenant_id"],
+            client_id=self._backend_secret_vars["client_id"],
+            secret=self._backend_secret_vars["client_secret"]
+        )
+        storage_client = StorageManagementClient(
+            credentials=credentials, subscription_id=self._backend_secret_vars["subscription_id"]
+        )
+        account_keys = storage_client.storage_accounts.list_keys(
+            azure_backend_resource.resource_group, azure_backend_resource.storage_account_name
+        )
+        return account_keys
+
+    def _handle_exception_logging(self, logger, msg):
+        logger.exception(msg)
+        raise ValueError(msg)
+
+    def get_backend_data(self, context, tf_state_unique_name: str) -> str:
+        with LoggingSessionContext(context) as logger:
+            azure_backend_resource = AzureTfBackend.create_from_context(context)
+            tf_state_file_string = self._generate_state_file_string(azure_backend_resource, tf_state_unique_name)
 
             backend_data = {"tf_state_file_string": tf_state_file_string}
             try:
@@ -156,43 +128,55 @@ class AzureTfBackendDriver (ResourceDriverInterface):
 
                 if azure_backend_resource.access_key:
                     dec_access_key = api.DecryptPassword(azure_backend_resource.access_key).Value
-                    self._backend_secret_vars = {
-                        "access_key": dec_access_key
-                    }
+                    self._backend_secret_vars = {"access_key": dec_access_key}
                 else:
                     if azure_backend_resource.cloud_provider:
-                        clp_resource_name = azure_backend_resource.cloud_provider
-                        res_details = api.GetResourceDetails(clp_resource_name)
-                        clp_res_model = res_details.ResourceModelName
-                        clpr_res_fam = res_details.ResourceFamilyName
-                        clp_resource_attributes = res_details.ResourceAttributes
+                        clp_details = self._validate_clp(api, azure_backend_resource, logger)
 
-                        if clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider':
-                            logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
-                            raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
-
-                        azure_attr_name_prefix = ""
-                        if clp_res_model == AZURE2G_MODEL:
-                            azure_attr_name_prefix = AZURE2G_MODEL + "."
-                        self._backend_secret_vars = {}
-                        for attr in clp_resource_attributes:
-                            if attr.Name == azure_attr_name_prefix + "Azure Subscription ID":
-                               self._backend_secret_vars["subscription_id"] = attr.Value
-                            if attr.Name == azure_attr_name_prefix + "Azure Tenant ID":
-                                self._backend_secret_vars["tenant_id"] = attr.Value
-                            if attr.Name == azure_attr_name_prefix + "Azure Application ID":
-                                self._backend_secret_vars["client_id"] = attr.Value
-                            if attr.Name == azure_attr_name_prefix + "Azure Application Key":
-                                dec_client_secret = api.DecryptPassword(attr.Value).Value
-                                self._backend_secret_vars["client_secret"] = dec_client_secret
+                        azure_model_prefix = ""
+                        if clp_details.ResourceModelName == AZURE2G_MODEL:
+                            azure_model_prefix = AZURE2G_MODEL + "."
+                        self._fill_backend_sercret_vars_data(api, azure_model_prefix, clp_details.ResourceAttributes)
                     else:
-                        logger.exception("Inputs for Cloud Backend Access missing")
-                        raise ValueError("Inputs for Cloud Backend Access missing")
+                        self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing")
 
             except Exception as e:
-                logger.exception("Inputs for Cloud Backend Access missing or incorrect")
-                raise ValueError("Inputs for Cloud Backend Access missing or incorrect")
+                self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
 
             logger.info(f"Returning backend data for creating provider file :\n{backend_data}")
             response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
             return response
+
+    def _generate_state_file_string(self, azure_backend_resource, tf_state_unique_name):
+        tf_state_file_string = f'terraform {{\n\
+\tbackend "azurerm" {{\n\
+\t\tstorage_account_name = "{azure_backend_resource.storage_account_name}"\n\
+\t\tcontainer_name       = "{azure_backend_resource.container_name}"\n\
+\t\tkey                  = "{tf_state_unique_name}"\n\
+\t}}\n\
+}}'
+        return tf_state_file_string
+
+    def _validate_clp(self, api, azure_backend_resource, logger):
+        clp_resource_name = azure_backend_resource.cloud_provider
+        clp_details = api.GetResourceDetails(clp_resource_name)
+        clp_res_model = clp_details.ResourceModelName
+        clpr_res_fam = clp_details.ResourceFamilyName
+        if (clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider') or \
+                clp_res_model not in AZURE_MODELS:
+            logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
+            raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
+        return clp_details
+
+    def _fill_backend_sercret_vars_data(self, api, azure_model_prefix, clp_resource_attributes):
+        self._backend_secret_vars = {}
+        for attr in clp_resource_attributes:
+            if attr.Name == azure_model_prefix + "Azure Subscription ID":
+                self._backend_secret_vars["subscription_id"] = attr.Value
+            if attr.Name == azure_model_prefix + "Azure Tenant ID":
+                self._backend_secret_vars["tenant_id"] = attr.Value
+            if attr.Name == azure_model_prefix + "Azure Application ID":
+                self._backend_secret_vars["client_id"] = attr.Value
+            if attr.Name == azure_model_prefix + "Azure Application Key":
+                dec_client_secret = api.DecryptPassword(attr.Value).Value
+                self._backend_secret_vars["client_secret"] = dec_client_secret
