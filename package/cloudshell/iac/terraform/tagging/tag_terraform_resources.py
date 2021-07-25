@@ -530,8 +530,6 @@ def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
     for inputkey, inputvalue in inputs_dict.items():
         inputs = inputs + f" -var {inputkey}={inputvalue}"
 
-    # os.chdir(main_tf_dir_path)
-
     init_command = 'terraform.exe init -no-color'
     plan_command = f'terraform.exe plan -no-color -input=false {inputs}'
 

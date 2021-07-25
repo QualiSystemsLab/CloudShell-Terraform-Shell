@@ -1,11 +1,11 @@
 import uuid
 
 from cloudshell.api.cloudshell_api import CloudShellAPISession, AttributeNameValue
-
 from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
 
 
 class TerraformServiceObject(object):
+
     def __init__(self, api: CloudShellAPISession, res_id: str, name: str, cloudshell_model_name: str):
         self.api = api
         self.res_id = res_id
@@ -27,9 +27,11 @@ class TerraformServiceObject(object):
     def _set_context_resource_attributes(self) -> dict:
         attr_dict = {}
         services = self.api.GetReservationDetails(self.res_id, disableCache=True).ReservationDescription.Services
+
         for service in services:
             if self.name == service.Alias:
                 for attribute in service.Attributes:
                     attr_dict[attribute.Name] = attribute.Value
                 return attr_dict
         raise ValueError(f"Service:{self.name} was not found in order to construct data object")
+

@@ -64,10 +64,8 @@ class ATTRIBUTE_NAMES:
     REMOTE_STATE_PROVIDER = "Remote State Provider"
     GITHUB_TERRAFORM_MODULE_URL = "Github Terraform Module URL"
     TERRAFORM_VERSION = "Terraform Version"
-
-
-
     GITHUB_TOKEN = "Github Token"
+    GITHUB_URL = "Github Terraform Module URL"
     BRANCH = "Branch"
     CLOUD_PROVIDER = "Cloud Provider"
     UUID = "UUID"

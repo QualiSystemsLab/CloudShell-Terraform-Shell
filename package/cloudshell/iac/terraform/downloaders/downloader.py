@@ -10,7 +10,6 @@ class Downloader(object):
 
     def download_terraform_module(self) -> str:
         url = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GITHUB_TERRAFORM_MODULE_URL)
-
         token_enc = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GITHUB_TOKEN)
         token = self._shell_helper.api.DecryptPassword(token_enc).Value
         branch = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.BRANCH)
@@ -30,7 +29,6 @@ class Downloader(object):
                 tf_workingdir,
                 self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.TERRAFORM_VERSION)
             )
-
         except Exception as e:
             self._shell_helper.logger.error(f"Failed downloading Terraform Repo from Github {str(e)}")
             raise
