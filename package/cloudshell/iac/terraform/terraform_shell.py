@@ -11,6 +11,7 @@ from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionCo
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
 from cloudshell.iac.terraform import TerraformShellConfig
+from cloudshell.iac.terraform.constants import DESTROY_STATUS, DESTROY_PASSED, ATTRIBUTE_NAMES, DESTROY_FAILED
 from cloudshell.iac.terraform.downloaders.downloader import Downloader
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from cloudshell.iac.terraform.services.input_output_service import InputOutputService
@@ -60,7 +61,8 @@ class TerraformShell:
                 tf_proc_executer.tag_terraform()
                 tf_proc_executer.plan_terraform()
                 tf_proc_executer.apply_terraform()
-
+                if self.using_remote_state(shell_helper):
+                    self._delete_local_temp_dir(sandbox_data_handler,tf_working_dir)
                 tf_proc_executer.save_terraform_outputs()
             else:
                 err_msg = "Execution is not enabled due to either failed previous Execution (*Try Destroy first) or " \
@@ -82,24 +84,32 @@ class TerraformShell:
 
                 if tf_proc_executer.can_destroy_run():
                     tf_proc_executer.destroy_terraform()
-
-                    tf_path = Path(tf_working_dir)
-                    tmp_folder_found = False
-                    while not tmp_folder_found:
-                        objects_in_folder = os.listdir(tf_path.parent.absolute())
-                        if len(objects_in_folder) == 2:
-                            if objects_in_folder[0] == 'REPO' and objects_in_folder[1] == 'repo.zip':
-                                tmp_folder_found = True
-                        tf_path = Path(tf_path.parent.absolute())
-                    tf_path_str = str(tf_path)
-                    shutil.rmtree(tf_path_str)
-
-                    sandbox_data_handler.set_tf_working_dir("")
+                    if self.using_remote_state(shell_helper) or self.destroy_passed(sandbox_data_handler):
+                        self._delete_local_temp_dir(sandbox_data_handler, tf_working_dir)
 
                 else:
                     raise Exception("Destroy blocked because APPLY was not yet executed")
             else:
                 raise Exception("Destroy failed due to missing local directory")
+
+    def destroy_passed(self, sandbox_data_handler):
+        return sandbox_data_handler.get_status(DESTROY_STATUS) == DESTROY_PASSED
+
+    def using_remote_state(self, shell_helper) -> bool:
+        return bool(shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER))
+
+    def _delete_local_temp_dir(self, sandbox_data_handler, tf_working_dir):
+        tf_path = Path(tf_working_dir)
+        tmp_folder_found = False
+        while not tmp_folder_found:
+            objects_in_folder = os.listdir(tf_path.parent.absolute())
+            if len(objects_in_folder) == 2:
+                if objects_in_folder[0] == 'REPO' and objects_in_folder[1] == 'repo.zip':
+                    tmp_folder_found = True
+            tf_path = Path(tf_path.parent.absolute())
+        tf_path_str = str(tf_path)
+        shutil.rmtree(tf_path_str)
+        sandbox_data_handler.set_tf_working_dir("")
 
     def _create_shell_helper(self, logger: logging.Logger) -> ShellHelperObject:
         api = CloudShellSessionContext(self._context).get_api()
