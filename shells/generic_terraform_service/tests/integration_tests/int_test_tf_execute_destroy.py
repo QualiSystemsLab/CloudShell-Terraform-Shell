@@ -32,3 +32,15 @@ class TestTerraformExecuteDestroy(TestCase):
             f"{SHELL_NAME}.Github Terraform Module URL"] = os.environ.get("GITHUB_TF_PRIVATE_VAULT_URL")
 
         self.integration_data.driver.destroy_terraform(self.integration_data.context)
+
+    def test_execute_and_destroy_with_remote(self):
+        self.integration_data.context.resource.attributes[
+            f"{SHELL_NAME}.Remote State Provider"] = os.environ.get("REMOTE_STATE_PROVIDER_ACCESS_KEY")
+        self.test_execute_and_destroy()
+        self.integration_data.context.resource.attributes[
+            f"{SHELL_NAME}.Remote State Provider"] = os.environ.get("REMOTE_STATE_PROVIDER_CLOUD_CRED")
+        self.test_execute_and_destroy()
+
+    def test_execute_and_destroy_without_remote(self):
+        self.integration_data.context.resource.attributes[f"{SHELL_NAME}.Remote State Provider"] = ""
+        self.test_execute_and_destroy()

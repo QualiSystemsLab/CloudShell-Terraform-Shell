@@ -4,6 +4,7 @@
             <Command Description="" DisplayName="Orchestration Save" Name="orchestration_save" />
             <Command Description="" DisplayName="Orchestration Restore" Name="orchestration_restore" />
             <Command Description="" DisplayName="Return Backend Data" Name="get_backend_data" Tags="allow_unreserved" />
+            <Command Description="" DisplayName="Return Backend Data" Name="get_backend_data" Tags="allow_unreserved" />
         </Category>
     </Layout>
 </Driver>

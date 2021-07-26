@@ -63,7 +63,7 @@ class TerraformShell:
                 tf_proc_executer.apply_terraform()
                 tf_proc_executer.save_terraform_outputs()
                 if self._using_remote_state(shell_helper):
-                    self._delete_local_temp_dir(sandbox_data_handler,tf_working_dir)
+                    self._delete_local_temp_dir(sandbox_data_handler, tf_working_dir)
             else:
                 err_msg = "Execution is not enabled due to either failed previous Execution (*Try Destroy first) or " \
                           "Successfully executed previously without successfully destroying it first"
