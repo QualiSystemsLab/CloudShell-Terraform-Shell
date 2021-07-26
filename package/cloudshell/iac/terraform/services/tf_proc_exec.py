@@ -25,6 +25,14 @@ class TfProcExec(object):
         self._sb_data_handler = sb_data_handler
         self._input_output_service = input_output_service
         self._tf_workingdir = sb_data_handler.get_tf_working_dir()
+        self._backend_handler = BackendHandler(
+            self._shell_helper.logger,
+            self._shell_helper.api,
+            self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER),
+            self._tf_workingdir,
+            self._shell_helper.sandbox_id,
+            self._sb_data_handler.get_tf_uuid()
+        )
 
         dt = datetime.now().strftime("%d_%m_%y-%H_%M_%S")
         self._exec_output_log = _create_logger(
@@ -34,7 +42,10 @@ class TfProcExec(object):
     def init_terraform(self):
         self._shell_helper.logger.info("Performing Terraform Init")
         self._shell_helper.sandbox_messages.write_message("running Terraform Init...")
-        backend_config_vars = self._init_backend_config()
+
+        self._backend_handler.generate_backend_cfg_file()
+        backend_config_vars = self._backend_handler.get_backend_secret_vars()
+
         vars = ["init", "-no-color"]
         if backend_config_vars:
             for key in backend_config_vars.keys():
@@ -68,6 +79,7 @@ class TfProcExec(object):
             self._run_tf_proc_with_command(cmd, DESTROY)
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_PASSED)
             self._set_service_status("Offline", "Destroy Passed")
+            self._backend_handler.delete_backend_tf_state_file()
 
         except Exception as e:
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
@@ -229,19 +241,3 @@ class TfProcExec(object):
             status,
             description
         )
-
-    def _init_backend_config(self) -> dict:
-
-        remote_state_provider = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER)
-        if remote_state_provider:
-            backend_handler = BackendHandler(
-                self._shell_helper.logger,
-                self._shell_helper.api,
-                remote_state_provider,
-                self._tf_workingdir,
-                self._shell_helper.sandbox_id,
-                self._sb_data_handler.get_tf_uuid()
-            )
-            backend_handler.generate_backend_cfg_file()
-            return backend_handler.get_backend_secret_vars()
-        return {}
