@@ -61,9 +61,9 @@ class TerraformShell:
                 tf_proc_executer.tag_terraform()
                 tf_proc_executer.plan_terraform()
                 tf_proc_executer.apply_terraform()
-                if self.using_remote_state(shell_helper):
-                    self._delete_local_temp_dir(sandbox_data_handler,tf_working_dir)
                 tf_proc_executer.save_terraform_outputs()
+                if self._using_remote_state(shell_helper):
+                    self._delete_local_temp_dir(sandbox_data_handler,tf_working_dir)
             else:
                 err_msg = "Execution is not enabled due to either failed previous Execution (*Try Destroy first) or " \
                           "Successfully executed previously without successfully destroying it first"
@@ -84,7 +84,7 @@ class TerraformShell:
 
                 if tf_proc_executer.can_destroy_run():
                     tf_proc_executer.destroy_terraform()
-                    if self.using_remote_state(shell_helper) or self.destroy_passed(sandbox_data_handler):
+                    if self._using_remote_state(shell_helper) or self._destroy_passed(sandbox_data_handler):
                         self._delete_local_temp_dir(sandbox_data_handler, tf_working_dir)
 
                 else:
@@ -92,10 +92,10 @@ class TerraformShell:
             else:
                 raise Exception("Destroy failed due to missing local directory")
 
-    def destroy_passed(self, sandbox_data_handler):
+    def _destroy_passed(self, sandbox_data_handler):
         return sandbox_data_handler.get_status(DESTROY_STATUS) == DESTROY_PASSED
 
-    def using_remote_state(self, shell_helper) -> bool:
+    def _using_remote_state(self, shell_helper) -> bool:
         return bool(shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER))
 
     def _delete_local_temp_dir(self, sandbox_data_handler, tf_working_dir):
