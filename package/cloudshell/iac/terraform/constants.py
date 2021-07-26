@@ -72,3 +72,4 @@ class ATTRIBUTE_NAMES:
 
 
 GET_BACKEND_DATA_COMMAND = "get_backend_data"
+DELETE_TFSTATE_FILE_COMMAND = "delete_tfstate_file"

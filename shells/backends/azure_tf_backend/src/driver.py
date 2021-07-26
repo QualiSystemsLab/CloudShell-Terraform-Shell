@@ -52,56 +52,60 @@ class AzureTfBackendDriver (ResourceDriverInterface):
         # In real life, this code will be preceded by SNMP/other calls to the resource details and will not be static
         # run 'shellfoundry generate' in order to create classes that represent your data model
 
-        self._container_validation(context)
+        self._get_validated_blob_svc_client(context)
         return AutoLoadDetails([], [])
 
-    def _container_validation(self, context):
+    def _get_validated_blob_svc_client(self, context):
         with LoggingSessionContext(context) as logger:
             azure_backend_resource = AzureTfBackend.create_from_context(context)
-            try:
-                api = CloudShellSessionContext(context).get_api()
-                credential = self._get_cloud_credential(api, azure_backend_resource, logger)
+            credential = self._get_cloud_credential(context, azure_backend_resource, logger)
+            blob_svc_container_client = self._get_container_client(logger, azure_backend_resource, credential)
+            self._validate_container(logger, blob_svc_container_client)
+            return blob_svc_container_client
 
-            except Exception as e:
-                self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
+    def _validate_container(self, logger, blob_svc_container_client):
+        try:
+            # The following command will yield an exception in case container does not exist
+            blob_svc_container_client.get_container_properties()
+        except ClientAuthenticationError as e:
+            self._handle_exception_logging(
+                logger, "Was not able to Authenticate in order to validate azure backend storage"
+        )
 
-            try:
-                container_client = self._validate_container_exists(azure_backend_resource, credential)
-            except ResourceNotFoundError:
-                self._handle_exception_logging(
-                    logger, f"Was not able to locate container referenced {azure_backend_resource.container_name}"
-                )
-            except ClientAuthenticationError as e:
-                self._handle_exception_logging(
-                    logger, "Was not able to Authenticate in order to validate azure backend storage"
-                )
-            return container_client
-
-    def _get_cloud_credential(self, api, azure_backend_resource, logger):
-        if api.DecryptPassword(azure_backend_resource.access_key).Value:
-            if azure_backend_resource.cloud_provider:
-                self._handle_exception_logging(logger, "Only one method of authentication should be filled")
-            credential = api.DecryptPassword(azure_backend_resource.access_key).Value
-        else:
-            if azure_backend_resource.cloud_provider:
-                clp_details = self._validate_clp(api, azure_backend_resource, logger)
-
-                account_keys = self._get_storage_keys(api, azure_backend_resource, clp_details)
-                if not account_keys.keys:
-                    self._handle_exception_logging(logger, f"Unable to find access key for the storage account")
-                credential = account_keys.keys[0].value
+    def _get_cloud_credential(self, context, azure_backend_resource, logger):
+        try:
+            api = CloudShellSessionContext(context).get_api()
+            if api.DecryptPassword(azure_backend_resource.access_key).Value:
+                if azure_backend_resource.cloud_provider:
+                    self._handle_exception_logging(logger, "Only one method of authentication should be filled")
+                credential = api.DecryptPassword(azure_backend_resource.access_key).Value
             else:
-                self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing")
+                if azure_backend_resource.cloud_provider:
+                    clp_details = self._validate_clp(api, azure_backend_resource, logger)
+
+                    account_keys = self._get_storage_keys(api, azure_backend_resource, clp_details)
+                    if not account_keys.keys:
+                        self._handle_exception_logging(logger, f"Unable to find access key for the storage account")
+                    credential = account_keys.keys[0].value
+                else:
+                    self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing")
+        except Exception as e:
+            self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
         return credential
 
-    def _validate_container_exists(self, azure_backend_resource, credential):
-        blob_svc_client = BlobServiceClient(
-            account_url=f"https://{azure_backend_resource.storage_account_name}.blob.core.windows.net/",
-            credential=credential
-        )
-        blob_svc_container_client = blob_svc_client.get_container_client(azure_backend_resource.container_name)
-        # The following command will yield an exception in case container does not exist
-        blob_svc_container_client.get_container_properties()
+    def _get_container_client(self, logger, azure_backend_resource, credential):
+        try:
+            blob_svc_client = BlobServiceClient(
+                account_url=f"https://{azure_backend_resource.storage_account_name}.blob.core.windows.net/",
+                credential=credential
+            )
+            blob_svc_container_client = blob_svc_client.get_container_client(azure_backend_resource.container_name)
+            # The following command will yield an exception in case container does not exist
+            blob_svc_container_client.get_container_properties()
+        except ClientAuthenticationError as e:
+            self._handle_exception_logging(
+                logger, "Was not able to Authenticate in order to validate azure backend storage"
+            )
         return blob_svc_container_client
 
     def _get_storage_keys(self, api, azure_backend_resource, clp_details):
@@ -157,10 +161,13 @@ class AzureTfBackendDriver (ResourceDriverInterface):
             return response
 
     def delete_tfstate_file(self, context, tf_state_unique_name: str):
-        container_client = self._container_validation(context)
+        container_client = self._get_validated_blob_svc_client(context)
         blobs = list(container_client.list_blobs(name_starts_with=tf_state_unique_name))
         for blob in blobs:
-            container_client.delete_blob(blob)
+            if blob["name"] == tf_state_unique_name:
+                container_client.delete_blob(blob)
+                return
+        raise ValueError(f"{tf_state_unique_name} file was not removed from backend provider")
 
     def _generate_state_file_string(self, azure_backend_resource, tf_state_unique_name):
         tf_state_file_string = f'terraform {{\n\
