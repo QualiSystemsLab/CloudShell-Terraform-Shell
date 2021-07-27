@@ -62,8 +62,8 @@ class ATTRIBUTE_NAMES:
     CT_INPUTS = "Custom Tags"
     APPLY_TAGS = "Apply Tags"
     REMOTE_STATE_PROVIDER = "Remote State Provider"
-    TF_VERSION = "Terraform Version"
-
+    GITHUB_TERRAFORM_MODULE_URL = "Github Terraform Module URL"
+    TERRAFORM_VERSION = "Terraform Version"
     GITHUB_TOKEN = "Github Token"
     GITHUB_URL = "Github Terraform Module URL"
     BRANCH = "Branch"
