@@ -38,9 +38,10 @@ class InputOutputService:
         # find all attributes that end with "_tfvar"
         for attribute_name in self._driver_helper.tf_service.attributes:
             # add tf variable specific attributes to result
-            if m := re.match(self._var_postfix_regex, attribute_name):
+            m = re.match(self._var_postfix_regex, attribute_name)
+            if m:
                 # remove the prefix to get the TF variable name
-                value = self._driver_helper.tf_service.attributes[attribute_name]
+                value = self._driver_helper.attr_handler.get_attribute(attribute_name)
                 tf_var_value = self.try_decrypt_password(value)
                 tf_var_name = m.group(1)
 

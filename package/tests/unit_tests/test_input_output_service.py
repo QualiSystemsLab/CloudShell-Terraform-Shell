@@ -35,6 +35,9 @@ class TestInputOutputService(TestCase):
         self.assertEqual(api_result.Value, result)
 
     def test_get_variables_from_var_attributes_model_name_contains_uppercase(self):
+        def get_attribute_mock(*args, **kwargs):
+            return driver_helper.tf_service.attributes.get(args[0], "")
+
         # arrange
         driver_helper = Mock()
         driver_helper.tf_service.cloudshell_model_name = "TF Service"
@@ -42,6 +45,8 @@ class TestInputOutputService(TestCase):
         driver_helper.tf_service.attributes = {"attribute1": "val1",
                                                "attribute2": "val2",
                                                var_name: "val3"}
+        driver_helper.attr_handler.get_attribute.side_effect = get_attribute_mock
+
         input_output_service = InputOutputService(driver_helper)
         input_output_service.try_decrypt_password = Mock(side_effect=TestHelper.return_original_val)
 

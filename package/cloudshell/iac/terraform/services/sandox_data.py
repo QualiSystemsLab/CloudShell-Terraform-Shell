@@ -10,10 +10,10 @@ from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 class SandboxDataHandler(object):
     def __init__(self, driver_helper_obj: ShellHelperObject, tf_working_dir: str = None):
         self._driver_helper_obj = driver_helper_obj
-        self._uuid = self._get_tf_uuid()
+        self._uuid = self.get_tf_uuid()
         self._tf_working_dir = self._get_tf_working_dir(tf_working_dir)
 
-    def _get_tf_uuid(self) -> str:
+    def get_tf_uuid(self) -> str:
         # if uuid exists as attribute just return it
         current_uuid = self._driver_helper_obj.attr_handler.get_attribute(ATTRIBUTE_NAMES.UUID)
         if current_uuid:
