@@ -9,7 +9,7 @@ from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 class SandboxDataHandler(object):
     def __init__(self, driver_helper_obj: ShellHelperObject, tf_working_dir: str = None):
         self._driver_helper_obj = driver_helper_obj
-1        self._uuid = self._driver_helper_obj.attr_handler.get_attribute(ATTRIBUTE_NAMES.UUID)
+        self._uuid = self._driver_helper_obj.attr_handler.get_attribute(ATTRIBUTE_NAMES.UUID)
         if not self._ged_uuid_data_as_str():
             self._create_tf_exec_state_data_entry(self._uuid)
         self._tf_working_dir = self._get_tf_working_dir(tf_working_dir)
