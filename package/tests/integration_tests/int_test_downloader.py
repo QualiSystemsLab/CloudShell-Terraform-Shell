@@ -33,11 +33,8 @@ class TestTerraformDownloader(TestCase):
             self.integration_data.context.reservation.reservation_id,
             False
         )
-        attr_handler = ServiceAttrHandler(self.integration_data.real_api,
-                                          self.integration_data.context.reservation.reservation_id, service_resource)
-        default_tags = TagsManager(self.integration_data.context.reservation)
 
-        attr_handler = ServiceAttrHandler(self.integration_data.real_api)
+        default_tags = TagsManager(self.integration_data.context.reservation)
 
         attr_handler = ServiceAttrHandler(service_resource)
 
@@ -48,7 +45,8 @@ class TestTerraformDownloader(TestCase):
             self.integration_data._logger,
             sandbox_messages,
             live_status_updater,
-            attr_handler
+            attr_handler,
+            default_tags
         )
 
     def _test_download_terraform_module(self, url: str):

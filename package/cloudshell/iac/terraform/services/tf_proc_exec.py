@@ -20,19 +20,13 @@ from cloudshell.iac.terraform.tagging.tag_terraform_resources import start_taggi
 
 class TfProcExec(object):
     def __init__(self, shell_helper: ShellHelperObject, sb_data_handler: SandboxDataHandler,
-                 input_output_service: InputOutputService):
+                 backend_handler: BackendHandler, input_output_service: InputOutputService):
         self._shell_helper = shell_helper
         self._sb_data_handler = sb_data_handler
+        self._backend_handler = backend_handler
         self._input_output_service = input_output_service
         self._tf_workingdir = sb_data_handler.get_tf_working_dir()
-        self._backend_handler = BackendHandler(
-            self._shell_helper.logger,
-            self._shell_helper.api,
-            self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER),
-            self._tf_workingdir,
-            self._shell_helper.sandbox_id,
-            self._sb_data_handler.get_tf_uuid()
-        )
+
 
         dt = datetime.now().strftime("%d_%m_%y-%H_%M_%S")
         self._exec_output_log = _create_logger(
