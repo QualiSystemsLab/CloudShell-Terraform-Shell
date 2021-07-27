@@ -12,7 +12,6 @@ imports:
   - cloudshell_standard: cloudshell_custom_service_standard_1_0_0.yaml
 
 node_types:
-  # todo: change the service name "generic_terraform_service"
   vendor.resource.Generic Terraform Service:
     derived_from: cloudshell.nodes.CustomService
     properties:
@@ -70,15 +69,15 @@ node_types:
         default: [ Infra As Code ]
 
       # Terraform module variables mapping
-      # attributes that start with "var_" prefix will be mapped to Terraform variables automatically
-#      var_MY_VAR:
+      # attributes that end with "_tfvar" postfix will be mapped to Terraform variables automatically
+#      MY_VAR_tfvar:
 #        description:
 #        type: string
 #        tags: [ user_input ]
 
       # Terraform module outputs mapping
-      # attributes that start with "out_" prefix will be mapped to Terraform outputs automatically
-#      out_MY_OUTPUT:
+      # attributes that end with "_tfout" postfix will be mapped to Terraform outputs automatically
+#      MY_OUTPUT_tfvar:
 #        description:
 #        type: string
 #        tags: [ user_input ]
