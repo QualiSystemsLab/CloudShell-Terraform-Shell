@@ -66,6 +66,7 @@ class TfProcExec(object):
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_PASSED)
             self._set_service_status("Offline", "Destroy Passed")
 
+
         except Exception as e:
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
             self._set_service_status("Error", "Destroy Failed")
