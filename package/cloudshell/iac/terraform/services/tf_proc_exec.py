@@ -24,7 +24,7 @@ class TfProcExec(object):
         self._shell_helper = shell_helper
         self._sb_data_handler = sb_data_handler
         self._input_output_service = input_output_service
-        self._tf_workingdir = sb_data_handler.get_tf_working_dir()
+        self._tf_working_dir = sb_data_handler.get_tf_working_dir()
 
         dt = datetime.now().strftime("%d_%m_%y-%H_%M_%S")
         self._exec_output_log = _create_logger(
@@ -103,10 +103,10 @@ class TfProcExec(object):
         if len(tags_dict) > 50:
             raise ValueError("AWS and Azure have a limit of 50 tags per resource, you have " + str(len(tags_dict)))
 
-        self._shell_helper.logger.info(self._tf_workingdir)
+        self._shell_helper.logger.info(self._tf_working_dir)
         self._shell_helper.logger.info(tags_dict)
 
-        start_tagging_terraform_resources(self._tf_workingdir, self._shell_helper.logger, tags_dict, inputs_dict)
+        start_tagging_terraform_resources(self._tf_working_dir, self._shell_helper.logger, tags_dict, inputs_dict)
 
     def plan_terraform(self) -> None:
         self._shell_helper.logger.info("Running Terraform Plan")
@@ -176,11 +176,12 @@ class TfProcExec(object):
         return True
 
     def _run_tf_proc_with_command(self, cmd: list, command: str, write_to_log: bool = True) -> str:
-        tform_command = [f"{os.path.join(self._tf_workingdir, 'terraform.exe')}"]
+        tform_command = [f"{os.path.join(self._tf_working_dir, 'terraform.exe')}"]
         tform_command.extend(cmd)
 
         try:
-            output = check_output(tform_command, shell=True, cwd=self._tf_workingdir, stderr=STDOUT).decode('utf-8')
+            # output = check_output(tform_command, shell=True, cwd=self._tf_workingdir, stderr=STDOUT).decode('utf-8')
+            output = check_output(tform_command, shell=True, cwd=self._tf_working_dir, stderr=STDOUT).decode('utf-8')
 
             clean_output = StringCleaner.get_clean_string(output)
             if write_to_log:
@@ -230,7 +231,7 @@ class TfProcExec(object):
                 self._shell_helper.logger,
                 self._shell_helper.api,
                 remote_state_provider,
-                self._tf_workingdir,
+                self._tf_working_dir,
                 self._shell_helper.sandbox_id,
                 self._sb_data_handler.get_tf_uuid()
             )
