@@ -23,40 +23,46 @@ class TestTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Test Cases ---------------------------------'''
 
+    def test_execute_and_destroy(self):
+        self.run_execute_and_destroy(
+            pre_exec_function=self.pre_exec,
+            pre_destroy_function=self.pre_destroy
+        )
+
     def test_execute_and_destroy_azure_vault(self):
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault,
-            pre_destroy_function=self.pre_destroy_azure_vault
+            pre_destroy_function=self.pre_destroy
         )
 
     def test_execute_and_destroy_azure_vault_with_remote_access_key_based(self):
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault_with_remote_access_key_based,
-            pre_destroy_function=self.pre_destroy_azure_vault
+            pre_destroy_function=self.pre_destroy
         )
 
     def test_execute_and_destroy_azure_vault_with_remote_access_cloud_cred_based(self):
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault_with_remote_cloud_cred_based,
-            pre_destroy_function=self.pre_destroy_azure_vault
+            pre_destroy_function=self.pre_destroy
         )
 
     def test_execute_and_destroy_azure_vault_with_remote_invalid_nonexistent(self):
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault_with_remote_invalid_nonexistent,
-            pre_destroy_function=self.pre_destroy_azure_vault
+            pre_destroy_function=self.pre_destroy
         )
 
     def test_execute_and_destroy_azure_vault_with_remote_invalid_wrong(self):
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault_with_remote_invalid_wrong,
-            pre_destroy_function=self.pre_destroy_azure_vault
+            pre_destroy_function=self.pre_destroy
         )
 
     def test_execute_and_destroy_azure_vault_without_remote(self):
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault_without_remote,
-            pre_destroy_function=self.pre_destroy_azure_vault
+            pre_destroy_function=self.pre_destroy
         )
 
     '''------------------------------ Functions : general _pre prep functions ---------------------------------'''
@@ -69,6 +75,9 @@ class TestTerraformExecuteDestroy(TestCase):
         pre_destroy_function()
 
     '''------------------------------ Functions : prep before exec -------------------------------------------'''
+
+    def pre_exec(self):
+        pass
 
     def pre_exec_azure_vault(self):
         self._set_attribute_on_service(
@@ -149,7 +158,7 @@ class TestTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Functions : prep before destroy -----------------------------------------'''
 
-    def pre_destroy_azure_vault(self):
+    def pre_destroy(self):
         # As UUID has been created and SB data now contains UUID and Status we must update context so destroy can run
         self.integration_data.set_context_resource_attributes(f"{SHELL_NAME}.UUID")
 
