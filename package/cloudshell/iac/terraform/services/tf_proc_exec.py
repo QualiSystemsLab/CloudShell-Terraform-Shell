@@ -185,7 +185,7 @@ class TfProcExec(object):
         tform_command.extend(cmd)
 
         try:
-            output = check_output(tform_command, shell=True, cwd=self._tf_working_dir, stderr=STDOUT).decode('utf-8')
+            output = check_output(tform_command, cwd=self._tf_working_dir, stderr=STDOUT).decode('utf-8')
 
             clean_output = StringCleaner.get_clean_string(output)
             if write_to_log:

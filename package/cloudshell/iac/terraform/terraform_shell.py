@@ -40,17 +40,7 @@ class TerraformShell:
         with nullcontext(self._logger) if self._logger else LoggingSessionContext(self._context) as logger:
             shell_helper = self._create_shell_helper(logger)
             sandbox_data_handler = SandboxDataHandler(shell_helper)
-            tf_working_dir = sandbox_data_handler.get_tf_working_dir()
-
-            if not self._does_working_dir_exists(tf_working_dir):
-                # working dir doesnt exist - need to download repo and tf exec
-                downloader = Downloader(shell_helper)
-                tf_working_dir = downloader.download_terraform_module()
-
-                downloader.download_terraform_executable(tf_working_dir)
-                sandbox_data_handler.set_tf_working_dir(tf_working_dir)
-            else:
-                logger.info(f"Using existing working dir = {tf_working_dir}")
+            tf_working_dir = self._prepare_tf_working_dir(logger, sandbox_data_handler, shell_helper)
 
             backend_handler = BackendHandler(shell_helper, tf_working_dir, sandbox_data_handler.get_tf_uuid())
             tf_proc_executer = TfProcExec(shell_helper,
@@ -73,23 +63,43 @@ class TerraformShell:
                 shell_helper.sandbox_messages.write_message(err_msg)
                 raise Exception(err_msg)
 
+    def _prepare_tf_working_dir(self, logger, sandbox_data_handler, shell_helper):
+        tf_working_dir = sandbox_data_handler.get_tf_working_dir()
+        if not self._does_working_dir_exists(tf_working_dir):
+            # working dir doesnt exist - need to download repo and tf exec
+            downloader = Downloader(shell_helper)
+            tf_working_dir = downloader.download_terraform_module()
+
+            downloader.download_terraform_executable(tf_working_dir)
+            sandbox_data_handler.set_tf_working_dir(tf_working_dir)
+        else:
+            logger.info(f"Using existing working dir = {tf_working_dir}")
+        return tf_working_dir
+
     def destroy_terraform(self):
         # initialize a logger if logger wasn't passed during init
         with nullcontext(self._logger) if self._logger else LoggingSessionContext(self._context) as logger:
 
             shell_helper = self._create_shell_helper(logger)
             sandbox_data_handler = SandboxDataHandler(shell_helper)
-            tf_working_dir = sandbox_data_handler.get_tf_working_dir()
+
+            if not shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER) and \
+                not (self._does_working_dir_exists(sandbox_data_handler.get_tf_working_dir())):
+                    raise ValueError(f"Missing local folder {sandbox_data_handler.get_tf_working_dir()}")
+
+            tf_working_dir = self._prepare_tf_working_dir(logger, sandbox_data_handler, shell_helper)
+            backend_handler = BackendHandler(shell_helper, tf_working_dir, sandbox_data_handler.get_tf_uuid())
 
             if tf_working_dir:
                 ProviderHandler.initialize_provider(shell_helper)
-                backend_handler = BackendHandler(shell_helper, tf_working_dir, sandbox_data_handler.get_tf_uuid())
+
                 tf_proc_executer = TfProcExec(shell_helper,
                                               sandbox_data_handler,
                                               backend_handler,
                                               InputOutputService(shell_helper))
 
                 if tf_proc_executer.can_destroy_run():
+                    tf_proc_executer.init_terraform()
                     tf_proc_executer.destroy_terraform()
                     if self._using_remote_state(shell_helper) or self._destroy_passed(sandbox_data_handler):
                         self._delete_local_temp_dir(sandbox_data_handler, tf_working_dir)
