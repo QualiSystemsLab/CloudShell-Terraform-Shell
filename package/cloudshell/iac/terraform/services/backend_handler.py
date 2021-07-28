@@ -39,15 +39,20 @@ class BackendHandler(object):
     def generate_backend_cfg_file(self):
         if self.backend_exists:
             params = [InputNameValue("tf_state_unique_name", f"{self._reservation_id}_{self._uuid}.tf.state")]
+            try:
+                backend_data = self._shell_helper.api.ExecuteCommand(
+                    self._reservation_id,
+                    self._backend_resource,
+                    "Resource",
+                    GET_BACKEND_DATA_COMMAND,
+                    params,
+                    False
+                )
+            except Exception as e:
+                msg = f"Was not able to generate remote tf state file : {str(e)}"
+                self._shell_helper.logger.exception(msg)
+                raise ValueError(msg)
 
-            backend_data = self._shell_helper.api.ExecuteCommand(
-                self._reservation_id,
-                self._backend_resource,
-                "Resource",
-                GET_BACKEND_DATA_COMMAND,
-                params,
-                False
-            )
             backend_data_json = json.loads(backend_data.Output)
 
             with open(os.path.join(self._working_dir, "backend.tf"), "w") as backend_file:
