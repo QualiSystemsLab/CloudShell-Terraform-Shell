@@ -27,6 +27,7 @@ class BackendHandler(object):
             self._uuid = uuid
             self._backend_secret_vars = {}
             self.backend_exists = bool(backend_resource)
+            # If the resource was referenced but not exists it would yield an Exception
             if self.backend_exists:
                 shell_helper.api.GetResourceDetails(backend_resource)
 
