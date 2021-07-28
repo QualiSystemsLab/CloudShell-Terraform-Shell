@@ -58,6 +58,6 @@ class IntegrationData(object):
                     elif not the_only_attribute_to_update:
                         self.context.resource.attributes[attribute.Name] = attribute.Value
 
-    def _create_driver(self) :
+    def _create_driver(self):
         self.driver = GenericTerraformServiceDriver()
         self.driver.initialize(self.context)
