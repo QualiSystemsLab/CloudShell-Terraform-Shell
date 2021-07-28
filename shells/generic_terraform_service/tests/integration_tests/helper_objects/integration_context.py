@@ -52,7 +52,7 @@ class IntegrationData(object):
         for service in services:
             if service.Alias == self._env_vars.sb_service_alias:
                 for attribute in service.Attributes:
-                    if the_only_attribute_to_update and attribute.Name == attribute.Name:
+                    if the_only_attribute_to_update and attribute.Name == the_only_attribute_to_update:
                         self.context.resource.attributes[attribute.Name] = attribute.Value
                         return
                     elif not the_only_attribute_to_update:

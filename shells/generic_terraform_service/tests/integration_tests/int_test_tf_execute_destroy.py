@@ -12,7 +12,7 @@ class TestTerraformExecuteDestroy(TestCase):
     def setUp(self) -> None:
         self.integration_data = IntegrationData()
 
-    def test_execute_and_destroy(self, pre_exec_function: function, pre_destroy_function: function):
+    def run_execute_and_destroy(self, pre_exec_function: function, pre_destroy_function: function):
 
         self.pre_exec_prep(pre_exec_function)
         self.integration_data.driver.execute_terraform(self.integration_data.context)
@@ -23,19 +23,19 @@ class TestTerraformExecuteDestroy(TestCase):
     '''------------------------------ Test Cases ---------------------------------'''
 
     def test_execute_and_destroy_azure_vault(self):
-        self.test_execute_and_destroy(
+        self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault,
             pre_destroy_function=self.pre_destroy_azure_vault
         )
 
     def test_execute_and_destroy_azure_vault_with_remote(self):
-        self.test_execute_and_destroy(
+        self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault_with_remote,
             pre_destroy_function=self.pre_destroy_azure_vault
         )
 
     def test_execute_and_destroy_azure_vault_without_remote(self):
-        self.test_execute_and_destroy(
+        self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault_without_remote,
             pre_destroy_function=self.pre_destroy_azure_vault
         )
