@@ -7,7 +7,7 @@ class LiveStatusUpdater:
         self._sandbox_id = sandbox_id
         self._update_live_status = update_live_status
 
-    def set_service_live_status(self, service_name: str, status: str, description: str):
+    def set_service_live_status(self, service_name: str, status: str, description: str) -> None:
         if self._update_live_status:
             self._api.SetServiceLiveStatus(
                 self._sandbox_id,

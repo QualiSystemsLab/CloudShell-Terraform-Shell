@@ -72,7 +72,6 @@ class TfProcExec(object):
             self._set_service_status("Offline", "Destroy Passed")
             self._backend_handler.delete_backend_tf_state_file()
 
-
         except Exception as e:
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
             self._set_service_status("Error", "Destroy Failed")
@@ -82,11 +81,11 @@ class TfProcExec(object):
         apply = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.APPLY_TAGS)
         if apply and not strtobool(apply):
             self._shell_helper.logger.info("Skipping Adding Tags to Terraform Resources")
-            self._shell_helper.sandbox_messages.write_message("apply tags is false, skipping adding tags...")
+            self._shell_helper.sandbox_messages.write_message("skipping adding tags...")
             return
 
         self._shell_helper.logger.info("Adding Tags to Terraform Resources")
-        self._shell_helper.sandbox_messages.write_message("apply tags is true or not defined, generating tags...")
+        self._shell_helper.sandbox_messages.write_message("generating tags...")
 
         tf_vars = self._input_output_service.get_all_terrafrom_variables()
 

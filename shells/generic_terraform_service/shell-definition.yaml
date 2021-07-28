@@ -16,7 +16,7 @@ node_types:
     derived_from: cloudshell.nodes.CustomService
     properties:
       Github Terraform Module URL:
-        description: "Github url to the Terraform module. Supports the same URL format from a browser. The entire repo will be downloaded. Url to a folder: https://github.com/<ACCOUNT>/<REPO>/tree/<BRANCH>/<PATH_TO_FOLDER> or url to a TF file: https://github.com/<ACCOUNT>/<REPO>/blob/<BRANCH>/<PATH>/filename.tf"
+        description: "Github url to the Terraform module. Supports the same URL format from a browser. The entire repo will be downloaded. Url to a folder: https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH_TO_FOLDER or url to a TF file: https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH/filename.tf"
         type: string
         tags: [ user_input ]
       Terraform Version:
