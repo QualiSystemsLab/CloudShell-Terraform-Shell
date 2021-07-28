@@ -534,7 +534,7 @@ def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
     plan_command = f'terraform.exe plan -no-color -input=false {inputs}'
 
     init = subprocess.Popen(init_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            universal_newlines=True, shell=True)
+                            universal_newlines=True)
     init_stdout, init_stderr = init.communicate()
 
     if init_stderr:
@@ -542,8 +542,9 @@ def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
 
     # Save the output to a var proc_stdout
     plan = subprocess.Popen(plan_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            universal_newlines=True, shell=True)
+                            universal_newlines=True)
     plan_stdout, plan_stderr = plan.communicate()
+    plan_stdout = ""
     return plan_stdout, plan_stderr, plan.returncode
 
 
@@ -634,6 +635,7 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
             # If it's still not pass that we probably did something wrong and we need to exit with error
             LoggerHelper.write_info(f"Trying to preform one final terraform init & plan in the directory '{tfs_folder_path}'"
                                     " in order to check for any validation errors in the new override files")
+
             stdout, stderr, return_code = _perform_terraform_init_plan(tfs_folder_path, inputs_dict)
             if return_code != 0 or stderr:
                 LoggerHelper.write_error("Errors were found in the last validation check:"

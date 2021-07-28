@@ -199,11 +199,12 @@ class TfProcExec(object):
             )
             if command in ALLOWED_LOGGING_CMDS:
                 self._write_to_exec_log(command, clean_output, ERROR_LOG_LEVEL)
-            raise TerraformExecutionError("Error during Terraform Plan. For more information please look at the logs.",
+            raise TerraformExecutionError(f"Error during Terraform {command}. "
+                                          f"For more information please look at the logs.",
                                           clean_output)
         except Exception as e:
             clean_output = StringCleaner.get_clean_string(str(e))
-            self._shell_helper.logger.error(f"Error Running Terraform plan {clean_output}")
+            self._shell_helper.logger.error(f"Error Running Terraform {command} {clean_output}")
             raise TerraformExecutionError("Error during Terraform Plan. For more information please look at the logs.")
 
     def _write_to_exec_log(self, command: str, log_data: str, log_level: int) -> None:
