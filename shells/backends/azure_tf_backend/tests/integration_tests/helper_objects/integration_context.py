@@ -39,7 +39,7 @@ class IntegrationData(object):
         self.context.reservation.domain = self._env_vars.cs_domain
 
     def set_context_resource_attributes(self):
-        for attribute in self.real_api.GetResourceDetails(self._env_vars.cs_resource).ResourceAttributes:
+        for attribute in self.real_api.GetResourceDetails(self.context.resource.name).ResourceAttributes:
             self.context.resource.attributes[attribute.Name] = attribute.Value
 
     def _create_driver(self):

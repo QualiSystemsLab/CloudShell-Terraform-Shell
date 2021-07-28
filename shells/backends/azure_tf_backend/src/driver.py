@@ -139,9 +139,9 @@ class AzureTfBackendDriver (ResourceDriverInterface):
             try:
                 api = CloudShellSessionContext(context).get_api()
 
-                if azure_backend_resource.access_key:
+                if api.DecryptPassword(azure_backend_resource.access_key).Value != '':
                     dec_access_key = api.DecryptPassword(azure_backend_resource.access_key).Value
-                    self._backend_secret_vars = {"access_key": dec_access_key}
+                    # self._backend_secret_vars = {"access_key": dec_access_key}
                 else:
                     if azure_backend_resource.cloud_provider:
                         clp_details = self._validate_clp(api, azure_backend_resource, logger)
@@ -149,9 +149,12 @@ class AzureTfBackendDriver (ResourceDriverInterface):
                         azure_model_prefix = ""
                         if clp_details.ResourceModelName == AZURE2G_MODEL:
                             azure_model_prefix = AZURE2G_MODEL + "."
+                        # self._backend_secret_vars = {"access_key": self._get_cloud_credential()}
                         self._fill_backend_sercret_vars_data(api, azure_model_prefix, clp_details.ResourceAttributes)
                     else:
                         self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing")
+                self._backend_secret_vars = \
+                    {"access_key": self._get_cloud_credential(context, azure_backend_resource, logger)}
 
             except Exception as e:
                 self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
