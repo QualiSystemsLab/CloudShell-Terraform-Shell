@@ -19,14 +19,16 @@ class BackendHandler(object):
         self._backend_resource = ""
         try:
             backend_resource = shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER)
-            if shell_helper.api.GetResourceDetails(backend_resource):
-                self._shell_helper = shell_helper
-                self._working_dir = working_dir
-                self._reservation_id = shell_helper.sandbox_id
-                self._backend_resource = backend_resource
-                self._uuid = uuid
-                self._backend_secret_vars = {}
-                self.backend_exists = bool(backend_resource)
+
+            self._shell_helper = shell_helper
+            self._working_dir = working_dir
+            self._reservation_id = shell_helper.sandbox_id
+            self._backend_resource = backend_resource
+            self._uuid = uuid
+            self._backend_secret_vars = {}
+            self.backend_exists = bool(backend_resource)
+            if self.backend_exists:
+                shell_helper.api.GetResourceDetails(backend_resource)
 
         except Exception as e:
             msg = f"Backend provider specified:[{self._backend_resource}] was not found in the inventory"
