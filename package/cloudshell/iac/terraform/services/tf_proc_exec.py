@@ -47,7 +47,7 @@ class TfProcExec(object):
         try:
             self._set_service_status("Progress 10", "Executing Terraform Init...")
             self._run_tf_proc_with_command(vars, INIT)
-            self._set_service_status("Progress 30", "Init Passed")
+            self._set_service_status("Progress 20", "Init Passed")
         except Exception as e:
             self._sb_data_handler.set_status(EXECUTE_STATUS, INIT_FAILED)
             self._set_service_status("Error", "Init Failed")
@@ -78,40 +78,46 @@ class TfProcExec(object):
             raise
 
     def tag_terraform(self) -> None:
-        apply = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.APPLY_TAGS)
-        if apply and not strtobool(apply):
-            self._shell_helper.logger.info("Skipping Adding Tags to Terraform Resources")
-            self._shell_helper.sandbox_messages.write_message("skipping adding tags...")
-            return
+        try:
+            self._set_service_status("Progress 25", "Performing tagging...")
+            apply = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.APPLY_TAGS)
+            if apply and not strtobool(apply):
+                self._shell_helper.logger.info("Skipping Adding Tags to Terraform Resources")
+                self._shell_helper.sandbox_messages.write_message("skipping adding tags...")
+                return
 
-        self._shell_helper.logger.info("Adding Tags to Terraform Resources")
-        self._shell_helper.sandbox_messages.write_message("generating tags...")
+            self._shell_helper.logger.info("Adding Tags to Terraform Resources")
+            self._shell_helper.sandbox_messages.write_message("generating tags...")
 
-        tf_vars = self._input_output_service.get_all_terrafrom_variables()
+            tf_vars = self._input_output_service.get_all_terrafrom_variables()
 
-        inputs_dict = dict()
+            inputs_dict = dict()
 
-        # add all TF variables to command
-        for tf_var in tf_vars:
-            inputs_dict[tf_var.name] = tf_var.value
+            # add all TF variables to command
+            for tf_var in tf_vars:
+                inputs_dict[tf_var.name] = tf_var.value
 
-        default_tags_dict: dict = self._shell_helper.default_tags.get_default_tags()
+            default_tags_dict: dict = self._shell_helper.default_tags.get_default_tags()
 
-        check_tag_input = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.CT_INPUTS)
-        if check_tag_input:
-            custom_tags_inputs = self._input_output_service.get_tags_from_custom_tags_attribute()
-        else:
-            custom_tags_inputs = {}
+            check_tag_input = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.CT_INPUTS)
+            if check_tag_input:
+                custom_tags_inputs = self._input_output_service.get_tags_from_custom_tags_attribute()
+            else:
+                custom_tags_inputs = {}
 
-        tags_dict = {**custom_tags_inputs, **default_tags_dict}
+            tags_dict = {**custom_tags_inputs, **default_tags_dict}
 
-        if len(tags_dict) > 50:
-            raise ValueError("AWS and Azure have a limit of 50 tags per resource, you have " + str(len(tags_dict)))
+            if len(tags_dict) > 50:
+                raise ValueError("AWS and Azure have a limit of 50 tags per resource, you have " + str(len(tags_dict)))
 
-        self._shell_helper.logger.info(self._tf_working_dir)
-        self._shell_helper.logger.info(tags_dict)
+            self._shell_helper.logger.info(self._tf_working_dir)
+            self._shell_helper.logger.info(tags_dict)
 
-        start_tagging_terraform_resources(self._tf_working_dir, self._shell_helper.logger, tags_dict, inputs_dict)
+            start_tagging_terraform_resources(self._tf_working_dir, self._shell_helper.logger, tags_dict, inputs_dict)
+            self._set_service_status("Progress 30", "Tagging Passed")
+        except Exception:
+            self._set_service_status("Error", "Tagging Failed")
+            raise
 
     def plan_terraform(self) -> None:
         self._shell_helper.logger.info("Running Terraform Plan")
