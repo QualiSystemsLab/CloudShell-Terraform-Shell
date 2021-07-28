@@ -14,6 +14,7 @@ from cloudshell.iac.terraform import TerraformShellConfig
 from cloudshell.iac.terraform.constants import DESTROY_STATUS, DESTROY_PASSED, ATTRIBUTE_NAMES, DESTROY_FAILED
 from cloudshell.iac.terraform.downloaders.downloader import Downloader
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
+from cloudshell.iac.terraform.services.backend_handler import BackendHandler
 from cloudshell.iac.terraform.services.input_output_service import InputOutputService
 from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpdater
 from cloudshell.iac.terraform.services.provider_handler import ProviderHandler
@@ -44,15 +45,17 @@ class TerraformShell:
             if not self._does_working_dir_exists(tf_working_dir):
                 # working dir doesnt exist - need to download repo and tf exec
                 downloader = Downloader(shell_helper)
-                tf_workingdir = downloader.download_terraform_module()
+                tf_working_dir = downloader.download_terraform_module()
 
-                downloader.download_terraform_executable(tf_workingdir)
-                sandbox_data_handler.set_tf_working_dir(tf_workingdir)
+                downloader.download_terraform_executable(tf_working_dir)
+                sandbox_data_handler.set_tf_working_dir(tf_working_dir)
             else:
                 logger.info(f"Using existing working dir = {tf_working_dir}")
 
+            backend_handler = BackendHandler(shell_helper, tf_working_dir, sandbox_data_handler.get_tf_uuid())
             tf_proc_executer = TfProcExec(shell_helper,
                                           sandbox_data_handler,
+                                          backend_handler,
                                           InputOutputService(shell_helper))
 
             if tf_proc_executer.can_execute_run():
@@ -80,7 +83,11 @@ class TerraformShell:
 
             if tf_working_dir:
                 ProviderHandler.initialize_provider(shell_helper)
-                tf_proc_executer = TfProcExec(shell_helper, sandbox_data_handler, InputOutputService(shell_helper))
+                backend_handler = BackendHandler(shell_helper, tf_working_dir, sandbox_data_handler.get_tf_uuid())
+                tf_proc_executer = TfProcExec(shell_helper,
+                                              sandbox_data_handler,
+                                              backend_handler,
+                                              InputOutputService(shell_helper))
 
                 if tf_proc_executer.can_destroy_run():
                     tf_proc_executer.destroy_terraform()
