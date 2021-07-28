@@ -25,7 +25,7 @@ class TfProcExec(object):
         self._sb_data_handler = sb_data_handler
         self._backend_handler = backend_handler
         self._input_output_service = input_output_service
-        self._tf_workingdir = sb_data_handler.get_tf_working_dir()
+        self._tf_working_dir = sb_data_handler.get_tf_working_dir()
 
 
         dt = datetime.now().strftime("%d_%m_%y-%H_%M_%S")
@@ -58,10 +58,7 @@ class TfProcExec(object):
         self._shell_helper.sandbox_messages.write_message("running Terraform Destroy...")
         cmd = ["destroy", "-auto-approve", "-no-color"]
 
-        # get variables from attributes that should be mapped to TF variables
-        tf_vars = self._input_output_service.get_variables_from_var_attributes()
-        # get any additional TF variables from "Terraform Inputs" variable
-        tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
+        tf_vars = self._input_output_service.get_all_terrafrom_variables()
 
         # add all TF variables to command
         for tf_var in tf_vars:
@@ -74,6 +71,7 @@ class TfProcExec(object):
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_PASSED)
             self._set_service_status("Offline", "Destroy Passed")
             self._backend_handler.delete_backend_tf_state_file()
+
 
         except Exception as e:
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
@@ -90,10 +88,7 @@ class TfProcExec(object):
         self._shell_helper.logger.info("Adding Tags to Terraform Resources")
         self._shell_helper.sandbox_messages.write_message("apply tags is true or not defined, generating tags...")
 
-        # get variables from attributes that should be mapped to TF variables
-        tf_vars = self._input_output_service.get_variables_from_var_attributes()
-        # get any additional TF variables from "Terraform Inputs" variable
-        tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
+        tf_vars = self._input_output_service.get_all_terrafrom_variables()
 
         inputs_dict = dict()
 
@@ -105,7 +100,7 @@ class TfProcExec(object):
 
         check_tag_input = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.CT_INPUTS)
         if check_tag_input:
-            custom_tags_inputs = self._input_output_service.get_variables_from_custom_tags_attribute()
+            custom_tags_inputs = self._input_output_service.get_tags_from_custom_tags_attribute()
         else:
             custom_tags_inputs = {}
 
@@ -114,10 +109,10 @@ class TfProcExec(object):
         if len(tags_dict) > 50:
             raise ValueError("AWS and Azure have a limit of 50 tags per resource, you have " + str(len(tags_dict)))
 
-        self._shell_helper.logger.info(self._tf_workingdir)
+        self._shell_helper.logger.info(self._tf_working_dir)
         self._shell_helper.logger.info(tags_dict)
 
-        start_tagging_terraform_resources(self._tf_workingdir, self._shell_helper.logger, tags_dict, inputs_dict)
+        start_tagging_terraform_resources(self._tf_working_dir, self._shell_helper.logger, tags_dict, inputs_dict)
 
     def plan_terraform(self) -> None:
         self._shell_helper.logger.info("Running Terraform Plan")
@@ -125,10 +120,7 @@ class TfProcExec(object):
 
         cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
 
-        # get variables from attributes that should be mapped to TF variables
-        tf_vars = self._input_output_service.get_variables_from_var_attributes()
-        # get any additional TF variables from "Terraform Inputs" variable
-        tf_vars.extend(self._input_output_service.get_variables_from_terraform_input_attribute())
+        tf_vars = self._input_output_service.get_all_terrafrom_variables()
 
         # add all TF variables to command
         for tf_var in tf_vars:
@@ -190,11 +182,11 @@ class TfProcExec(object):
         return True
 
     def _run_tf_proc_with_command(self, cmd: list, command: str, write_to_log: bool = True) -> str:
-        tform_command = [f"{os.path.join(self._tf_workingdir, 'terraform.exe')}"]
+        tform_command = [f"{os.path.join(self._tf_working_dir, 'terraform.exe')}"]
         tform_command.extend(cmd)
 
         try:
-            output = check_output(tform_command, shell=True, cwd=self._tf_workingdir, stderr=STDOUT).decode('utf-8')
+            output = check_output(tform_command, shell=True, cwd=self._tf_working_dir, stderr=STDOUT).decode('utf-8')
 
             clean_output = StringCleaner.get_clean_string(output)
             if write_to_log:
