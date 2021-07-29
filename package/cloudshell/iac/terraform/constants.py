@@ -52,7 +52,7 @@ DIRTY_CHARS = r'''
             '''
 
 GITHUB_REPO_PATTERN = \
-    "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/(?:blob|tree|/?)/(?P<branch_id>.+?)/(?P<path>.*?)$"
+    "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)(?:/blob/|/tree/|/?)(?P<branch_id>.+?)/(?P<path>.*?)$"
 
 
 class ATTRIBUTE_NAMES:
