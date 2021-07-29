@@ -18,8 +18,8 @@ class TestTerraformExecuteDestroy(TestCase):
     def run_execute_and_destroy(
             self, pre_exec_function: function,
             pre_destroy_function: function,
-            integration_data: IntegrationData):
-
+            integration_data: IntegrationData
+    ):
         self.clear_sb_data()
         self.run_execute(pre_exec_function, integration_data)
         self.run_destroy(pre_destroy_function, integration_data)
@@ -34,11 +34,11 @@ class TestTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Test Cases ---------------------------------'''
 
-    def test_execute_and_destroy(self, integration_data: IntegrationData):
+    def test_execute_and_destroy(self):
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec,
             pre_destroy_function=self.pre_destroy,
-            integration_data=integration_data
+            integration_data=self.integration_data1
         )
 
     def test_execute_and_destroy_azure_vault(self):
@@ -109,7 +109,7 @@ class TestTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Functions : prep before exec -------------------------------------------'''
 
-    def pre_exec(self):
+    def pre_exec(self, integration_data: IntegrationData):
         pass
 
     def pre_exec_azure_vault(self, integration_data: IntegrationData):
