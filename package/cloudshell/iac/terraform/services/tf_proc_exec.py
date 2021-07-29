@@ -79,7 +79,7 @@ class TfProcExec(object):
 
     def tag_terraform(self) -> None:
         try:
-            self._set_service_status("Progress 30", "Performing tagging...")
+            self._set_service_status("Progress 30", "Applying tags...")
             apply = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.APPLY_TAGS)
             if apply and not strtobool(apply):
                 self._shell_helper.logger.info("Skipping Adding Tags to Terraform Resources")
@@ -116,7 +116,7 @@ class TfProcExec(object):
             start_tagging_terraform_resources(self._tf_working_dir, self._shell_helper.logger, tags_dict, inputs_dict)
             self._set_service_status("Progress 40", "Tagging Passed")
         except Exception:
-            self._set_service_status("Error", "Tagging Failed")
+            self._set_service_status("Error", "Failed to apply tags")
             raise
 
     def plan_terraform(self) -> None:
