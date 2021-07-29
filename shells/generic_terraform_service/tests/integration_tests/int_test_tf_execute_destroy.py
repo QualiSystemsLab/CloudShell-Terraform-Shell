@@ -20,7 +20,7 @@ class TestTerraformExecuteDestroy(TestCase):
             pre_destroy_function: function,
             integration_data: IntegrationData):
 
-        self.clear_sb_data(integration_data)
+        self.clear_sb_data()
         self.run_execute(pre_exec_function, integration_data)
         self.run_destroy(pre_destroy_function, integration_data)
 
