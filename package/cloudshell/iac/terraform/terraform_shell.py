@@ -80,11 +80,14 @@ class TerraformShell:
                 not self._does_working_dir_exists(sandbox_data_handler.get_tf_working_dir()):
             raise ValueError(f"Missing local folder {sandbox_data_handler.get_tf_working_dir()}")
 
-    def _destroy_passed(self, sandbox_data_handler):
+    @staticmethod
+    def _destroy_passed(sandbox_data_handler):
         return sandbox_data_handler.get_status(DESTROY_STATUS) == DESTROY_PASSED
 
-    def _using_remote_state(self, shell_helper) -> bool:
+    @staticmethod
+    def _using_remote_state(shell_helper) -> bool:
         return bool(shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER))
 
-    def _does_working_dir_exists(self, dir: str) -> bool:
-        return dir and os.path.isdir(dir)
+    @staticmethod
+    def _does_working_dir_exists(directory: str) -> bool:
+        return directory and os.path.isdir(directory)
