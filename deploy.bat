@@ -6,3 +6,6 @@ python setup.py sdist
 cd dist
 xcopy /Q /Y . "C:\Program Files (x86)\QualiSystems\CloudShell\Server\Config\Pypi Server Repository"
 cd ..\..
+cd shells\backends\azure_tf_backend
+shellfoundry install
+cd ..\..\..
