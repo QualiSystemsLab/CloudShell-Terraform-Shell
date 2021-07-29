@@ -59,9 +59,6 @@ node_types:
             type: string
           Resource Group:
             type: string
-      hide_address:
-        type:string
-        default: true
 
 
     artifacts:
