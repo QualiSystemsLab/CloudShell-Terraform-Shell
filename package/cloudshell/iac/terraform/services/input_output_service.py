@@ -11,7 +11,7 @@ TFVar = namedtuple('TFVar', ['name', 'value'])
 
 
 class InputOutputService:
-    def __init__(self, driver_helper: ShellHelperObject, inputs_map: Dict = None, outputs_map: Dict = None):
+    def __init__(self, driver_helper: ShellHelperObject, inputs_map: Dict, outputs_map: Dict):
         self._driver_helper = driver_helper
         self._inputs_map = inputs_map
         self._outputs_map = outputs_map
@@ -56,6 +56,7 @@ class InputOutputService:
         Password attributes will be automatically decrypted.
         """
         result = []
+        self._driver_helper.logger.info(f"inputs_map: {self._inputs_map}")
         if not self._inputs_map:
             return result
 
@@ -124,6 +125,7 @@ class InputOutputService:
         attr_update_req = []
         unmaped_outputs = {}
         unmaped_sensitive_outputs = {}
+        self._driver_helper.logger.info(f"outputs_map: {self._outputs_map}")
 
         for output in unparsed_output_json:
             regex = re.compile(f"^{self._driver_helper.tf_service.cloudshell_model_name}\.{output}_tfout$",

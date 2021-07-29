@@ -11,7 +11,7 @@ class TestInputOutputService(TestCase):
         # arrange
         driver_helper = Mock()
         driver_helper.api.DecryptPassword.side_effect = Exception()
-        input_output_service = InputOutputService(driver_helper)
+        input_output_service = InputOutputService(driver_helper, None, None)
         value = Mock()
 
         # act
@@ -25,7 +25,7 @@ class TestInputOutputService(TestCase):
         api_result = Mock()
         driver_helper = Mock()
         driver_helper.api.DecryptPassword.return_value = api_result
-        input_output_service = InputOutputService(driver_helper)
+        input_output_service = InputOutputService(driver_helper, None, None)
         value = Mock()
 
         # act
@@ -47,7 +47,7 @@ class TestInputOutputService(TestCase):
                                                var_name: "val3"}
         driver_helper.attr_handler.get_attribute.side_effect = get_attribute_mock
 
-        input_output_service = InputOutputService(driver_helper)
+        input_output_service = InputOutputService(driver_helper, None, None)
         input_output_service.try_decrypt_password = Mock(side_effect=TestHelper.return_original_val)
 
         # act
@@ -67,7 +67,7 @@ class TestInputOutputService(TestCase):
         # arrange
         driver_helper = Mock()
         driver_helper.attr_handler.get_attribute.side_effect = get_tf_inputs_attribute
-        input_output_service = InputOutputService(driver_helper)
+        input_output_service = InputOutputService(driver_helper, None, None)
 
         # act
         result = input_output_service.get_variables_from_terraform_input_attribute()
@@ -82,7 +82,7 @@ class TestInputOutputService(TestCase):
         # arrange
         driver_helper = Mock()
         driver_helper.attr_handler.get_attribute.return_value = ""
-        input_output_service = InputOutputService(driver_helper)
+        input_output_service = InputOutputService(driver_helper, None, None)
 
         # act
         result = input_output_service.get_variables_from_terraform_input_attribute()
@@ -94,7 +94,7 @@ class TestInputOutputService(TestCase):
         # arrange
         driver_helper = Mock()
         driver_helper.tf_service.attributes = MagicMock()
-        input_output_service = InputOutputService(driver_helper)
+        input_output_service = InputOutputService(driver_helper, None, None)
 
         # act
         input_output_service.parse_and_save_outputs({})
@@ -116,7 +116,7 @@ class TestInputOutputService(TestCase):
                 "value": "val1"
             }
         }
-        input_output_service = InputOutputService(driver_helper)
+        input_output_service = InputOutputService(driver_helper, None, None)
 
         # act
         input_output_service.parse_and_save_outputs(json_output)
@@ -152,7 +152,7 @@ class TestInputOutputService(TestCase):
                 "value": "val3"
             }
         }
-        input_output_service = InputOutputService(driver_helper)
+        input_output_service = InputOutputService(driver_helper, None, None)
 
         # act
         input_output_service.parse_and_save_outputs(json_output)
@@ -188,7 +188,7 @@ class TestInputOutputService(TestCase):
                 "value": "val3"
             }
         }
-        input_output_service = InputOutputService(driver_helper)
+        input_output_service = InputOutputService(driver_helper, None, None)
 
         # act
         input_output_service.parse_and_save_outputs(json_output)
@@ -222,7 +222,7 @@ class TestInputOutputService(TestCase):
                 "value": "val2"
             }
         }
-        input_output_service = InputOutputService(driver_helper)
+        input_output_service = InputOutputService(driver_helper, None, None)
 
         # act
         input_output_service.parse_and_save_outputs(json_output)
@@ -252,7 +252,7 @@ class TestInputOutputService(TestCase):
         outputs_map = {
             "MyVar": "attribute1"
         }
-        input_output_service = InputOutputService(driver_helper, outputs_map=outputs_map)
+        input_output_service = InputOutputService(driver_helper, None, outputs_map)
 
         # act
         input_output_service.parse_and_save_outputs(json_output)
@@ -279,7 +279,7 @@ class TestInputOutputService(TestCase):
         driver_helper.attr_handler.get_attribute.side_effect = get_attribute_mock
         inputs_map = {"attribute2": "tfvar1",
                       "attribute4": "tfvar2"}
-        input_output_service = InputOutputService(driver_helper, inputs_map)
+        input_output_service = InputOutputService(driver_helper, inputs_map, None)
         input_output_service.try_decrypt_password = Mock(side_effect=TestHelper.return_original_val)
 
         # act
@@ -291,7 +291,7 @@ class TestInputOutputService(TestCase):
 
     def test_get_variables_from_explicitly_mapped_attributes_no_map(self):
         # arrange
-        input_output_service = InputOutputService(Mock(), None)
+        input_output_service = InputOutputService(Mock(), None, None)
 
         # act
         result = input_output_service.get_variables_from_explicitly_mapped_attributes()
