@@ -18,8 +18,8 @@ from tests.integration_tests.helper_objects.env_vars import EnvVars
 
 
 class IntegrationData(object):
-    def __init__(self):
-        self._env_vars = EnvVars()
+    def __init__(self, service_name: str):
+        self._env_vars = EnvVars(service_name)
         self.real_api = CloudShellAPISession(
             self._env_vars.cs_server,
             self._env_vars.cs_user,
@@ -58,6 +58,6 @@ class IntegrationData(object):
                     elif not the_only_attribute_to_update:
                         self.context.resource.attributes[attribute.Name] = attribute.Value
 
-    def _create_driver(self) :
+    def _create_driver(self):
         self.driver = GenericTerraformServiceDriver()
         self.driver.initialize(self.context)
