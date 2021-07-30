@@ -530,19 +530,18 @@ def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
     for inputkey, inputvalue in inputs_dict.items():
         inputs = inputs + f" -var {inputkey}={inputvalue}"
 
-    init_command = 'terraform.exe init -no-color'
-    plan_command = f'terraform.exe plan -no-color -input=false {inputs}'
+    executable_cmd = f'{os.path.join(main_tf_dir_path, "terraform.exe")}'
+    init_command = [executable_cmd, 'init', '-no-color']
+    plan_command = [executable_cmd, 'plan', '-no-color', '-input=false']
 
-    init = subprocess.Popen(init_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            universal_newlines=True)
+    init = subprocess.Popen(init_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     init_stdout, init_stderr = init.communicate()
 
     if init_stderr:
         return init_stdout, init_stderr, init.returncode
 
     # Save the output to a var proc_stdout
-    plan = subprocess.Popen(plan_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            universal_newlines=True)
+    plan = subprocess.Popen(plan_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     plan_stdout, plan_stderr = plan.communicate()
     plan_stdout = ""
     return plan_stdout, plan_stderr, plan.returncode
