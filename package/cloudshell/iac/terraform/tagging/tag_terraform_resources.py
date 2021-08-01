@@ -525,15 +525,16 @@ def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
     # if os.path.exists(os.path.join(main_tf_dir_path, Constants.COLONY_VARIABLES_FILE_NAME)):
     #     plan_var_file_command = f"-var-file={Constants.COLONY_VARIABLES_FILE_NAME}"
 
-    inputs = ""
+    inputs = []
 
     for inputkey, inputvalue in inputs_dict.items():
-        inputs = inputs + f" -var {inputkey}={inputvalue}"
+        inputs.extend(['-var', f'{inputkey}={inputvalue}'])
 
     executable_cmd = f'{os.path.join(main_tf_dir_path, "terraform.exe")}'
     init_command = [executable_cmd, 'init', '-no-color']
     plan_command = [executable_cmd, 'plan', '-no-color', '-input=false']
-
+    plan_command.extend(inputs)
+    
     init = subprocess.Popen(init_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     init_stdout, init_stderr = init.communicate()
 
