@@ -534,7 +534,7 @@ def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
     init_command = [executable_cmd, 'init', '-no-color']
     plan_command = [executable_cmd, 'plan', '-no-color', '-input=false']
     plan_command.extend(inputs)
-    
+
     init = subprocess.Popen(init_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     init_stdout, init_stderr = init.communicate()
 
