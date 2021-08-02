@@ -35,7 +35,7 @@ class TfProcExec(object):
 
     def init_terraform(self):
         self._shell_helper.logger.info("Performing Terraform Init...")
-        self._shell_helper.sandbox_messages.write_message("Running Terraform Init.....")
+        self._shell_helper.sandbox_messages.write_message("Running Terraform Init...")
 
         self._backend_handler.generate_backend_cfg_file()
         backend_config_vars = self._backend_handler.get_backend_secret_vars()

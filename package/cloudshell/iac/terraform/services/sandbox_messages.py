@@ -11,7 +11,6 @@ class SandboxMessagesService:
     def write_message(self, message: str, prefix: str = "", postfix: str = ""):
         if self._write_messages_to_sandbox:
             formatted_message = self._format_message(self._service_name, message)
-            self._api.WriteMessageToReservationOutput(self._sandbox_id, formatted_message)
             self._api.WriteMessageToReservationOutput(self._sandbox_id, f'{prefix}{formatted_message}{postfix}')
 
     def _format_message(self, service_name, message):
@@ -22,4 +21,4 @@ class SandboxMessagesService:
     def write_error_message(self, message: str):
         prefix = f'<span style="text-transform:lowercase"><p style="display:inline"><font color="red">'
         postfix = '</font></p></span>'
-        self.write_message(message,prefix,postfix)
+        self.write_message(message, prefix, postfix)

@@ -525,16 +525,17 @@ def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
     # if os.path.exists(os.path.join(main_tf_dir_path, Constants.COLONY_VARIABLES_FILE_NAME)):
     #     plan_var_file_command = f"-var-file={Constants.COLONY_VARIABLES_FILE_NAME}"
 
-    inputs = ""
+    inputs = []
 
     for inputkey, inputvalue in inputs_dict.items():
-        inputs = inputs + f" -var {inputkey}={inputvalue}"
+        inputs.extend(['-var', f'{inputkey}={inputvalue}'])
 
-    init_command = 'terraform.exe init -no-color'
-    plan_command = f'terraform.exe plan -no-color -input=false {inputs}'
+    executable_cmd = f'{os.path.join(main_tf_dir_path, "terraform.exe")}'
+    init_command = [executable_cmd, 'init', '-no-color']
+    plan_command = [executable_cmd, 'plan', '-no-color', '-input=false']
+    plan_command.extend(inputs)
 
-    init = subprocess.Popen(init_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            universal_newlines=True)
+    init = subprocess.Popen(init_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     init_stdout, init_stderr = init.communicate()
 
     if init_stderr:
@@ -579,7 +580,7 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
 
         # Had to change exit(3) to "raise" so exception can be handled outside
         #exit(3)
-        raise
+        raise ValueError("Exit before the override procedure began because the init/plan failed")
     LoggerHelper.write_info(f"terraform init & plan passed successfully")
 
     tags_templates_creator = OverrideTagsTemplatesCreator(tags_dict)
