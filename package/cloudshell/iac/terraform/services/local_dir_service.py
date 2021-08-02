@@ -1,13 +1,16 @@
+import logging
 import os
 import shutil
 from pathlib import Path
 
 from cloudshell.iac.terraform.downloaders.downloader import Downloader
+from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
+from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
 
 
 class LocalDir:
     @staticmethod
-    def delete_local_temp_dir(sandbox_data_handler, tf_working_dir):
+    def delete_local_temp_dir(sandbox_data_handler: SandboxDataHandler, tf_working_dir: str):
         tf_path = Path(tf_working_dir)
         tmp_folder_found = False
         while not tmp_folder_found:
@@ -25,7 +28,8 @@ class LocalDir:
         return dir and os.path.isdir(dir)
 
     @staticmethod
-    def prepare_tf_working_dir(logger, sandbox_data_handler, shell_helper):
+    def prepare_tf_working_dir(logger: logging.Logger, sandbox_data_handler: SandboxDataHandler,
+                               shell_helper: ShellHelperObject):
         tf_working_dir = sandbox_data_handler.get_tf_working_dir()
 
         if not (tf_working_dir and os.path.isdir(tf_working_dir)):

@@ -1,11 +1,11 @@
 import logging
-import os
 from contextlib import nullcontext
 
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 from cloudshell.iac.terraform import TerraformShellConfig
 from cloudshell.iac.terraform.constants import DESTROY_STATUS, DESTROY_PASSED, ATTRIBUTE_NAMES
+from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from cloudshell.iac.terraform.services.local_dir_service import LocalDir
 from cloudshell.iac.terraform.services.provider_handler import ProviderHandler
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
@@ -33,10 +33,8 @@ class TerraformShell:
             if tf_proc_executer.can_execute_run():
                 self._execute_procedure(sandbox_data_handler, shell_helper, tf_proc_executer, tf_working_dir)
             else:
-                err_msg = "Execution is not enabled due to successfully executed previously " \
-                          "without successfully destroying it first"
-                shell_helper.sandbox_messages.write_message(err_msg)
-                raise Exception(err_msg)
+                self._handle_error_output(shell_helper, "Execution is not enabled due to: successfully "
+                                                        "executing previously without successfully destroying it first")
 
     def _execute_procedure(self, sandbox_data_handler, shell_helper, tf_proc_executer, tf_working_dir):
         ProviderHandler.initialize_provider(shell_helper)
@@ -65,9 +63,9 @@ class TerraformShell:
                 if tf_proc_executer.can_destroy_run():
                     self._destroy_procedure(sandbox_data_handler, shell_helper, tf_proc_executer, tf_working_dir)
                 else:
-                    raise Exception("Destroy blocked because APPLY was not yet executed")
+                    self._handle_error_output(shell_helper, "Destroy blocked because APPLY was not yet executed")
             else:
-                raise Exception("Destroy failed due to missing local directory")
+                self._handle_error_output(shell_helper, "Destroy failed due to missing local directory")
 
     def _destroy_procedure(self, sandbox_data_handler, shell_helper, tf_proc_executer, tf_working_dir):
         tf_proc_executer.init_terraform()
@@ -77,8 +75,8 @@ class TerraformShell:
 
     def _validate_remote_backend_or_existing_working_dir(self, sandbox_data_handler, shell_helper):
         if not shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER) and \
-                not self._does_working_dir_exists(sandbox_data_handler.get_tf_working_dir()):
-            raise ValueError(f"Missing local folder {sandbox_data_handler.get_tf_working_dir()}")
+                not LocalDir.does_working_dir_exists(sandbox_data_handler.get_tf_working_dir()):
+            self._handle_error_output(shell_helper, f"Missing local folder {sandbox_data_handler.get_tf_working_dir()}")
 
     @staticmethod
     def _destroy_passed(sandbox_data_handler):
@@ -89,5 +87,6 @@ class TerraformShell:
         return bool(shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER))
 
     @staticmethod
-    def _does_working_dir_exists(directory: str) -> bool:
-        return directory and os.path.isdir(directory)
+    def _handle_error_output(shell_helper: ShellHelperObject, err_msg: str):
+        shell_helper.sandbox_messages.write_error_message(err_msg)
+        raise Exception(err_msg)
