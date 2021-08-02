@@ -174,8 +174,6 @@ class TfProcExec(object):
     def can_execute_run(self) -> bool:
         execute_status = self._sb_data_handler.get_status(EXECUTE_STATUS)
         destroy_status = self._sb_data_handler.get_status(DESTROY_STATUS)
-        if execute_status in [APPLY_FAILED]:
-            return False
         if destroy_status in [DESTROY_FAILED] and execute_status == APPLY_PASSED:
             return False
         return True

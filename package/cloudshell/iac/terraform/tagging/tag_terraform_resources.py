@@ -544,8 +544,7 @@ def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
         return init_stdout, init_stderr, init.returncode
 
     # Save the output to a var proc_stdout
-    plan = subprocess.Popen(plan_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            universal_newlines=True)
+    plan = subprocess.Popen(plan_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     plan_stdout, plan_stderr = plan.communicate()
     plan_stdout = ""
     return plan_stdout, plan_stderr, plan.returncode
