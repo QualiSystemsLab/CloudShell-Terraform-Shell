@@ -16,7 +16,7 @@ class LocalDir:
         while not tmp_folder_found:
             objects_in_folder = os.listdir(tf_path.parent.absolute())
             if len(objects_in_folder) == 2:
-                if objects_in_folder[0] == 'REPO' and objects_in_folder[1] == 'repo.zip':
+                if 'REPO' in objects_in_folder and 'repo.zip' in objects_in_folder:
                     tmp_folder_found = True
             tf_path = Path(tf_path.parent.absolute())
         tf_path_str = str(tf_path)
