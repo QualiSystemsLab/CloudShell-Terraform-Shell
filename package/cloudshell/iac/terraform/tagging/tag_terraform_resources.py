@@ -649,7 +649,8 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
                 LoggerHelper.write_error("Tagging terraform resources operation has FAILED !!!!!")
                 # Had to change exit(1) to "raise" so exception can be handled outside
                 # exit(1)
-                raise TerraformAutoTagsError("Errors were found in the last validation check")
+                raise TerraformAutoTagsError("Validation errors during Terraform Init/Plan "
+                                             "when applying automated tags")
 
         else:
             LoggerHelper.write_warning("No untaggable resources were found, but errors in plan file do exists")
