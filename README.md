@@ -12,7 +12,7 @@ Additional workflow recommendation: it is very easy to customize Blueprint setup
 ## Service Attributes
 |Attribute Name|Data Type|Description|
 |:---|:---|:---|
-|Github Terraform Module URL|String|path to target module. Can be provided in three formats: <br/> 1) <br/> 2) <br/> 3)  |
+|Github Terraform Module URL|String|path to target module. Can be provided in three formats: <br/> 1)https://github.com/<ACCOUNT>/<REPO>/tree/<BRANCH>/<PATH_TO_FOLDER> <br/> 2)https://github.com/<ACCOUNT>/<REPO>/blob/<BRANCH>/<PATH_TO_FOLDER>/filename.tf<br/> 3)https://raw.githubusercontent.com/<ACCOUNT>/<REPO>/<BRANCH>/<PATH_TO_FOLDER>/filename.tf  |
 |Terraform Version|String|The version of terraform.exe that will be downloaded and used (If not specified latest version will be used)|
 |Github Token|String| Github developer token to be used in order to download TF module|
 |Cloud Provider|String| Reference to the CloudProvider resource that shall be used to create authentication|
