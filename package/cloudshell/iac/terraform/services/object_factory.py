@@ -22,7 +22,7 @@ class ObjectFactory:
     def create_tf_proc_executer(config: TerraformShellConfig,
                                 sandbox_data_handler: SandboxDataHandler,
                                 shell_helper: ShellHelperObject,
-                                tf_working_dir: str):
+                                tf_working_dir: str) -> TfProcExec:
         backend_handler = BackendHandler(shell_helper, tf_working_dir, sandbox_data_handler.get_tf_uuid())
         input_output_service = InputOutputService(shell_helper, config.inputs_map, config.outputs_map)
         tf_proc_executer = TfProcExec(shell_helper, sandbox_data_handler, backend_handler, input_output_service)

@@ -1,7 +1,7 @@
-import function as function
 from cloudshell.api.cloudshell_api import AttributeNameValue
 from dotenv import load_dotenv
 from tests.integration_tests.constants import SHELL_NAME
+from typing import Callable
 
 from tests.integration_tests.helper_objects.integration_context import IntegrationData
 
@@ -16,19 +16,19 @@ class TestTerraformExecuteDestroy(TestCase):
         self.integration_data2 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS2"))
 
     def run_execute_and_destroy(
-            self, pre_exec_function: function,
-            pre_destroy_function: function,
+            self, pre_exec_function: Callable,
+            pre_destroy_function: Callable,
             integration_data: IntegrationData
     ):
         self.clear_sb_data()
         self.run_execute(pre_exec_function, integration_data)
         self.run_destroy(pre_destroy_function, integration_data)
 
-    def run_execute(self, pre_exec_function: function, integration_data: IntegrationData):
+    def run_execute(self, pre_exec_function: Callable, integration_data: IntegrationData):
         self.pre_exec_prep(pre_exec_function, integration_data)
         integration_data.driver.execute_terraform(integration_data.context)
 
-    def run_destroy(self,pre_destroy_function: function, integration_data: IntegrationData):
+    def run_destroy(self,pre_destroy_function: Callable, integration_data: IntegrationData):
         self.pre_destroy_prep(pre_destroy_function, integration_data)
         integration_data.driver.destroy_terraform(integration_data.context)
 
@@ -104,10 +104,10 @@ class TestTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Functions : general _pre prep functions ---------------------------------'''
 
-    def pre_exec_prep(self, pre_exec_function: function, integration_data: IntegrationData):
+    def pre_exec_prep(self, pre_exec_function: Callable, integration_data: IntegrationData):
         pre_exec_function(integration_data)
 
-    def pre_destroy_prep(self, pre_destroy_function: function, integration_data: IntegrationData):
+    def pre_destroy_prep(self, pre_destroy_function: Callable, integration_data: IntegrationData):
         pre_destroy_function(integration_data)
 
     def clear_sb_data(self):
