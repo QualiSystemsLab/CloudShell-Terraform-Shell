@@ -576,7 +576,10 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
         # Error Code 3 mark to the outside tf script (that run me) that there was an error but not because of
         # the override procedure (but because the client tf file has compile errors even before we started the
         # override procedure)
-        exit(3)
+
+        # Had to change exit(3) to "raise" so exception can be handled outside
+        #exit(3)
+        raise
     LoggerHelper.write_info(f"terraform init & plan passed successfully")
 
     tags_templates_creator = OverrideTagsTemplatesCreator(tags_dict)
@@ -642,12 +645,16 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
                                          f" (Return_code is {return_code})"
                                          f"\n\nErrors are:\n{stderr}\n")
                 LoggerHelper.write_error("Tagging terraform resources operation has FAILED !!!!!")
-                exit(1)
+                # Had to change exit(1) to "raise" so exception can be handled outside
+                # exit(1)
+                raise ValueError("Errors were found in the last validation check")
 
         else:
             LoggerHelper.write_warning("No untaggable resources were found, but errors in plan file do exists")
             LoggerHelper.write_error("Tagging terraform resources operation has FAILED !!!!!")
-            exit(1)
+            # Had to change exit(1) to "raise" so exception can be handled outside
+            # exit(1)
+            raise ValueError("No untaggable resources were found, but errors in plan file do exists")
     else:
         LoggerHelper.write_info("No errors founds in plan output")
 
