@@ -48,7 +48,8 @@ class IntegrationData(object):
         self.context.reservation.domain = self._env_vars.cs_domain
 
     def set_context_resource_attributes(self, the_only_attribute_to_update=""):
-        services = self.real_api.GetReservationDetails(self._env_vars.cs_res_id, disableCache=True).ReservationDescription.Services
+        services = self.real_api.GetReservationDetails(self._env_vars.cs_res_id, disableCache=True)\
+            .ReservationDescription.Services
         for service in services:
             if service.Alias == self._env_vars.sb_service_alias:
                 for attribute in service.Attributes:

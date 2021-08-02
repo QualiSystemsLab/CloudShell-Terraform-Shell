@@ -35,7 +35,7 @@ class TfProcExec(object):
 
     def init_terraform(self):
         self._shell_helper.logger.info("Performing Terraform Init...")
-        self._shell_helper.sandbox_messages.write_message("Running Terraform Init.....")
+        self._shell_helper.sandbox_messages.write_message("Running Terraform Init...")
 
         self._backend_handler.generate_backend_cfg_file()
         backend_config_vars = self._backend_handler.get_backend_secret_vars()
@@ -50,7 +50,7 @@ class TfProcExec(object):
             self._set_service_status("Progress 20", "Init Passed")
         except Exception as e:
             self._sb_data_handler.set_status(EXECUTE_STATUS, INIT_FAILED)
-            self._set_service_status("Error", "Init Failed")
+            self._shell_helper.sandbox_messages.write_error_message("Init Failed")
             raise
 
     def destroy_terraform(self):
@@ -74,7 +74,7 @@ class TfProcExec(object):
 
         except Exception as e:
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
-            self._set_service_status("Error", "Destroy Failed")
+            self._shell_helper.sandbox_messages.write_error_message("Destroy Failed")
             raise
 
     def tag_terraform(self) -> None:
@@ -116,7 +116,7 @@ class TfProcExec(object):
             start_tagging_terraform_resources(self._tf_working_dir, self._shell_helper.logger, tags_dict, inputs_dict)
             self._set_service_status("Progress 40", "Tagging Passed")
         except Exception:
-            self._set_service_status("Error", "Failed to apply tags")
+            self._shell_helper.sandbox_messages.write_error_message("Failed to apply tags")
             raise
 
     def plan_terraform(self) -> None:
@@ -138,7 +138,7 @@ class TfProcExec(object):
             self._set_service_status("Progress 60", "Plan Passed")
         except Exception:
             self._sb_data_handler.set_status(EXECUTE_STATUS, PLAN_FAILED)
-            self._set_service_status("Error", "Plan Failed")
+            self._shell_helper.sandbox_messages.write_error_message("Plan Failed")
             raise
 
     def apply_terraform(self):
@@ -153,7 +153,7 @@ class TfProcExec(object):
             self._set_service_status("Online", "Apply Passed")
         except Exception as e:
             self._sb_data_handler.set_status(EXECUTE_STATUS, APPLY_FAILED)
-            self._set_service_status("Error", "Apply Failed")
+            self._shell_helper.sandbox_messages.write_error_message("Apply Failed")
             raise
 
     def save_terraform_outputs(self):

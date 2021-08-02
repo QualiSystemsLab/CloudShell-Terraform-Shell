@@ -12,6 +12,8 @@ import json
 
 
 # =====================================================================================================================
+from cloudshell.iac.terraform.models.exceptions import TerraformAutoTagsError
+
 
 class Constants:
     TAGS = "tags"  # used for tag aws and azure resources in terraform
@@ -118,6 +120,7 @@ class LoggerHelper:
         LoggerHelper.actual_write("error", LoggerHelper.log_instance, msg, code_line)
 
 # =====================================================================================================================
+
 
 def parse_comma_separated_string(params_string: str = None) -> dict:
     res = {}
@@ -229,7 +232,6 @@ class OverrideTagsTemplatesCreator:
         # (in case we need to look at it)
         list_of_maps_value = " ,\n\t\t".join(colony_tags_to_list)
         self.colony_autoScaling_tags_flat_maps_list = f"\nlist(\n\t\t{list_of_maps_value}\n)"
-
 
     def _get_basic_override_tags_template(self, resource_type: str, resource_name: str, tags: str) -> str:
         tags_label = Constants.LABELS if resource_type.startswith("kubernetes_") else Constants.TAGS
@@ -558,7 +560,7 @@ def _get_untaggable_resources_types_from_plan_output(text: str) -> List[str]:
 
 def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dict, inputs_dict: dict = dict()):
     if not os.path.exists(main_dir_path):
-        raise ValueError(f"Path {main_dir_path} does not exist")
+        raise TerraformAutoTagsError(f"Path {main_dir_path} does not exist")
     tfs_folder_path = main_dir_path
     # log_path = Constants.get_override_log_path(main_dir_path)
     # colony_tags_file_path = Constants.get_colony_tags_path(main_dir_path)
@@ -576,7 +578,10 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
         # Error Code 3 mark to the outside tf script (that run me) that there was an error but not because of
         # the override procedure (but because the client tf file has compile errors even before we started the
         # override procedure)
-        exit(3)
+
+        # Had to change exit(3) to "raise" so exception can be handled outside
+        #exit(3)
+        raise TerraformAutoTagsError("Validation errors during Terraform Init/Plan when applying automated tags")
     LoggerHelper.write_info(f"terraform init & plan passed successfully")
 
     tags_templates_creator = OverrideTagsTemplatesCreator(tags_dict)
@@ -642,12 +647,18 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
                                          f" (Return_code is {return_code})"
                                          f"\n\nErrors are:\n{stderr}\n")
                 LoggerHelper.write_error("Tagging terraform resources operation has FAILED !!!!!")
-                exit(1)
+                # Had to change exit(1) to "raise" so exception can be handled outside
+                # exit(1)
+                raise TerraformAutoTagsError("Validation errors during Terraform Init/Plan "
+                                             "when applying automated tags")
 
         else:
             LoggerHelper.write_warning("No untaggable resources were found, but errors in plan file do exists")
             LoggerHelper.write_error("Tagging terraform resources operation has FAILED !!!!!")
-            exit(1)
+            # Had to change exit(1) to "raise" so exception can be handled outside
+            # exit(1)
+            raise TerraformAutoTagsError("No untaggable resources were found, but there is an error in Terraform "
+                                         "Plan when applying automated tags. Please check the logs for more details")
     else:
         LoggerHelper.write_info("No errors founds in plan output")
 
