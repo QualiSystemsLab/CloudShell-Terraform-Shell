@@ -122,4 +122,3 @@ class TestServiceAttrHandler(unittest.TestCase):
 
         # assert
         self.assertEqual(f"{tf_service.cloudshell_model_name}.attribute1", result)
-
