@@ -28,23 +28,27 @@ class TerraformShell:
             sandbox_data_handler = SandboxDataHandler(shell_helper)
             tf_working_dir = LocalDir.prepare_tf_working_dir(logger, sandbox_data_handler, shell_helper)
 
+            self._execute_procedure(sandbox_data_handler, shell_helper, tf_working_dir)
+
+    def _execute_procedure(self, sandbox_data_handler: SandboxDataHandler, shell_helper: ShellHelperObject,
+                           tf_working_dir: str):
+        try:
             tf_proc_executer = ObjectFactory.create_tf_proc_executer(self._config, sandbox_data_handler,
                                                                      shell_helper, tf_working_dir)
             if tf_proc_executer.can_execute_run():
-                self._execute_procedure(sandbox_data_handler, shell_helper, tf_proc_executer, tf_working_dir)
+                ProviderHandler.initialize_provider(shell_helper)
+                tf_proc_executer.init_terraform()
+                tf_proc_executer.tag_terraform()
+                tf_proc_executer.plan_terraform()
+                tf_proc_executer.apply_terraform()
+                tf_proc_executer.save_terraform_outputs()
             else:
-                self._handle_error_output(shell_helper, "Execution is not enabled due to: successfully "
-                                                        "executing previously without successfully destroying it first")
-
-    def _execute_procedure(self, sandbox_data_handler, shell_helper, tf_proc_executer, tf_working_dir):
-        ProviderHandler.initialize_provider(shell_helper)
-        tf_proc_executer.init_terraform()
-        tf_proc_executer.tag_terraform()
-        tf_proc_executer.plan_terraform()
-        tf_proc_executer.apply_terraform()
-        tf_proc_executer.save_terraform_outputs()
-        if self._using_remote_state(shell_helper):
-            LocalDir.delete_local_temp_dir(sandbox_data_handler, tf_working_dir)
+                self._handle_error_output(shell_helper, "This Terraform Module has been successfully deployed but "
+                                                        "destroy failed. Please destroy successfully before running "
+                                                        "execute again.")
+        finally:
+            if self._using_remote_state(shell_helper):
+                LocalDir.delete_local_temp_dir(sandbox_data_handler, tf_working_dir)
 
     def destroy_terraform(self):
         # initialize a logger if logger wasn't passed during init
@@ -55,23 +59,25 @@ class TerraformShell:
             self._validate_remote_backend_or_existing_working_dir(sandbox_data_handler, shell_helper)
 
             tf_working_dir = LocalDir.prepare_tf_working_dir(logger, sandbox_data_handler, shell_helper)
+            self._destroy_procedure(sandbox_data_handler, shell_helper, tf_working_dir)
 
-            if tf_working_dir:
-                ProviderHandler.initialize_provider(shell_helper)
-                tf_proc_executer = ObjectFactory.create_tf_proc_executer(self._config, sandbox_data_handler,
-                                                                         shell_helper, tf_working_dir)
-                if tf_proc_executer.can_destroy_run():
-                    self._destroy_procedure(sandbox_data_handler, shell_helper, tf_proc_executer, tf_working_dir)
-                else:
-                    self._handle_error_output(shell_helper, "Destroy blocked because APPLY was not yet executed")
+    def _destroy_procedure(self, sandbox_data_handler: SandboxDataHandler, shell_helper: ShellHelperObject,
+                           tf_working_dir: str):
+        if not tf_working_dir:
+            self._handle_error_output(shell_helper, "Destroy failed due to missing local directory")
+
+        try:
+            ProviderHandler.initialize_provider(shell_helper)
+            tf_proc_executer = ObjectFactory.create_tf_proc_executer(self._config, sandbox_data_handler,
+                                                                     shell_helper, tf_working_dir)
+            if tf_proc_executer.can_destroy_run():
+                tf_proc_executer.init_terraform()
+                tf_proc_executer.destroy_terraform()
             else:
-                self._handle_error_output(shell_helper, "Destroy failed due to missing local directory")
-
-    def _destroy_procedure(self, sandbox_data_handler, shell_helper, tf_proc_executer, tf_working_dir):
-        tf_proc_executer.init_terraform()
-        tf_proc_executer.destroy_terraform()
-        if self._using_remote_state(shell_helper) or self._destroy_passed(sandbox_data_handler):
-            LocalDir.delete_local_temp_dir(sandbox_data_handler, tf_working_dir)
+                self._handle_error_output(shell_helper, "Destroy blocked because APPLY was not yet executed")
+        finally:
+            if self._using_remote_state(shell_helper) or self._destroy_passed(sandbox_data_handler):
+                LocalDir.delete_local_temp_dir(sandbox_data_handler, tf_working_dir)
 
     def _validate_remote_backend_or_existing_working_dir(self, sandbox_data_handler, shell_helper):
         if not shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER) and \

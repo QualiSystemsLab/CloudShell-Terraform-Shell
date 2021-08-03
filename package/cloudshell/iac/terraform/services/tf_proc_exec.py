@@ -71,6 +71,7 @@ class TfProcExec(object):
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_PASSED)
             self._set_service_status("Offline", "Destroy Passed")
             self._backend_handler.delete_backend_tf_state_file()
+            self._shell_helper.sandbox_messages.write_message("Terraform Destroy completed")
 
         except Exception as e:
             self._sb_data_handler.set_status(DESTROY_STATUS, DESTROY_FAILED)
