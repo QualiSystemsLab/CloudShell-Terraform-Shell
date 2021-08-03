@@ -33,8 +33,9 @@ class TerraformShell:
             if tf_proc_executer.can_execute_run():
                 self._execute_procedure(sandbox_data_handler, shell_helper, tf_proc_executer, tf_working_dir)
             else:
-                self._handle_error_output(shell_helper, "Execution is not enabled due to: successfully "
-                                                        "executing previously without successfully destroying it first")
+                self._handle_error_output(shell_helper, "This Terraform Module has been successfully deployed but "
+                                                        "destroy failed. Please destroy successfully before running "
+                                                        "execute again.")
 
     def _execute_procedure(self, sandbox_data_handler, shell_helper, tf_proc_executer, tf_working_dir):
         ProviderHandler.initialize_provider(shell_helper)
