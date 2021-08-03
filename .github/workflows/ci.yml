@@ -1,0 +1,68 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Triggers the workflow on push or pull request events
+on: [push, pull_request]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+#      - name: Lint Code Base
+#        uses: docker://github/super-linter:v3
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          VALIDATE_ALL_CODEBASE: true
+#          VALIDATE_PYTHON_MYPY: false
+#          LINTER_RULES_PATH: .
+#          PYTHON_BLACK_CONFIG_FILE: pyproject.toml
+#          PYTHON_ISORT_CONFIG_FILE: pyproject.toml
+#          JSCPD_CONFIG_FILE: .jscpd.json
+      - name: Test with unittest
+        run: |
+          python -m unittest
+#      - name: Run integrations tests
+#        run: |
+#          python -m unittest discover -p "int_test*.py"
+#
+#  Coverage:
+#    name: Test Coverage
+#    runs-on: ubuntu-latest
+#    steps:
+#    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+#    - uses: actions/checkout@v2
+#    # install python
+#    - name: install python
+#      uses: actions/setup-python@v2
+#      with:
+#        python-version: 3.8.0
+#    - name: Install dependencies
+#      run: |
+#        pip install wheel
+#        pip install -U pytest pytest-cov coveralls
+#        python -m pip install --upgrade pip
+#        pip install -r requirements.txt
+#    - name: Test with pytest
+#      run: |
+#        python -m pytest --cov=./colony --cov-report xml
+#    - name: Run coveralls
+#      env:
+#          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALL_TOKEN }}
+##           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+##           GITHUB_TOKEN: ${{ secrets.COVERALL_TOKEN }}
+#
+#      run: |
+#        coveralls
