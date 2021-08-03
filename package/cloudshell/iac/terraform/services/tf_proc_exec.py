@@ -151,6 +151,7 @@ class TfProcExec(object):
             self._run_tf_proc_with_command(cmd, APPLY)
             self._sb_data_handler.set_status(EXECUTE_STATUS, APPLY_PASSED)
             self._set_service_status("Online", "Apply Passed")
+            self._shell_helper.sandbox_messages.write_message("Terraform Apply completed")
         except Exception as e:
             self._sb_data_handler.set_status(EXECUTE_STATUS, APPLY_FAILED)
             self._shell_helper.sandbox_messages.write_error_message("Apply Failed")
