@@ -123,7 +123,7 @@ class TestInputOutputService(TestCase):
 
         # assert
         driver_helper.api.SetServiceAttributesValues.assert_called_once()
-        print(f"-->{len(driver_helper.api.SetServiceAttributesValues.mock_calls)}")
+        print(f"-->{len(driver_helper.api.SetServiceAttributesValues.mock_calls.mock_calls)}")
         self.assertEqual(driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0].Name, var_name)
         self.assertEqual(driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0].Value, "val1")
 
