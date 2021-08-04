@@ -23,6 +23,9 @@ jobs:
           chmod +x ci_deploy.sh
           ./ci_deploy.sh
           pwd
+          cd package
+          pwd
+          echo "test123"
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f test_requirements.txt ]; then pip install -r test_requirements.txt; fi
 #      - name: Lint Code Base
