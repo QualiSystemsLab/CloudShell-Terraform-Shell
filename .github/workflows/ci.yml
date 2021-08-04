@@ -20,7 +20,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pwd
+          chmod +x ci_deploy.sh
+          ./ci_deploy.sh
           cd package
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f test_requirements.txt ]; then pip install -r test_requirements.txt; fi
