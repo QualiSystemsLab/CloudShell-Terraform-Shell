@@ -207,7 +207,7 @@ class TestInputOutputService(TestCase):
             filter(lambda x: x.Name == tf_sensitive_output_name, attribute_update_req_list))
 
         # attribute_update_req = driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0]
-        attribute_update_req = driver_helper.api.SetServiceAttributesValues.call_args[0][2]
+        attribute_update_req = driver_helper.api.SetServiceAttributesValues.call_args[0][2][0]
         self.assertEqual("MyVar2=val2", sensitive_output_update_req.Value)
         self.assertIn("MyVar1=val1", attribute_update_req.Value)
         self.assertIn("MyVar3=val3", attribute_update_req.Value)
