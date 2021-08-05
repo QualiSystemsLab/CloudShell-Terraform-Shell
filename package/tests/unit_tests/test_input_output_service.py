@@ -200,8 +200,9 @@ class TestInputOutputService(TestCase):
         # assert
         driver_helper.api.SetServiceAttributesValues.assert_called_once()
 
-        attribute_update_req_list = driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2]
-        output_update_req = next(filter(lambda x: x.Name == tf_output_name, attribute_update_req_list))
+        # attribute_update_req_list = driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2]
+        attribute_update_req_list = driver_helper.api.SetServiceAttributesValues.call_args[0][2]
+        # output_update_req = next(filter(lambda x: x.Name == tf_output_name, attribute_update_req_list))
         sensitive_output_update_req = next(
             filter(lambda x: x.Name == tf_sensitive_output_name, attribute_update_req_list))
 
