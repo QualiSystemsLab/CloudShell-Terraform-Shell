@@ -8,4 +8,3 @@ class TerraformShellConfig:
         self.update_live_status = update_live_status
         self.inputs_map = inputs_map
         self.outputs_map = outputs_map
-
