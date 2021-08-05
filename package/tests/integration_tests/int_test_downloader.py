@@ -49,20 +49,24 @@ class TestTerraformDownloader(TestCase):
             default_tags
         )
 
-    def _test_download_terraform_module(self, url: str):
+    def _test_download_terraform_module(self, url: str, branch: str):
         self.integration_data.context.resource.attributes[
             f"{SHELL_NAME}.Github Terraform Module URL"] = url
         self._driver_helper.tf_service.attributes[
             f"{SHELL_NAME}.Github Terraform Module URL"] = url
+        self.integration_data.context.resource.attributes[
+            f"{SHELL_NAME}.Branch"] = branch
+        self._driver_helper.tf_service.attributes[
+            f"{SHELL_NAME}.Branch"] = branch
 
         downloader = Downloader(self._driver_helper)
         tf_workingdir = downloader.download_terraform_module()
         self.assertTrue(os.path.exists(os.path.join(tf_workingdir, TF_HELLO_FILE)))
 
     def test_public_and_private_hello_dl(self):
-        self._test_download_terraform_module(GITHUB_TF_PUBLIC_HELLO_URL_FILE)
-        self._test_download_terraform_module(os.environ.get("GITHUB_TF_PRIVATE_HELLO_URL"))
-        self._test_download_terraform_module(GITHUB_TF_PUBLIC_HELLO_URL_FOLDER)
+        self._test_download_terraform_module(GITHUB_TF_PUBLIC_HELLO_URL_FILE, "")
+        self._test_download_terraform_module(os.environ.get("GITHUB_TF_PRIVATE_HELLO_URL"), "")
+        self._test_download_terraform_module(GITHUB_TF_PUBLIC_HELLO_URL_FOLDER, "")
 
     def test_download_terraform_executable(self):
         downloader = Downloader(self._driver_helper)
