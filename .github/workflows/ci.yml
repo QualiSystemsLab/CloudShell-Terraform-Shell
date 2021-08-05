@@ -26,12 +26,14 @@ jobs:
           if [ -f test_requirements.txt ]; then pip install -r test_requirements.txt; fi
       - name: Lint with flake8
         run: |
-            pwd
             python -m pip install flake8
             # stop the build if there are Python syntax errors or undefined names
-            flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --ignore=F632 /shells/generic_terraform_service/src/data_model.py /shells/backends/azure_tf_backend/src/data_model.py
-            # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-            flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --ignore=F632 /shells/generic_terraform_service/src/data_model.py /shells/backends/azure_tf_backend/src/data_model.py
+            # E722 bare 'except'
+            # W605 invalid escape sequence '\.'
+            # E501 line too long
+            # F841 local variable 'e' is assigned to but never used
+            python -m flake8 . --count --ignore=E722,W605,E501,F841 --exclude .\cloudshell\iac\terraform\tagging\tag_terraform_resources.py --statistics --show-source
+
       - name: Create package and install it
         run: |
           python -m pip install --upgrade pip

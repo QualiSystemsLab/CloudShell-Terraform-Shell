@@ -1,6 +1,6 @@
 import json
 
-from cloudshell.api.cloudshell_api import SandboxDataKeyValue, AttributeNameValue, GetSandboxDataInfo
+from cloudshell.api.cloudshell_api import SandboxDataKeyValue, GetSandboxDataInfo
 
 from cloudshell.iac.terraform.constants import EXECUTE_STATUS, DESTROY_STATUS, NONE, TF_WORKING_DIR, ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
