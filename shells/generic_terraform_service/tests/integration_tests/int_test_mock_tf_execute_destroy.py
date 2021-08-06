@@ -36,9 +36,11 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Test Cases ---------------------------------'''
 
-    @patch('cloudshell.shell.core.session.cloudshell_session')
+    @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
     def test_execute_and_destroy_azure_vault(self, patch_api):
-        patch_api.return_value = Mock()
+        api_mock = Mock()
+        patch_api.return_value.get_api.return_value = api_mock
+        api_mock.GetReservationDetails.return_value = []
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault,
             pre_destroy_function=self.pre_destroy,
