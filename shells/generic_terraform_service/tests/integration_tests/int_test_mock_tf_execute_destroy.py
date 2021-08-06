@@ -1,3 +1,5 @@
+from unittest.mock import patch, Mock
+
 from cloudshell.api.cloudshell_api import AttributeNameValue
 from dotenv import load_dotenv
 from tests.integration_tests.constants import SHELL_NAME
@@ -9,11 +11,11 @@ import os
 from unittest import TestCase
 
 
-class TestTerraformExecuteDestroy(TestCase):
+class TestMockTerraformExecuteDestroy(TestCase):
     def setUp(self) -> None:
         load_dotenv()
-        self.integration_data1 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS1"))
-        self.integration_data2 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS2"))
+        self.integration_data1 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS1"), real_api=False)
+        self.integration_data2 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS2"), real_api=False)
 
     def run_execute_and_destroy(
             self, pre_exec_function: Callable,
@@ -34,14 +36,9 @@ class TestTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Test Cases ---------------------------------'''
 
-    def test_execute_and_destroy(self):
-        self.run_execute_and_destroy(
-            pre_exec_function=self.pre_exec,
-            pre_destroy_function=self.pre_destroy,
-            integration_data=self.integration_data1
-        )
-
-    def test_execute_and_destroy_azure_vault(self):
+    @patch('cloudshell.shell.core.session.cloudshell_session')
+    def test_execute_and_destroy_azure_vault(self, patch_api):
+        patch_api.return_value = Mock()
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault,
             pre_destroy_function=self.pre_destroy,
@@ -111,7 +108,7 @@ class TestTerraformExecuteDestroy(TestCase):
         pre_destroy_function(integration_data)
 
     def clear_sb_data(self):
-        self.integration_data1.real_api.ClearSandboxData(self.integration_data1.context.reservation.reservation_id)
+        self.integration_data1.api.ClearSandboxData(self.integration_data1.context.reservation.reservation_id)
 
     '''------------------------------ Functions : prep before exec -------------------------------------------'''
 
@@ -196,13 +193,13 @@ class TestTerraformExecuteDestroy(TestCase):
 
     def pre_destroy(self, integration_data: IntegrationData):
         # As UUID has been created and SB data now contains UUID and Status we must update context so destroy can run
-        integration_data.set_context_resource_attributes(f"{SHELL_NAME}.UUID")
+        integration_data.set_context_resource_attributes_from_cs(f"{SHELL_NAME}.UUID")
 
     '''------------------------------ Helper Functions ---------------------------------------------------------'''
 
     def _set_attribute_on_service(self, attr_name: str, attr_value: str, integration_data: IntegrationData):
         attr_req = [AttributeNameValue(attr_name, attr_value)]
-        integration_data.real_api.SetServiceAttributesValues(
+        integration_data.api.SetServiceAttributesValues(
             integration_data.context.reservation.reservation_id,
             integration_data.context.resource.name,
             attr_req
