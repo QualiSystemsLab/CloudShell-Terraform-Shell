@@ -12,7 +12,13 @@ from unittest import TestCase
 
 
 class TestMockTerraformExecuteDestroy(TestCase):
-    def setUp(self) -> None:
+    @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
+    def setUp(self, patch_api) -> None:
+        self.api_mock = Mock()
+        patch_api.return_value.get_api.return_value = api_mock
+
+        self.api_mock.GetReservationDetails.ReservationDescription.Services.return_value = []
+
         load_dotenv()
         self.integration_data1 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS1"), real_api=False)
         self.integration_data2 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS2"), real_api=False)
@@ -28,19 +34,16 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     def run_execute(self, pre_exec_function: Callable, integration_data: IntegrationData):
         self.pre_exec_prep(pre_exec_function, integration_data)
-        integration_data.driver.execute_terraform(integration_data.context)
+        integration_data.tf_shell.execute_terraform()
 
     def run_destroy(self,pre_destroy_function: Callable, integration_data: IntegrationData):
         self.pre_destroy_prep(pre_destroy_function, integration_data)
-        integration_data.driver.destroy_terraform(integration_data.context)
+        integration_data.tf_shell.destroy_terraform()
 
     '''------------------------------ Test Cases ---------------------------------'''
 
-    @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
-    def test_execute_and_destroy_azure_vault(self, patch_api):
-        api_mock = Mock()
-        patch_api.return_value.get_api.return_value = api_mock
-        api_mock.GetReservationDetails.return_value = []
+    def test_execute_and_destroy_azure_vault(self):
+        self._set_azure_vault
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault,
             pre_destroy_function=self.pre_destroy,

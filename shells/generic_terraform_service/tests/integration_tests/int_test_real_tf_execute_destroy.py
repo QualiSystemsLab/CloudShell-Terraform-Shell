@@ -26,11 +26,11 @@ class TestRealTerraformExecuteDestroy(TestCase):
 
     def run_execute(self, pre_exec_function: Callable, integration_data: IntegrationData):
         self.pre_exec_prep(pre_exec_function, integration_data)
-        integration_data.driver.execute_terraform(integration_data.context)
+        integration_data.tf_shell.execute_terraform()
 
     def run_destroy(self,pre_destroy_function: Callable, integration_data: IntegrationData):
         self.pre_destroy_prep(pre_destroy_function, integration_data)
-        integration_data.driver.destroy_terraform(integration_data.context)
+        integration_data.tf_shell.destroy_terraform()
 
     '''------------------------------ Test Cases ---------------------------------'''
 
