@@ -33,7 +33,7 @@ jobs:
             # W605 invalid escape sequence '\.'
             # E501 line too long
             # F841 local variable 'e' is assigned to but never used
-            python -m flake8 . --count --ignore=E722,W605,E501,F841 --exclude .\package\cloudshell\iac\terraform\tagging\tag_terraform_resources.py --statistics --show-source
+            python -m flake8 . --count --ignore=E722,W605,E501,F841 --exclude .\package\cloudshell\iac\terraform\tagging\tag_terraform_resources.py .\shells\generic_terraform_service\data_model.py .\shells\backends\azure_tf_backend\data_model.py --statistics --show-source
 
       - name: Create package and install it
         run: |
