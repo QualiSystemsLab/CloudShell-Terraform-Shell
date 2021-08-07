@@ -27,7 +27,6 @@ class TfProcExec(object):
         self._input_output_service = input_output_service
         self._tf_working_dir = sb_data_handler.get_tf_working_dir()
 
-
         dt = datetime.now().strftime("%d_%m_%y-%H_%M_%S")
         self._exec_output_log = _create_logger(
             log_group=shell_helper.sandbox_id, log_category="QS", log_file_prefix=f"TF_EXEC_LOG_{dt}"

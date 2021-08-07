@@ -1,8 +1,8 @@
 import json
 
-from azure.core.exceptions import ResourceNotFoundError, ClientAuthenticationError
+from azure.core.exceptions import ClientAuthenticationError
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
-from cloudshell.shell.core.driver_context import InitCommandContext, AutoLoadDetails
+from cloudshell.shell.core.driver_context import AutoLoadDetails
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
@@ -70,7 +70,7 @@ class AzureTfBackendDriver (ResourceDriverInterface):
         except ClientAuthenticationError as e:
             self._handle_exception_logging(
                 logger, "Was not able to Authenticate in order to validate azure backend storage"
-        )
+            )
 
     def _get_cloud_credential(self, context, azure_backend_resource, logger):
         try:
@@ -85,7 +85,7 @@ class AzureTfBackendDriver (ResourceDriverInterface):
 
                     account_keys = self._get_storage_keys(api, azure_backend_resource, clp_details)
                     if not account_keys.keys:
-                        self._handle_exception_logging(logger, f"Unable to find access key for the storage account")
+                        self._handle_exception_logging(logger, "Unable to find access key for the storage account")
                     credential = account_keys.keys[0].value
                 else:
                     self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing")

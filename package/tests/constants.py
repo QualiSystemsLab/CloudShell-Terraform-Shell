@@ -8,4 +8,3 @@ BACKEND_ENV_VARS = 'backend_env_vars'
 TERRAFORM_EXEC_FILE = "terraform.exe"
 TF_HELLO_FILE = "hello.tf"
 SHELL_NAME = "Generic Terraform Service"
-

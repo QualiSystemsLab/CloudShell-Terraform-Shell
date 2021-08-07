@@ -1,5 +1,5 @@
 import os
-
+import cloudshell.helpers.scripts.cloudshell_dev_helpers as dev_helpers
 from cloudshell.api.cloudshell_api import AttributeNameValue
 from cloudshell.workflow.orchestration.sandbox import Sandbox
 from tests.integration_tests.constants import SHELL_NAME, UUID_ATTRIBUTE
@@ -14,7 +14,7 @@ cs_user = os.environ.get("CS_USERNAME")
 cs_pass = os.environ.get("CS_PASSWORD")
 cs_domain = os.environ.get("RESERVATION_DOMAIN")
 
-import cloudshell.helpers.scripts.cloudshell_dev_helpers as dev_helpers
+
 dev_helpers.attach_to_cloudshell_as(cs_user, cs_pass, cs_domain, sb_id, server_address=server_address, cloudshell_api_port='8029')
 
 
@@ -38,6 +38,7 @@ def wipe_uuids(sb: Sandbox):
 
     for service in services:
         sb.automation_api.SetServiceAttributesValues(sb_id, service.Alias, attr_req)
+
 
 sb = Sandbox()
 print_uuids(sb)
