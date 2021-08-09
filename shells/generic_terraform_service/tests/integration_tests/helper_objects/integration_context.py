@@ -7,32 +7,30 @@ from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
 from tests.integration_tests.helper_objects.env_vars import EnvVars
+from tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesFactory
 
 
 class IntegrationData(object):
-    def __init__(self, service_name: str, real_api: bool = True, mocked_attributes: list[AttributeValueInfo] = None):
+    def __init__(self, service_name: str, is_api_real: bool = True, mock_api: Mock = None):
         self._env_vars = EnvVars(service_name)
 
-        if real_api:
+        if is_api_real:
             self.api = CloudShellAPISession(
                 self._env_vars.cs_server,
                 self._env_vars.cs_user,
                 self._env_vars.cs_pass,
                 self._env_vars.cs_domain
             )
-            self._set_context(real_api)
-            self._logger = get_qs_logger(log_group=self.context.resource.name)
-            self.create_tf_shell()
 
         else:
-            self.api = Mock()
+            self.api = mock_api
             self.api.authentication.xmlrpc_token = Mock()
-            self._set_context(real_api)
-            self._logger = get_qs_logger(log_group=self.context.resource.name)
+        self._set_context(is_api_real)
+        self._logger = get_qs_logger(log_group=self.context.resource.name)
+        self.create_tf_shell()
 
-            self._set_context(real_api, mocked_attributes)
 
-    def _set_context(self, real_api: bool, mocked_attributes: list[AttributeValueInfo] = None):
+    def _set_context(self, is_api_real: bool):
         self.context = mock.create_autospec(ResourceCommandContext)
         self.context.connectivity = mock.MagicMock()
         self.context.connectivity.server_address = self._env_vars.cs_server
@@ -42,9 +40,10 @@ class IntegrationData(object):
         self.context.resource.attributes = dict()
         self.context.resource.name = self._env_vars.sb_service_alias
         self.context.resource.model = 'Generic Terraform Service'
-        if real_api:
+        if is_api_real:
             self.set_context_resource_attributes_from_cs()
-
+        else:
+            self.context.resource.attributes = ServiceAttributesFactory.create_empty_attributes()
         self.context.reservation = mock.MagicMock()
         self.context.reservation.reservation_id = self._env_vars.cs_res_id
         self.context.reservation.domain = self._env_vars.cs_domain
@@ -64,3 +63,4 @@ class IntegrationData(object):
     def create_tf_shell(self):
         self._config = TerraformShellConfig(write_sandbox_messages=True, update_live_status=True)
         self.tf_shell = TerraformShell(self.context, self._logger, self._config)
+

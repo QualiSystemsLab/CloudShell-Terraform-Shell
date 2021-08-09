@@ -12,8 +12,8 @@ from unittest import TestCase
 class TestRealTerraformExecuteDestroy(TestCase):
     def setUp(self) -> None:
         load_dotenv()
-        self.integration_data1 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS1"), real_api=True)
-        self.integration_data2 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS2"), real_api=True)
+        self.integration_data1 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS1"), is_api_real=True)
+        self.integration_data2 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS2"), is_api_real=True)
 
     def run_execute_and_destroy(
             self, pre_exec_function: Callable,

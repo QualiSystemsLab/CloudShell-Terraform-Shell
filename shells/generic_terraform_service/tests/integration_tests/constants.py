@@ -1,5 +1,8 @@
+from cloudshell.api.cloudshell_api import ResourceAttribute
+
 SHELL_NAME = "Generic Terraform Service"
 UUID_ATTRIBUTE = f"{SHELL_NAME}.UUID"
+
 
 class ATTRIBUTE_NAMES:
     TF_OUTPUTS = "Terraform Outputs"
