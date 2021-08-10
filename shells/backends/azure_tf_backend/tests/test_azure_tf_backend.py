@@ -7,7 +7,7 @@ Tests for `AzureTfBackendDriver`
 
 import unittest
 
-# from driver import AzureTfBackendDriver
+from driver import AzureTfBackendDriver
 
 
 class TestAzureTfBackendDriver(unittest.TestCase):

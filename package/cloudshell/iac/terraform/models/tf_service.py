@@ -34,3 +34,4 @@ class TerraformServiceObject(object):
                     attr_dict[attribute.Name] = attribute.Value
                 return attr_dict
         raise ValueError(f"Service:{self.name} was not found in order to construct data object")
+

@@ -38,7 +38,7 @@ class TfExecDownloader(object):
             if 'current_version' in cont.keys():
                 version = cont['current_version']
             else:
-                raise ValueError('Could not find latest TF version from hashicorp site')
+                raise ValueError(f'Could not find latest TF version from hashicorp site')
 
         # Verifying values
         if not os.path.exists(tf_workingdir):

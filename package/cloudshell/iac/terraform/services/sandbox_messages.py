@@ -19,6 +19,6 @@ class SandboxMessagesService:
         return '{0} {1}'.format(service_name, message)
 
     def write_error_message(self, message: str):
-        prefix = '<font color="red">'
+        prefix = f'<font color="red">'
         postfix = '</font>'
         self.write_message(message, prefix, postfix)

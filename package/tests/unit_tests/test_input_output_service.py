@@ -123,9 +123,8 @@ class TestInputOutputService(TestCase):
 
         # assert
         driver_helper.api.SetServiceAttributesValues.assert_called_once()
-
-        self.assertEqual(driver_helper.api.SetServiceAttributesValues.call_args[0][2][0].Name, var_name)
-        self.assertEqual(driver_helper.api.SetServiceAttributesValues.call_args[0][2][0].Value, "val1")
+        self.assertEqual(driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0].Name, var_name)
+        self.assertEqual(driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0].Value, "val1")
 
     def test_parse_and_save_outputs_with_mapped_attributes_and_outputs_attribute(self):
         # arrange
@@ -161,7 +160,7 @@ class TestInputOutputService(TestCase):
         # assert
         driver_helper.api.SetServiceAttributesValues.assert_called_once()
         # check that SetServiceAttributesValues was called with 2 AttributeNameValue values
-        self.assertEqual(len(driver_helper.api.SetServiceAttributesValues.call_args[0][2]), 2)
+        self.assertEqual(len(driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2]), 2)
 
     def test_parse_and_save_outputs_with_unmapped_attributes(self):
         # arrange
@@ -197,11 +196,12 @@ class TestInputOutputService(TestCase):
         # assert
         driver_helper.api.SetServiceAttributesValues.assert_called_once()
 
-        attribute_update_req_list = driver_helper.api.SetServiceAttributesValues.call_args[0][2]
+        attribute_update_req_list = driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2]
+        output_update_req = next(filter(lambda x: x.Name == tf_output_name, attribute_update_req_list))
         sensitive_output_update_req = next(
             filter(lambda x: x.Name == tf_sensitive_output_name, attribute_update_req_list))
 
-        attribute_update_req = driver_helper.api.SetServiceAttributesValues.call_args[0][2][0]
+        attribute_update_req = driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0]
         self.assertEqual("MyVar2=val2", sensitive_output_update_req.Value)
         self.assertIn("MyVar1=val1", attribute_update_req.Value)
         self.assertIn("MyVar3=val3", attribute_update_req.Value)
@@ -259,9 +259,8 @@ class TestInputOutputService(TestCase):
 
         # assert
         driver_helper.api.SetServiceAttributesValues.assert_called_once()
-
-        self.assertEqual(driver_helper.api.SetServiceAttributesValues.call_args[0][2][0].Name, "attribute1")
-        self.assertEqual(driver_helper.api.SetServiceAttributesValues.call_args[0][2][0].Value, "val1")
+        self.assertEqual(driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0].Name, "attribute1")
+        self.assertEqual(driver_helper.api.SetServiceAttributesValues.mock_calls[0].args[2][0].Value, "val1")
 
     def test_get_variables_from_explicitly_mapped_attributes(self):
         # arrange

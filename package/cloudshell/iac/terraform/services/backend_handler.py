@@ -1,8 +1,10 @@
 import json
 import os
+from logging import Logger
 
-from cloudshell.api.cloudshell_api import InputNameValue
+from cloudshell.api.cloudshell_api import CloudShellAPISession, InputNameValue
 
+# from tests.constants import GET_BACKEND_DATA_COMMAND
 from cloudshell.iac.terraform.constants import GET_BACKEND_DATA_COMMAND, DELETE_TFSTATE_FILE_COMMAND, ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 

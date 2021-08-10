@@ -30,3 +30,13 @@ class TagsManager:
             self.DefaultTagNames.domain: self._reservation_info.domain,
             self.DefaultTagNames.ran_by: self._reservation_info.running_user,
         }
+
+
+def get_default_tags_count():
+    return len(
+        [
+            tag_name
+            for tag_name in vars(AzureTagsManager.DefaultTagNames)
+            if not tag_name.startswith("__")
+        ]
+    )
