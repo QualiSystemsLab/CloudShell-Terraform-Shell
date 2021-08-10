@@ -176,7 +176,7 @@ class InputOutputService:
 
     def _is_explicitly_mapped_output(self, output: str) -> bool:
         return self._outputs_map and output in self._outputs_map and \
-                    self._driver_helper.attr_handler.check_2nd_gen_attribute_exist(self._outputs_map[output])
+            self._driver_helper.attr_handler.check_2nd_gen_attribute_exist(self._outputs_map[output])
 
     def _parse_outputs_to_csv(self, outputs: Dict) -> str:
         output_string = []
