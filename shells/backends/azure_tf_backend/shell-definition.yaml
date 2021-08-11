@@ -35,6 +35,9 @@ node_types:
       Resource Group:
         description: Resource Group of the StorageAccount/Container (if Cloud Provider authentication has been filled)
         type: string
+      hide_address:
+        type: string
+        default: true
 
     capabilities:
       auto_discovery_capability:
