@@ -9,11 +9,11 @@ import os
 from unittest import TestCase
 
 
-class TestTerraformExecuteDestroy(TestCase):
+class TestRealTerraformExecuteDestroy(TestCase):
     def setUp(self) -> None:
         load_dotenv()
-        self.integration_data1 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS1"))
-        self.integration_data2 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS2"))
+        self.integration_data1 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS1"), is_api_real=True)
+        self.integration_data2 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS2"), is_api_real=True)
 
     def run_execute_and_destroy(
             self, pre_exec_function: Callable,
@@ -26,11 +26,11 @@ class TestTerraformExecuteDestroy(TestCase):
 
     def run_execute(self, pre_exec_function: Callable, integration_data: IntegrationData):
         self.pre_exec_prep(pre_exec_function, integration_data)
-        integration_data.driver.execute_terraform(integration_data.context)
+        integration_data.tf_shell.execute_terraform()
 
     def run_destroy(self, pre_destroy_function: Callable, integration_data: IntegrationData):
         self.pre_destroy_prep(pre_destroy_function, integration_data)
-        integration_data.driver.destroy_terraform(integration_data.context)
+        integration_data.tf_shell.destroy_terraform()
 
     '''------------------------------ Test Cases ---------------------------------'''
 
@@ -111,7 +111,7 @@ class TestTerraformExecuteDestroy(TestCase):
         pre_destroy_function(integration_data)
 
     def clear_sb_data(self):
-        self.integration_data1.real_api.ClearSandboxData(self.integration_data1.context.reservation.reservation_id)
+        self.integration_data1.api.ClearSandboxData(self.integration_data1.context.reservation.reservation_id)
 
     '''------------------------------ Functions : prep before exec -------------------------------------------'''
 
@@ -196,13 +196,13 @@ class TestTerraformExecuteDestroy(TestCase):
 
     def pre_destroy(self, integration_data: IntegrationData):
         # As UUID has been created and SB data now contains UUID and Status we must update context so destroy can run
-        integration_data.set_context_resource_attributes(f"{SHELL_NAME}.UUID")
+        integration_data.set_context_resource_attributes_from_cs(f"{SHELL_NAME}.UUID")
 
     '''------------------------------ Helper Functions ---------------------------------------------------------'''
 
     def _set_attribute_on_service(self, attr_name: str, attr_value: str, integration_data: IntegrationData):
         attr_req = [AttributeNameValue(attr_name, attr_value)]
-        integration_data.real_api.SetServiceAttributesValues(
+        integration_data.api.SetServiceAttributesValues(
             integration_data.context.reservation.reservation_id,
             integration_data.context.resource.name,
             attr_req
