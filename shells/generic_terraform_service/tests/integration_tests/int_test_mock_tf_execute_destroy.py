@@ -58,7 +58,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
         self.pre_exec_prep(pre_exec_function, integration_data)
         integration_data.tf_shell.execute_terraform()
 
-    def run_destroy(self,pre_destroy_function: Callable, integration_data: IntegrationData):
+    def run_destroy(self, pre_destroy_function: Callable, integration_data: IntegrationData):
         self.pre_destroy_prep(pre_destroy_function, integration_data)
         integration_data.tf_shell.destroy_terraform()
 

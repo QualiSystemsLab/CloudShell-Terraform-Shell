@@ -1,7 +1,7 @@
 from unittest import mock
 from unittest.mock import Mock
 
-from cloudshell.api.cloudshell_api import CloudShellAPISession, AttributeValueInfo
+from cloudshell.api.cloudshell_api import CloudShellAPISession
 from cloudshell.iac.terraform import TerraformShell, TerraformShellConfig
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
@@ -28,7 +28,6 @@ class IntegrationData(object):
         self._set_context(is_api_real)
         self._logger = get_qs_logger(log_group=self.context.resource.name)
         self.create_tf_shell()
-
 
     def _set_context(self, is_api_real: bool):
         self.context = mock.create_autospec(ResourceCommandContext)
@@ -63,4 +62,3 @@ class IntegrationData(object):
     def create_tf_shell(self):
         self._config = TerraformShellConfig(write_sandbox_messages=True, update_live_status=True)
         self.tf_shell = TerraformShell(self.context, self._logger, self._config)
-
