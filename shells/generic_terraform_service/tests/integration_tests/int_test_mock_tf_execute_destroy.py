@@ -23,10 +23,10 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
         self._mocked_tf_working_dir = ''
         self._prepare_mock_services()
-        self._prepare_integration_data()
 
         self.mock_api.GetReservationDetails.return_value.ReservationDescription.Services = [self._service1,
                                                                                             self._service2]
+        self._prepare_integration_data()
 
     def _prepare_integration_data(self):
         self.integration_data1 = IntegrationData(self._service1.Alias, False, self.mock_api)
@@ -61,6 +61,11 @@ class TestMockTerraformExecuteDestroy(TestCase):
     def run_destroy(self, pre_destroy_function: Callable, integration_data: IntegrationData):
         self.pre_destroy_prep(pre_destroy_function, integration_data)
         integration_data.tf_shell.destroy_terraform()
+
+    def run_execute_and_destroy(self, pre_exec_function: Callable, pre_destroy_function: Callable,
+                                integration_data: IntegrationData):
+        self.run_execute(pre_exec_function, integration_data)
+        self.run_destroy(pre_destroy_function, integration_data)
 
     '''------------------------------ Test Cases ---------------------------------'''
 
@@ -122,6 +127,9 @@ class TestMockTerraformExecuteDestroy(TestCase):
             os.environ.get("CLP_RESOURSE"),
             integration_data
         )
+        self._prepare_service1_before_execute(integration_data)
+
+    def _prepare_service1_before_execute(self, integration_data):
         service1 = Mock()
         service1.Alias = integration_data.context.resource.name
         service1.Attributes = integration_data.context.resource.attributes
@@ -144,6 +152,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
             os.environ.get(""),
             integration_data
         )
+        self._prepare_service1_before_execute(integration_data)
 
     def pre_exec_azure_vault_with_remote_access_key_based(self, integration_data: IntegrationData):
         self.pre_exec_azure_vault(integration_data)
