@@ -4,11 +4,11 @@ Purpose: allow execution of Terraform deployment from CloudShell. Multiple Terra
 Additional workflow recommendation: it is very easy to customize Blueprint setup script that will run the “Execute Terraform” command on the service, and a similar teardown script that will run the “Destroy Terraform” command – this way the Terraform Module lifecycle is connected to the Sandbox lifecycle.
 
 ## Content
-* (1) cloudshell-iac-terraform - Python package that contains all the logic. It's assumed that this python package is used by a CloudShell Service 
-* (2) generic_terraform_service - Main Shell
-  * Used as is in a generic fashion or use it as an example to build an extension for a specific purpose (e.g. Azure MsSql, AWS RDS or any other managed cloud service)
-* (3) Remote backends
-  * azure_tf_backend - Azure Remote Backend shell. See below for more details about usage 
+1. cloudshell-iac-terraform - Python package that contains all the logic. It's assumed that this python package is used by a CloudShell Service 
+2. generic_terraform_service - Main Shell <br>
+   Use as is in a generic fashion or use it as an example to build an extension for a specific purpose (e.g. Azure MsSql, AWS RDS or any other managed cloud service)
+3. Remote backends <br>
+   azure_tf_backend - Azure Remote Backend shell. See below for more details about usage 
 
 ## Shell Usage Instructions
  
@@ -36,14 +36,12 @@ Additional workflow recommendation: it is very easy to customize Blueprint setup
 #### Auto mapping from attributes to TF Variables
 
 Attributes that end with the postfix "_tfvar" will be automatically mapped to TF variables with the same name as the CloudShell attribute but without the postfix. <br>
-Example: <br>
-The value of a CloudShell attribute called "DB_Name_tfvar" will be automatically assigned to a TF variable called "DB_Name".  
+Example: The value of a CloudShell attribute called "DB_Name_tfvar" will be automatically assigned to a TF variable called "DB_Name".  
 
 #### Auto mapping from TF Outputs to CloudShell attributes
 
 Attributes that end with the postfix "_tfout" will be automatically updated with the value of TF Outputs that has the same name but without the postfix.  <br>
-Example: <br>
-The value of a TF output "DB_Hostname" will be automatically set on an attribute with the name "DB_Hostname_tfout".
+Example: The value of a TF output "DB_Hostname" will be automatically set on an attribute with the name "DB_Hostname_tfout".
 
 ## Config Object (cloudshell-iac-terraform)
 The cloudshell-iac-terraform python package provides a configuration mechanism enabling you to set the behavior of the shell programmatically.
