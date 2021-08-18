@@ -1,10 +1,7 @@
 <Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.GenericTerraformServiceDriver"
         Name="GenericTerraformServiceDriver" Version="1.0.0" PythonVersion="3">
     <Layout>
-        <Command Description="Deploy Terraform module." Name="run_terraform" DisplayName="Deploy Terraform"/>
         <Command Description="Execute Terraform module." Name="execute_terraform" DisplayName="Execute Terraform"/>
         <Command Description="Destroy Terraform module." Name="destroy_terraform" DisplayName="Destroy Terraform"/>
-        <Command Description="Plan Terraform deployment." Name="plan_terraform" DisplayName="Plan Terraform"/>
-        <Command Description="Get Terraform state." Name="show_terraform_state" DisplayName="Show Terraform State"/>
     </Layout>
 </Driver>
