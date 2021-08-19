@@ -1,13 +1,14 @@
 # CloudShell-Terraform-Shell
-Purpose: allow execution of Terraform deployment from CloudShell. Multiple Terraform services can be added to a Blueprint or Sandbox, and these can be executed from CloudShell Portal UI by the user that is reserving the Blueprint.
+Purpose: allows the execution of a Terraform deployment from CloudShell. Multiple Terraform services can be added to a Blueprint or Sandbox, and these can be executed from CloudShell Portal UI by the user that is reserving the Blueprint.
 
-Additional workflow recommendation: it is very easy to customize Blueprint setup script that will run the “Execute Terraform” command on the service, and a similar teardown script that will run the “Destroy Terraform” command – this way the Terraform Module lifecycle is connected to the Sandbox lifecycle.
+Additional workflow recommendation: it is very easy to customize a Blueprint setup script that will run the “Execute Terraform” command on the service. A similar teardown script is available that will run the “Destroy Terraform” command. This way the Terraform Module lifecycle is connected to the Sandbox lifecycle.
 
 ## Content
-1. cloudshell-iac-terraform - Python package that contains all the logic. It's assumed that this python package is used by a CloudShell Service 
+1. cloudshell-iac-terraform - Primary Package <br>
+   Python package that contains all of the logic. It's assumed that this python package is used by a CloudShell Service 
 2. generic_terraform_service - Main Shell <br>
    Use as is in a generic fashion or use it as an example to build an extension for a specific purpose (e.g. Azure MsSql, AWS RDS or any other managed cloud service)
-3. Remote backends <br>
+3. Remote backends: <br>
    azure_tf_backend - Azure Remote Backend shell. See below for more details about usage 
 
 ## Shell Usage Instructions
@@ -31,17 +32,17 @@ Additional workflow recommendation: it is very easy to customize Blueprint setup
 |Apply Tags|Boolean|Specify whether TF resources will be auto-tagged. 6 default tags will be added automatically and also any custom tags will be added to all TF resources|  N/A|
 |Custom Tags|String|Comma separated list of name=value pairs to be used as additional custom tags in case Apply Tags attribute is True|  No |
 
-### Attributes Auto Mapping
+## Attributes Auto Mapping
 
-#### Auto mapping from attributes to TF Variables
+### **Auto mapping from attributes to TF Variables**
 
 Attributes that end with the postfix "_tfvar" will be automatically mapped to TF variables with the same name as the CloudShell attribute but without the postfix. <br>
-Example: The value of a CloudShell attribute called "DB_Name_tfvar" will be automatically assigned to a TF variable called "DB_Name".  
+> Example: The value of a CloudShell attribute called "DB_Name_tfvar" will be automatically assigned to a TF variable called "DB_Name".  
 
-#### Auto mapping from TF Outputs to CloudShell attributes
+### **Auto mapping from TF Outputs to CloudShell attributes**
 
 Attributes that end with the postfix "_tfout" will be automatically updated with the value of TF Outputs that has the same name but without the postfix.  <br>
-Example: The value of a TF output "DB_Hostname" will be automatically set on an attribute with the name "DB_Hostname_tfout".
+> Example: The value of a TF output "DB_Hostname" will be automatically set on an attribute with the name "DB_Hostname_tfout".
 
 ## Config Object (cloudshell-iac-terraform)
 The cloudshell-iac-terraform python package provides a configuration mechanism enabling you to set the behavior of the shell programmatically.
@@ -62,7 +63,7 @@ The "Generic Terraform Service" contains an example of how to use the config obj
 |Execute Terraform| Takes care of the full deployment flow: Init, Plan and Apply.
 |Destroy Terraform|Destroys the Terraform deployment previously done for this module.|
 
-## Remote Backends
+## Remote Backends (Remote Terraform State File)
 
 Remote backend provider shells are used to apply remote backend functionality. If the "Remote State Provider" 
 attribute is set with a name of a Remote Backend resource then the Terraform Shell will use this resource to get the
@@ -73,10 +74,9 @@ Terraform creates a state file called tfstate and it can contain sensitive data 
 
 ### Azure Remote Provider Shell (backends\azure_tf_backend)
 
-The Azure Remote Provider shell is used in order to enable CloudShell access to Azure storage to be used in order to 
-store the remote statefile.</br>
+The Azure Remote Provider shell is used in order to enable CloudShell access to Azure storage, to then be used to store the remote state file.</br>
 One must create a resource and fill in the attributes - then specify that resource name as the Remote State Provider.
-Only one type of authentication is allowed either by Access Key or using the Cloud Provider authentication keys.
+Only one type of authentication is allowed, either by Access Key or using the Cloud Provider authentication keys. ? if both are specified it errors?
 
 |Attribute|Type|Description|
 |:-----|:-----|:-----|
@@ -93,15 +93,15 @@ Coming soon
 
 ## Additional Notes
 
-* In order to avoid sensitive data showing up in the logs it's recommended to use Terraform version 0.14.0 or higher and set "sensitive = true" for all sensitive inputs and outputs.
+* In order to avoid sensitive data showing up in the logs, it's recommended to use Terraform version 0.14.0 or higher and set "sensitive = true" for all sensitive inputs and outputs.
 * The cloudshell-iac-terraform python package will create 2 log files. The first log file is the standard logging file used by all CloudShell shells. The second log file will contain the raw output from Terraform commands like "terraform plan" for example. The name of this log will start with "TF_EXEC_LOG_".
 * Unmapped sensitive outputs will be saved in an encrypted attribute ("password" type attribute) called "Terraform Sensitive Outputs" in case this attribute exists in shell-definition.yaml. Or ignored if the "Terraform Sensitive Outputs" doesn't exist.
 * When using the auto mapping feature with sensitive outputs/inputs it's the responsibility of the Shell developer to use attributes of type "password" to avoid exposing sensitive data. 
-* All the shell commands are executed on an Execution Server using python’s “Sub Process” package. All the commands are executed with "shell=False" for increased security to avoid exposing sensitive data. And because "shell" is set to False, executions history will not be available in the Execution Server. 
+* All the shell commands are executed on an Execution Server using python’s “Sub Process” package. All the commands are executed with "shell=False" for increased security to avoid exposing sensitive data. Due to "shell" being set to False, executions history will not be available in the Execution Server. 
 
 ## Contributing
 
-All your contributions are welcomed and encouraged. We've compiled detailed information about:
+All your contributions are welcomed and encouraged. We've compiled detailed information about contributing below:
 
 * [Contributing](contributing.md)
 
