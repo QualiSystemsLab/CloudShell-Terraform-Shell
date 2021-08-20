@@ -1,4 +1,9 @@
+[![CI](https://github.com/QualiSystemsLab/CloudShell-Terraform-Shell/workflows/CI/badge.svg)](https://github.com/QualiSystemsLab/CloudShell-Terraform-Shell/actions?query=workflow%3ACI)
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python/)
+[![PyPI version](https://badge.fury.io/py/cloudshell-iac-terraform.svg)](https://badge.fury.io/py/cloudshell-iac-terraform)
+
 # CloudShell-Terraform-Shell
+
 Purpose: allows the execution of a Terraform deployment from CloudShell. Multiple Terraform services can be added to a Blueprint or Sandbox, and these can be executed from CloudShell Portal UI by the user that is reserving the Blueprint.
 
 Additional workflow recommendation: it is very easy to customize a Blueprint setup script that will run the “Execute Terraform” command on the service. A similar teardown script is available that will run the “Destroy Terraform” command. This way the Terraform Module lifecycle is connected to the Sandbox lifecycle.
@@ -20,7 +25,7 @@ Additional workflow recommendation: it is very easy to customize a Blueprint set
 ## Service Attributes (generic_terraform_service)
 |Attribute Name|Data Type|Description|Mandatory?|
 |:---|:---|:---|:---|
-|Github Terraform Module URL|String|Path to target module. Can be provided in three formats: <br/> 1) https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH_TO_FOLDER <br/> 2) https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH_TO_FOLDER/FILENAME.tf <br/> 3) https://raw.githubusercontent.com/ACCOUNT/REPO/BRANCH/PATH_TO_FOLDER/FILENAME.tf  | Yes |
+|Github Terraform Module URL|String|Path to target module. Can be provided in three formats: <br/> 1) https://github.com/{ACCOUNT}/{REPO}/tree/{BRANCH}/{PATH_TO_FOLDER} <br/> 2) https://github.com/{ACCOUNT}/{REPO}/blob/{BRANCH}/{PATH_TO_FOLDER}/{FILENAME}.tf <br/> 3) https://raw.githubusercontent.com/{ACCOUNT}/{REPO}/{BRANCH}/{PATH_TO_FOLDER}/{FILENAME}.tf  | Yes |
 |Terraform Version|String|The version of terraform.exe that will be downloaded and used (If not specified latest version will be used)|  No |
 |Github Token|String| Github PAT (Private Access Token) to be used in order to download TF module. The entire repo will be downloaded and then the referenced TF module will be executed |  Yes |
 |Cloud Provider|String| Reference to the CloudProvider resource that should be used to initialize the Terrafom provider. Supported cloud providers: <br> - Azure Shell <br>- Azure Shell 2G| Yes |
