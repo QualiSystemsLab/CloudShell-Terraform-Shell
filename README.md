@@ -76,7 +76,7 @@ Terraform creates a state file called tfstate and it can contain sensitive data 
 
 The Azure Remote Provider shell is used in order to enable CloudShell access to Azure storage, to then be used to store the remote state file.</br>
 One must create a resource and fill in the attributes - then specify that resource name as the Remote State Provider.
-Only one type of authentication is allowed, either by Access Key or using the Cloud Provider authentication keys. ? if both are specified it errors?
+Only one type of authentication is allowed, either by Access Key or using the Cloud Provider authentication keys. If both options are specified it will throw an error, so please supply only 1 option.
 
 |Attribute|Type|Description|
 |:-----|:-----|:-----|
