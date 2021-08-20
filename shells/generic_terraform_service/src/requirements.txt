@@ -1,2 +1,2 @@
-cloudshell-iac-terraform==0.1.0
-cloudshell-shell-core == 5.0.5
+cloudshell-iac-terraform==1.0.0
+cloudshell-shell-core==5.0.5

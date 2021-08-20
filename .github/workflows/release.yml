@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  Release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for lint and tests to succeed
+        uses: lewagon/wait-on-check-action@v0.2
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'LintAndTest'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Validate tag version
+        run: |
+          version=$(cat package/version.txt)        # get cloudshell-iac-terraform version
+          tag=${GITHUB_REF/refs\/tags\//}           # get tag name
+          tag="${tag:1}"                            # remove the 'v' prefix from the tag that triggered this action
+          echo $version
+          echo $tag
+          if [ "$tag" == "$version" ]
+          then
+            echo "Tag and version are equal"
+          else
+            echo "Error: Tag and version are not equal, cannot create a release"
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f package/requirements.txt ]; then pip install -r package/requirements.txt; fi
+          pip install setuptools wheel twine
+
+      - name: Build
+        run: |
+          cd package
+          python setup.py sdist bdist_wheel
+
+      - name: Create Release and Upload Artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to Pypi
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          twine upload dist/*
