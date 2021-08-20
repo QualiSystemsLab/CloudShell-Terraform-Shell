@@ -24,7 +24,7 @@ setup(
     include_package_data=True,
     keywords="sandbox cloud IaC cloudshell terraform",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Topic :: Software Development :: Libraries",
         "License :: OSI Approved :: Apache Software License",
     ],
