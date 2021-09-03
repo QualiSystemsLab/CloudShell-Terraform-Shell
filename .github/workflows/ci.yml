@@ -44,7 +44,12 @@ jobs:
           python -m pip install --upgrade pip
           chmod +x ci_deploy.sh
           ./ci_deploy.sh
-      - name: Test with unittest
+      - name: Test unit tests with unittest
         run: |
           python -m unittest
-
+      - name: Test integration tests for shells/generic_terraform_service with unittest
+          run: |
+            pwd
+            cd shells/generic_terraform_service
+            pwd
+            run the "python -m unittest discover -p "int_test_mock*.py"
