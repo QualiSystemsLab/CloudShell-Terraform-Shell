@@ -52,4 +52,4 @@ jobs:
           pwd
           cd shells/generic_terraform_service
           pwd
-          run the "python -m unittest discover -p "int_test_mock*.py"
+          python -m unittest discover -p "int_test_mock*.py"
