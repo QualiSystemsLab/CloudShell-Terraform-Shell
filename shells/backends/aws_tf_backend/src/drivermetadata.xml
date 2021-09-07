@@ -1,0 +1,10 @@
+<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.AwsTfBackendDriver" Name="AwsTfBackendDriver" Version="1.0.0" PythonVersion="3">
+    <Layout>
+         <Category Name="Hidden Commands">
+            <Command Description="" DisplayName="Orchestration Save" Name="orchestration_save" />
+            <Command Description="" DisplayName="Orchestration Restore" Name="orchestration_restore" />
+             <Command Description="" DisplayName="Return Backend Data" Name="get_backend_data" Tags="allow_unreserved" />
+            <Command Description="" DisplayName="Delete TFstate File" Name="delete_tfstate_file" Tags="allow_unreserved" />
+        </Category>
+    </Layout>
+</Driver>
