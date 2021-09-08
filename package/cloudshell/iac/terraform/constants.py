@@ -37,6 +37,7 @@ TF_WORKING_DIR = "TF_WORKING_DIR"
 
 # CLP models
 AZURE2G_MODEL = "Microsoft Azure Cloud Provider 2G"
+AWS2G_MODEL = "Amazon AWS Cloud Provider 2G"
 
 # Misc
 DIRTY_CHARS = r'''

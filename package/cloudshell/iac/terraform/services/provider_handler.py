@@ -1,7 +1,10 @@
 import os
 from logging import Logger
+from typing import Callable
 
-from cloudshell.iac.terraform.constants import AZURE2G_MODEL, ATTRIBUTE_NAMES
+from cloudshell.api.cloudshell_api import ResourceInfo
+
+from cloudshell.iac.terraform.constants import AZURE2G_MODEL, ATTRIBUTE_NAMES, AWS2G_MODEL
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
 
@@ -23,17 +26,21 @@ class ProviderHandler(object):
             raise ValueError(f"{clpr_res_fam} currently not supported")
 
         try:
-            if clp_res_model == 'Microsoft Azure' or clp_res_model == AZURE2G_MODEL:
-                shell_helper.sandbox_messages.write_message("initializing provider...")
-                shell_helper.logger.info("Initializing Environment variables with CloudProvider details")
-                clp_resource_attributes = clp_details.ResourceAttributes
+            if clp_res_model in ['Microsoft Azure', AZURE2G_MODEL]:
+                ProviderHandler._set_cloud_env_vars(
+                    clp_details,
+                    clp_res_model,
+                    shell_helper,
+                    ProviderHandler._set_azure_env_vars_based_on_clp
+                )
 
-                azure_attr_name_prefix = ""
-                if clp_res_model == AZURE2G_MODEL:
-                    azure_attr_name_prefix = AZURE2G_MODEL + "."
-
-                ProviderHandler._set_azure_env_vars_based_on_clp(azure_attr_name_prefix, clp_resource_attributes,
-                                                                 shell_helper)
+            if clp_res_model in ['AWS EC2', AWS2G_MODEL]:
+                ProviderHandler._set_cloud_env_vars(
+                    clp_details,
+                    clp_res_model,
+                    shell_helper,
+                    ProviderHandler._set_aws_env_vars_based_on_clp
+                )
             else:
                 shell_helper.logger.error(f"{clp_res_model} currently not supported")
                 raise ValueError(f"{clp_res_model} currently not supported")
@@ -41,6 +48,24 @@ class ProviderHandler(object):
         except Exception as e:
             shell_helper.logger.error(f"Error Setting environment variables -> {str(e)}")
             raise
+
+    @staticmethod
+    def _set_cloud_env_vars(
+            clp_details: ResourceInfo,
+            clp_res_model: str,
+            shell_helper: ShellHelperObject,
+            set_cloud_env_vars_based_on_clp: Callable
+    ):
+        shell_helper.sandbox_messages.write_message("initializing provider...")
+        shell_helper.logger.info("Initializing Environment variables with CloudProvider details")
+        clp_resource_attributes = clp_details.ResourceAttributes
+
+        cloud_attr_name_prefix = ""
+        if clp_res_model in [AZURE2G_MODEL, AWS2G_MODEL]:
+            cloud_attr_name_prefix = clp_res_model + "."
+
+        set_cloud_env_vars_based_on_clp(cloud_attr_name_prefix, clp_resource_attributes, shell_helper)
+
 
     @staticmethod
     def _set_azure_env_vars_based_on_clp(azure_attr_name_prefix, clp_resource_attributes, shell_helper):
@@ -54,3 +79,20 @@ class ProviderHandler(object):
             if attr.Name == azure_attr_name_prefix + "Azure Application Key":
                 dec_client_secret = shell_helper.api.DecryptPassword(attr.Value).Value
                 os.environ["ARM_CLIENT_SECRET"] = dec_client_secret
+
+    @staticmethod
+    def _set_aws_env_vars_based_on_clp(aws_attr_name_prefix, clp_resource_attributes, shell_helper):
+        dec_access_key = ""
+        dec_secret_key = ""
+
+        for attr in clp_resource_attributes:
+            if attr.Name == aws_attr_name_prefix + "AWS Access Key":
+                dec_access_key = shell_helper.api.DecryptPassword(attr.Value).Value
+            if attr.Name == aws_attr_name_prefix + "AWS Secret Access Key":
+                dec_secret_key = shell_helper.api.DecryptPassword(attr.Value).Value
+            if attr.Name == aws_attr_name_prefix + "Region":
+                os.environ["AWS_DEFAULT_REGION"] = attr.Value
+
+        if dec_access_key and dec_secret_key:
+            os.environ["AWS_ACCESS_KEY_ID"] = dec_access_key
+            os.environ["ARM_CLIENT_SECRET"] = dec_secret_key
