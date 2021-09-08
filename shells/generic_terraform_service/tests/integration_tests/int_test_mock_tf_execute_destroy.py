@@ -10,13 +10,15 @@ from tests.integration_tests.helper_objects.integration_context import Integrati
 import os
 from unittest import TestCase, mock
 
+from pathlib import Path
+
 from tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesFactory
 
 
 class TestMockTerraformExecuteDestroy(TestCase):
     @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
     def setUp(self, patched_api) -> None:
-        load_dotenv()
+        load_dotenv(Path('.env.int_tests'))
 
         self._prepare_mock_api()
         patched_api.return_value.get_api.return_value = self.mock_api
