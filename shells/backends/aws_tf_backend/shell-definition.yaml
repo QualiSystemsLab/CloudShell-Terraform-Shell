@@ -54,6 +54,12 @@ node_types:
           inventory_description:
             type: string
             default: Describe the resource shell template
+
+          Execution Server Selector:
+            description: Select on which Execution Server the auto-discovery will run
+            type: string
+            tags: [ setting, user_input ]
+
     artifacts:
       icon:
         file: shell-icon.png
