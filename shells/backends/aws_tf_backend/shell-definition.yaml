@@ -21,8 +21,8 @@ node_types:
         description: The name of the bucket to be used in order to save the state file
         type: string
         tags: [ setting, user_input ]
-      Region:
-        description: The region of the bucket
+      Region Name:
+        description: The region in which the bucket resides
         type: string
         tags: [ setting, user_input ]
       Access Key:
@@ -34,9 +34,8 @@ node_types:
         type: cloudshell.datatypes.Password
         tags: [ setting, user_input ]
       Cloud Provider:
-        description: In case Access and Secret Keys has not been filled - the keys from the cloud provider will be used.
+        description: In case Access Key and Secret Key were not filled - the keys from the cloud provider will be used.
         type: string
-
       hide_address:
         type: string
         default: true
@@ -54,12 +53,6 @@ node_types:
           inventory_description:
             type: string
             default: Describe the resource shell template
-
-          Execution Server Selector:
-            description: Select on which Execution Server the auto-discovery will run
-            type: string
-            tags: [ setting, user_input ]
-
     artifacts:
       icon:
         file: shell-icon.png

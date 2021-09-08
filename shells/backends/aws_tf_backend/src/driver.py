@@ -1,7 +1,13 @@
+from botocore.exceptions import ClientError
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadResource, \
     AutoLoadAttribute, AutoLoadDetails, CancellationContext
 #from data_model import *  # run 'shellfoundry generate' to generate data model classes
+from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
+from cloudshell.shell.core.session.logging_session import LoggingSessionContext
+import boto3
+
+from aws_tf_backend.src.data_model import AwsTfBackend
 
 
 class AwsTfBackendDriver (ResourceDriverInterface):
@@ -40,18 +46,50 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         # In real life, this code will be preceded by SNMP/other calls to the resource details and will not be static
         # run 'shellfoundry generate' in order to create classes that represent your data model
 
-        '''
-        resource = AwsTfBackend.create_from_context(context)
-        resource.vendor = 'specify the shell vendor'
-        resource.model = 'specify the shell model'
-
-        port1 = ResourcePort('Port 1')
-        port1.ipv4_address = '192.168.10.7'
-        resource.add_sub_resource('1', port1)
-
-        return resource.create_autoload_details()
-        '''
         return AutoLoadDetails([], [])
+
+
+    def _validate_bucket_exists(self, context):
+        with LoggingSessionContext(context) as logger:
+            aws_backend_resource = AwsTfBackend.create_from_context(context)
+            try:
+                api = CloudShellSessionContext(context).get_api()
+                access_key = api.DecryptPassword(aws_backend_resource.access_key).Value
+                secret_key = api.DecryptPassword(aws_backend_resource.secret_key).Value
+                bucket_name = aws_backend_resource.bucket_name
+
+                self._validate_attributes(aws_backend_resource, bucket_name, logger)
+                if access_key and secret_key:
+                    if aws_backend_resource.cloud_provider:
+                        self._handle_exception_logging(logger, "Only one method of authentication should be filled")
+
+                    aws_session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+                else:
+                    aws_session = boto3.Session()
+
+                bucket_data = aws_session.resource('s3').meta.client.head_bucket(Bucket=bucket_name)
+
+            except ClientError as client_exception:
+                if client_exception.response['Error']['Code'] == '403':
+                    self._handle_exception_logging(logger, "Access to bucket denied (possibly wrong keys)")
+                if client_exception.response['Error']['Code'] == '404':
+                    self._handle_exception_logging(logger, "Bucket was not found")
+                self._handle_exception_logging(logger, f"There was an issue accessing the bucket. Error code = "
+                                                       f"{client_exception.response['Error']['Code']}")
+            except Exception as e:
+                self._handle_exception_logging(logger, "There was an issue accessing the bucket.")
+
+
+    def _validate_attributes(self, aws_backend_resource, bucket_name, logger):
+
+        if not aws_backend_resource.region_name:
+            self._handle_exception_logging(logger, "Region should be filled")
+        if not bucket_name:
+            self._handle_exception_logging(logger, "Bucket Name be filled")
+
+    def _handle_exception_logging(self, logger, msg):
+        logger.exception(msg)
+        raise ValueError(msg)
 
     # </editor-fold>
 

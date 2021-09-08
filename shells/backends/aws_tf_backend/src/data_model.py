@@ -155,6 +155,96 @@ class AwsTfBackend(object):
         return 'AwsTfBackend'
 
     @property
+    def bucket_name(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Aws Tf Backend.Bucket Name'] if 'Aws Tf Backend.Bucket Name' in self.attributes else None
+
+    @bucket_name.setter
+    def bucket_name(self, value):
+        """
+        The name of the bucket to be used in order to save the state file
+        :type value: str
+        """
+        self.attributes['Aws Tf Backend.Bucket Name'] = value
+
+    @property
+    def region_name(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Aws Tf Backend.Region Name'] if 'Aws Tf Backend.Region Name' in self.attributes else None
+
+    @region_name.setter
+    def region_name(self, value):
+        """
+        The region in which the bucket resides
+        :type value: str
+        """
+        self.attributes['Aws Tf Backend.Region Name'] = value
+
+    @property
+    def access_key(self):
+        """
+        :rtype: string
+        """
+        return self.attributes['Aws Tf Backend.Access Key'] if 'Aws Tf Backend.Access Key' in self.attributes else None
+
+    @access_key.setter
+    def access_key(self, value):
+        """
+        AWS access key
+        :type value: string
+        """
+        self.attributes['Aws Tf Backend.Access Key'] = value
+
+    @property
+    def secret_key(self):
+        """
+        :rtype: string
+        """
+        return self.attributes['Aws Tf Backend.Secret Key'] if 'Aws Tf Backend.Secret Key' in self.attributes else None
+
+    @secret_key.setter
+    def secret_key(self, value):
+        """
+        AWS secret key
+        :type value: string
+        """
+        self.attributes['Aws Tf Backend.Secret Key'] = value
+
+    @property
+    def cloud_provider(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Aws Tf Backend.Cloud Provider'] if 'Aws Tf Backend.Cloud Provider' in self.attributes else None
+
+    @cloud_provider.setter
+    def cloud_provider(self, value):
+        """
+        In case Access Key and Secret Key were not filled - the keys from the cloud provider will be used.
+        :type value: str
+        """
+        self.attributes['Aws Tf Backend.Cloud Provider'] = value
+
+    @property
+    def hide_address(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Aws Tf Backend.hide_address'] if 'Aws Tf Backend.hide_address' in self.attributes else None
+
+    @hide_address.setter
+    def hide_address(self, value='true'):
+        """
+        
+        :type value: str
+        """
+        self.attributes['Aws Tf Backend.hide_address'] = value
+
+    @property
     def user(self):
         """
         :rtype: str
