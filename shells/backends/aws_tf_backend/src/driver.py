@@ -7,7 +7,9 @@ from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionCo
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 import boto3
 
-from aws_tf_backend.src.data_model import AwsTfBackend
+from aws_tf_backend.src.constants import AWS_MODELS, AWS2G_MODEL
+from azure_tf_backend.src.constants import ACCESS_KEY_ATTRIBUTE
+from data_model import *
 
 
 class AwsTfBackendDriver (ResourceDriverInterface):
@@ -32,8 +34,6 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         This is a good place to close any open sessions, finish writing to log files
         """
         pass
-
-    # <editor-fold desc="Discovery">
 
     def get_inventory(self, context):
         """
@@ -65,6 +65,15 @@ class AwsTfBackendDriver (ResourceDriverInterface):
 
                     aws_session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
                 else:
+                    if not aws_backend_resource.cloud_provider:
+                        self._handle_exception_logging(logger, "At least one method of authentication should be filled")
+
+                    clp_details = self._validate_clp(api, aws_backend_resource, logger)
+
+                    aws_model_prefix = ""
+                    if clp_details.ResourceModelName == AWS2G_MODEL:
+                        aws_model_prefix = AWS2G_MODEL + "."
+                    access_key = self._get_attrbiute_value_from_clp(clp_details.ResourceAttributes, ACCESS_KEY_ATTRIBUTE)
                     aws_session = boto3.Session()
 
                 bucket_data = aws_session.resource('s3').meta.client.head_bucket(Bucket=bucket_name)
@@ -79,6 +88,10 @@ class AwsTfBackendDriver (ResourceDriverInterface):
             except Exception as e:
                 self._handle_exception_logging(logger, "There was an issue accessing the bucket.")
 
+    def _get_attrbiute_value_from_clp(self,attributes , model_prefix, attribute_name):
+        for attribute in attributes:
+            if attribute.name == f"{model_prefix} + {}attribute_name}:
+
 
     def _validate_attributes(self, aws_backend_resource, bucket_name, logger):
 
@@ -91,9 +104,17 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         logger.exception(msg)
         raise ValueError(msg)
 
-    # </editor-fold>
+    def _validate_clp(self, api, aws_backend_resource, logger):
+        clp_resource_name = aws_backend_resource.cloud_provider
+        clp_details = api.GetResourceDetails(clp_resource_name)
+        clp_res_model = clp_details.ResourceModelName
+        clpr_res_fam = clp_details.ResourceFamilyName
+        if (clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider') or \
+                clp_res_model not in AWS_MODELS:
+            logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
+            raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
+        return clp_details
 
-    # <editor-fold desc="Orchestration Save and Restore Standard">
     def orchestration_save(self, context, cancellation_context, mode, custom_params):
       """
       Saves the Shell state and returns a description of the saved artifacts and information
@@ -170,4 +191,3 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         '''
         pass
 
-    # </editor-fold>

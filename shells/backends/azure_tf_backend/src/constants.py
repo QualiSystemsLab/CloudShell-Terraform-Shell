@@ -1,3 +1,7 @@
 AZURE1G_MODEL = "Microsoft Azure"
 AZURE2G_MODEL = "Microsoft Azure Cloud Provider 2G"
 AZURE_MODELS = [AZURE1G_MODEL, AZURE2G_MODEL]
+
+
+SECRET_KEY_ATTRIBUTE = 'AWS Secret Access Key'
+ACCESS_KEY_ATTRIBUTE = 'AWS Access Key ID'
