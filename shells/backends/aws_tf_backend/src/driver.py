@@ -1,3 +1,5 @@
+import json
+
 from botocore.exceptions import ClientError
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadResource, \
@@ -45,10 +47,78 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         # See below some example code demonstrating how to return the resource structure and attributes
         # In real life, this code will be preceded by SNMP/other calls to the resource details and will not be static
         # run 'shellfoundry generate' in order to create classes that represent your data model
-
+        self._validate_bucket_exists(context)
         return AutoLoadDetails([], [])
 
+    # <editor-fold desc="Exposed shell commands get backend data and delete tfstate_File">
+    def get_backend_data(self, context, tf_state_unique_name: str) -> str:
+        self._backend_secret_vars = {}
 
+        with LoggingSessionContext(context) as logger:
+            aws_backend_resource = AwsTfBackend.create_from_context(context)
+            tf_state_file_string = self._generate_state_file_string(aws_backend_resource, tf_state_unique_name)
+
+            backend_data = {"tf_state_file_string": tf_state_file_string}
+            try:
+                api = CloudShellSessionContext(context).get_api()
+                access_key = api.DecryptPassword(aws_backend_resource.access_key).Value
+                secret_key = api.DecryptPassword(aws_backend_resource.secret_key).Value
+
+                if access_key and secret_key:
+                    self._backend_secret_vars = {"access_key": access_key, "secret_key": secret_key}
+                else:
+                    if aws_backend_resource.cloud_provider:
+                        clp_details = self._validate_clp(api, aws_backend_resource, logger)
+
+                        aws_model_prefix = ""
+                        if clp_details.ResourceModelName == AWS2G_MODEL:
+                            aws_model_prefix = AWS2G_MODEL + "."
+                        self._fill_backend_sercret_vars_data(clp_details, aws_model_prefix)
+
+            except Exception as e:
+                self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
+
+            logger.info(f"Returning backend data for creating provider file :\n{backend_data}")
+            response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
+            return response
+
+    def delete_tfstate_file(self, context, tf_state_unique_name: str):
+        with LoggingSessionContext(context) as logger:
+            aws_backend_resource = AwsTfBackend.create_from_context(context)
+            try:
+                api = CloudShellSessionContext(context).get_api()
+                access_key = api.DecryptPassword(aws_backend_resource.access_key).Value
+                secret_key = api.DecryptPassword(aws_backend_resource.secret_key).Value
+                bucket_name = aws_backend_resource.bucket_name
+
+                self._validate_attributes(aws_backend_resource, bucket_name, logger)
+
+                aws_session = self._create_aws_session(access_key, api, aws_backend_resource, logger, secret_key)
+                aws_session.resource('s3').meta.client.delete_object(Bucket=bucket_name, Key=tf_state_unique_name)
+            except Exception as e:
+                raise ValueError(f"{tf_state_unique_name} file was not removed from backend provider")
+    # </editor-fold>
+
+    def _fill_backend_sercret_vars_data(self, clp_details, aws_model_prefix) -> None:
+        self._backend_secret_vars = {}
+        access_key = self._get_attrbiute_value_from_clp(
+            clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE),
+        secret_key = self._get_attrbiute_value_from_clp(
+            clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE)
+        if access_key and secret_key:
+            self._backend_secret_vars = {"access_key": access_key, "secret_key": secret_key}
+
+    def _generate_state_file_string(self, aws_backend_resource: AwsTfBackend, tf_state_unique_name: str):
+        tf_state_file_string = f'terraform {{\n\
+\tbackend "s3" {{\n\
+\t\tbucket = "{aws_backend_resource.bucket_name}"\n\
+\t\tkey    = "{tf_state_unique_name}"\n\
+\t\tregion = "{aws_backend_resource.region_name}"\n\
+\t}}\n\
+}}'
+        return tf_state_file_string
+
+    # <editor-fold desc="Validate S3 Bucket Exists">
     def _validate_bucket_exists(self, context):
         with LoggingSessionContext(context) as logger:
             aws_backend_resource = AwsTfBackend.create_from_context(context)
@@ -59,22 +129,8 @@ class AwsTfBackendDriver (ResourceDriverInterface):
                 bucket_name = aws_backend_resource.bucket_name
 
                 self._validate_attributes(aws_backend_resource, bucket_name, logger)
-                if access_key and secret_key:
-                    if aws_backend_resource.cloud_provider:
-                        self._handle_exception_logging(logger, "Only one method of authentication should be filled")
 
-                    aws_session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-                else:
-                    if not aws_backend_resource.cloud_provider:
-                        self._handle_exception_logging(logger, "At least one method of authentication should be filled")
-
-                    clp_details = self._validate_clp(api, aws_backend_resource, logger)
-
-                    aws_model_prefix = ""
-                    if clp_details.ResourceModelName == AWS2G_MODEL:
-                        aws_model_prefix = AWS2G_MODEL + "."
-                    access_key = self._get_attrbiute_value_from_clp(clp_details.ResourceAttributes, ACCESS_KEY_ATTRIBUTE)
-                    aws_session = boto3.Session()
+                aws_session = self._create_aws_session(access_key, api, aws_backend_resource, logger, secret_key)
 
                 bucket_data = aws_session.resource('s3').meta.client.head_bucket(Bucket=bucket_name)
 
@@ -88,10 +144,44 @@ class AwsTfBackendDriver (ResourceDriverInterface):
             except Exception as e:
                 self._handle_exception_logging(logger, "There was an issue accessing the bucket.")
 
-    def _get_attrbiute_value_from_clp(self,attributes , model_prefix, attribute_name):
-        for attribute in attributes:
-            if attribute.name == f"{model_prefix} + {}attribute_name}:
+    def _create_aws_session(self, access_key, api, aws_backend_resource, logger, secret_key):
+        # Keys defines on AWS TF BACKEND RESOURCE
+        if access_key and secret_key:
+            if aws_backend_resource.cloud_provider:
+                self._handle_exception_logging(logger, "Only one method of authentication should be filled")
 
+            aws_session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+
+        # Keys not defines on AWS TF BACKEND RESOURCE (CLP reference should have been set)
+        else:
+            # CLP had not been set...
+            if not aws_backend_resource.cloud_provider:
+                self._handle_exception_logging(logger, "At least one method of authentication should be filled")
+
+            # Check a correct CLP has been reference and get an AWS session based of its attributes
+            clp_details = self._validate_clp(api, aws_backend_resource, logger)
+            aws_session = self._get_aws_session_based_on_clp(clp_details)
+        return aws_session
+
+    def _get_aws_session_based_on_clp(self, clp_details):
+        aws_model_prefix = ""
+        if clp_details.ResourceModelName == AWS2G_MODEL:
+            aws_model_prefix = AWS2G_MODEL + "."
+        access_key = self._get_attrbiute_value_from_clp(
+            clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE)
+        secret_key = self._get_attrbiute_value_from_clp(
+            clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE)
+        if access_key and secret_key:
+            aws_session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+        else:
+            aws_session = boto3.Session()
+        return aws_session
+
+    def _get_attrbiute_value_from_clp(self,attributes , model_prefix, attribute_name) -> str:
+        for attribute in attributes:
+            if attribute.name == f"{model_prefix} + {attribute_name}":
+                return attribute.value
+        return ""
 
     def _validate_attributes(self, aws_backend_resource, bucket_name, logger):
 
@@ -99,10 +189,6 @@ class AwsTfBackendDriver (ResourceDriverInterface):
             self._handle_exception_logging(logger, "Region should be filled")
         if not bucket_name:
             self._handle_exception_logging(logger, "Bucket Name be filled")
-
-    def _handle_exception_logging(self, logger, msg):
-        logger.exception(msg)
-        raise ValueError(msg)
 
     def _validate_clp(self, api, aws_backend_resource, logger):
         clp_resource_name = aws_backend_resource.cloud_provider
@@ -115,6 +201,12 @@ class AwsTfBackendDriver (ResourceDriverInterface):
             raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
         return clp_details
 
+    def _handle_exception_logging(self, logger, msg):
+        logger.exception(msg)
+        raise ValueError(msg)
+    # </editor-fold>
+
+    # <editor-fold desc="orchestration save/restore">
     def orchestration_save(self, context, cancellation_context, mode, custom_params):
       """
       Saves the Shell state and returns a description of the saved artifacts and information
@@ -190,4 +282,5 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         return saved_details_object[u'saved_artifact'][u'identifier']
         '''
         pass
+    # </editor-fold>
 
