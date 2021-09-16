@@ -34,7 +34,7 @@ class ProviderHandler(object):
                     ProviderHandler._set_azure_env_vars_based_on_clp
                 )
 
-            if clp_res_model in ['AWS EC2', AWS2G_MODEL]:
+            elif clp_res_model in ['AWS EC2', AWS2G_MODEL]:
                 ProviderHandler._set_cloud_env_vars(
                     clp_details,
                     clp_res_model,
