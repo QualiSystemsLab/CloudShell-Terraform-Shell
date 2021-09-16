@@ -8,7 +8,7 @@ from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionCo
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 import boto3
 
-from constants import AWS_MODELS, AWS2G_MODEL, AWS1G_MODEL
+from constants import AWS_MODELS, AWS2G_MODEL
 
 from constants import ACCESS_KEY_ATTRIBUTE, SECRET_KEY_ATTRIBUTE
 from data_model import AwsTfBackend
