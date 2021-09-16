@@ -9,7 +9,8 @@ from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 import boto3
 
 from constants import AWS_MODELS, AWS2G_MODEL
-from constants import ACCESS_KEY_ATTRIBUTE
+
+from constants import ACCESS_KEY_ATTRIBUTE, SECRET_KEY_ATTRIBUTE
 from data_model import AwsTfBackend
 
 
@@ -72,7 +73,7 @@ class AwsTfBackendDriver (ResourceDriverInterface):
                         aws_model_prefix = ""
                         if clp_details.ResourceModelName == AWS2G_MODEL:
                             aws_model_prefix = AWS2G_MODEL + "."
-                        self._fill_backend_sercret_vars_data(clp_details, aws_model_prefix)
+                        self._fill_backend_sercret_vars_data(api, clp_details, aws_model_prefix)
 
             except Exception as e:
                 self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
@@ -99,14 +100,13 @@ class AwsTfBackendDriver (ResourceDriverInterface):
                 raise ValueError(f"{tf_state_unique_name} file was not removed from backend provider")
     # </editor-fold>
 
-    def _fill_backend_sercret_vars_data(self, clp_details, aws_model_prefix) -> None:
+    def _fill_backend_sercret_vars_data(self, api, clp_details, aws_model_prefix) -> None:
         self._backend_secret_vars = {}
-        access_key = self._get_attrbiute_value_from_clp(
-            clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE),
-        secret_key = self._get_attrbiute_value_from_clp(
-            clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE)
-        if access_key and secret_key:
-            self._backend_secret_vars = {"access_key": access_key, "secret_key": secret_key}
+
+        access_key_dec, secret_key_dec = self._get_decrypted_aws_keys(api, clp_details)
+
+        if access_key_dec and secret_key_dec:
+            self._backend_secret_vars = {"access_key": access_key_dec, "secret_key": secret_key_dec}
 
     def _generate_state_file_string(self, aws_backend_resource: AwsTfBackend, tf_state_unique_name: str):
         tf_state_file_string = f'terraform {{\n\
@@ -186,7 +186,7 @@ class AwsTfBackendDriver (ResourceDriverInterface):
     def _get_attrbiute_value_from_clp(self, attributes, model_prefix, attribute_name) -> str:
         for attribute in attributes:
 
-            if attribute.name == f"{model_prefix} + {attribute_name}":
+            if attribute.Name == f"{model_prefix} + {attribute_name}":
                 return attribute.value
         return ""
 
