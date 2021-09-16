@@ -62,18 +62,16 @@ class AwsTfBackendDriver (ResourceDriverInterface):
             try:
                 api = CloudShellSessionContext(context).get_api()
 
-                clp_details = self._validate_clp(api, aws_backend_resource, logger)
-                access_key_dec, secret_key_dec = self._get_decrypted_aws_keys(api, clp_details)
+                access_key_dec = api.DecryptPassword(aws_backend_resource.access_key).Value
+                secret_key_dec = api.DecryptPassword(aws_backend_resource.secret_key).Value
 
                 if access_key_dec and secret_key_dec:
                     self._backend_secret_vars = {"access_key": access_key_dec, "secret_key": secret_key_dec}
                 else:
                     if aws_backend_resource.cloud_provider:
 
-                        aws_model_prefix = ""
-                        if clp_details.ResourceModelName == AWS2G_MODEL:
-                            aws_model_prefix = AWS2G_MODEL + "."
-                        self._fill_backend_sercret_vars_data(api, clp_details, aws_model_prefix)
+                        clp_details = api.GetResourceDetails(aws_backend_resource.cloud_provider)
+                        self._fill_backend_sercret_vars_data(api, clp_details)
 
             except Exception as e:
                 self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
@@ -100,7 +98,7 @@ class AwsTfBackendDriver (ResourceDriverInterface):
                 raise ValueError(f"{tf_state_unique_name} file was not removed from backend provider")
     # </editor-fold>
 
-    def _fill_backend_sercret_vars_data(self, api, clp_details, aws_model_prefix) -> None:
+    def _fill_backend_sercret_vars_data(self, api, clp_details) -> None:
         self._backend_secret_vars = {}
 
         access_key_dec, secret_key_dec = self._get_decrypted_aws_keys(api, clp_details)
@@ -178,7 +176,7 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         access_key = self._get_attrbiute_value_from_clp(
             clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE)
         secret_key = self._get_attrbiute_value_from_clp(
-            clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE)
+            clp_details.ResourceAttributes, aws_model_prefix, SECRET_KEY_ATTRIBUTE)
         access_key_dec = api.DecryptPassword(access_key).Value
         secret_key_dec = api.DecryptPassword(secret_key).Value
         return access_key_dec, secret_key_dec
@@ -186,7 +184,7 @@ class AwsTfBackendDriver (ResourceDriverInterface):
     def _get_attrbiute_value_from_clp(self, attributes, model_prefix, attribute_name) -> str:
         for attribute in attributes:
 
-            if attribute.Name == f"{model_prefix} + {attribute_name}":
+            if attribute.Name == f"{model_prefix}{attribute_name}":
                 return attribute.value
         return ""
 
