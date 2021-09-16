@@ -60,14 +60,14 @@ class AwsTfBackendDriver (ResourceDriverInterface):
             backend_data = {"tf_state_file_string": tf_state_file_string}
             try:
                 api = CloudShellSessionContext(context).get_api()
-                access_key = api.DecryptPassword(aws_backend_resource.access_key).Value
-                secret_key = api.DecryptPassword(aws_backend_resource.secret_key).Value
 
-                if access_key and secret_key:
-                    self._backend_secret_vars = {"access_key": access_key, "secret_key": secret_key}
+                clp_details = self._validate_clp(api, aws_backend_resource, logger)
+                access_key_dec, secret_key_dec = self._get_decrypted_aws_keys(api, clp_details)
+
+                if access_key_dec and secret_key_dec:
+                    self._backend_secret_vars = {"access_key": access_key_dec, "secret_key": secret_key_dec}
                 else:
                     if aws_backend_resource.cloud_provider:
-                        clp_details = self._validate_clp(api, aws_backend_resource, logger)
 
                         aws_model_prefix = ""
                         if clp_details.ResourceModelName == AWS2G_MODEL:
@@ -86,13 +86,14 @@ class AwsTfBackendDriver (ResourceDriverInterface):
             aws_backend_resource = AwsTfBackend.create_from_context(context)
             try:
                 api = CloudShellSessionContext(context).get_api()
+
                 access_key = api.DecryptPassword(aws_backend_resource.access_key).Value
                 secret_key = api.DecryptPassword(aws_backend_resource.secret_key).Value
                 bucket_name = aws_backend_resource.bucket_name
 
                 self._validate_attributes(aws_backend_resource, bucket_name, logger)
 
-                aws_session = self._create_aws_session(access_key, api, aws_backend_resource, logger, secret_key)
+                aws_session = self._create_aws_session(api, access_key, secret_key, aws_backend_resource, logger)
                 aws_session.resource('s3').meta.client.delete_object(Bucket=bucket_name, Key=tf_state_unique_name)
             except Exception as e:
                 raise ValueError(f"{tf_state_unique_name} file was not removed from backend provider")
@@ -129,7 +130,7 @@ class AwsTfBackendDriver (ResourceDriverInterface):
 
                 self._validate_attributes(aws_backend_resource, bucket_name, logger)
 
-                aws_session = self._create_aws_session(access_key, api, aws_backend_resource, logger, secret_key)
+                aws_session = self._create_aws_session(api, access_key, secret_key, aws_backend_resource, logger)
 
                 bucket_data = aws_session.resource('s3').meta.client.head_bucket(Bucket=bucket_name)
 
@@ -143,7 +144,7 @@ class AwsTfBackendDriver (ResourceDriverInterface):
             except Exception as e:
                 self._handle_exception_logging(logger, "There was an issue accessing the bucket.")
 
-    def _create_aws_session(self, access_key, api, aws_backend_resource, logger, secret_key):
+    def _create_aws_session(self, api, access_key, secret_key, aws_backend_resource, logger):
         # Keys defines on AWS TF BACKEND RESOURCE
         if access_key and secret_key:
             if aws_backend_resource.cloud_provider:
@@ -159,10 +160,18 @@ class AwsTfBackendDriver (ResourceDriverInterface):
 
             # Check a correct CLP has been reference and get an AWS session based of its attributes
             clp_details = self._validate_clp(api, aws_backend_resource, logger)
-            aws_session = self._get_aws_session_based_on_clp(clp_details)
+            aws_session = self._get_aws_session_based_on_clp(api, clp_details)
         return aws_session
 
-    def _get_aws_session_based_on_clp(self, clp_details):
+    def _get_aws_session_based_on_clp(self, api, clp_details):
+        access_key_dec, secret_key_dec = self._get_decrypted_aws_keys(api, clp_details)
+        if access_key_dec and secret_key_dec:
+            aws_session = boto3.Session(aws_access_key_id=access_key_dec, aws_secret_access_key=secret_key_dec)
+        else:
+            aws_session = boto3.Session()
+        return aws_session
+
+    def _get_decrypted_aws_keys(self, api, clp_details):
         aws_model_prefix = ""
         if clp_details.ResourceModelName == AWS2G_MODEL:
             aws_model_prefix = AWS2G_MODEL + "."
@@ -170,14 +179,13 @@ class AwsTfBackendDriver (ResourceDriverInterface):
             clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE)
         secret_key = self._get_attrbiute_value_from_clp(
             clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE)
-        if access_key and secret_key:
-            aws_session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-        else:
-            aws_session = boto3.Session()
-        return aws_session
+        access_key_dec = api.DecryptPassword(access_key).Value
+        secret_key_dec = api.DecryptPassword(secret_key).Value
+        return access_key_dec, secret_key_dec
 
     def _get_attrbiute_value_from_clp(self, attributes, model_prefix, attribute_name) -> str:
         for attribute in attributes:
+
             if attribute.name == f"{model_prefix} + {attribute_name}":
                 return attribute.value
         return ""
