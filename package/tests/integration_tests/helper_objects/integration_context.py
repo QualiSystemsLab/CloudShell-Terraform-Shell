@@ -10,12 +10,14 @@ from package.tests.integration_tests.helper_objects.env_vars import EnvVars
 
 class IntegrationData(object):
     def __init__(self):
+
         self._env_vars = EnvVars()
         self.real_api = CloudShellAPISession(
             self._env_vars.cs_server,
             self._env_vars.cs_user,
             self._env_vars.cs_pass,
-            self._env_vars.cs_domain
+            self._env_vars.cs_domain,
+            os.environ.get("SB_SERVICE_ALIAS")
         )
         self._set_context()
         self._logger = get_qs_logger(log_group=self.context.resource.name)
@@ -44,8 +46,3 @@ class IntegrationData(object):
             if service.Alias == self._env_vars.sb_service_alias:
                 for attribute in service.Attributes:
                     self.context.resource.attributes[attribute.Name] = attribute.Value
-    '''
-    def _create_driver(self) :
-        self.driver = GenericTerraformServiceDriver()
-        self.driver.initialize(self.context)
-    '''
