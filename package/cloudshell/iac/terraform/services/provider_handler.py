@@ -66,7 +66,6 @@ class ProviderHandler(object):
 
         set_cloud_env_vars_based_on_clp(cloud_attr_name_prefix, clp_resource_attributes, shell_helper)
 
-
     @staticmethod
     def _set_azure_env_vars_based_on_clp(azure_attr_name_prefix, clp_resource_attributes, shell_helper):
         for attr in clp_resource_attributes:
