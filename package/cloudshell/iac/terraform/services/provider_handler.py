@@ -94,7 +94,7 @@ class ProviderHandler(object):
                 os.environ["AWS_DEFAULT_REGION"] = attr.Value
                 region_flag = True
         if not region_flag:
-            raise ValueError(f"Region was not found on AWS Cloud Provider")
+            raise ValueError("Region was not found on AWS Cloud Provider")
 
         # We must check both keys exist...if not then the EC2 Execution Server profile would be used (Role)
         if dec_access_key and dec_secret_key:
