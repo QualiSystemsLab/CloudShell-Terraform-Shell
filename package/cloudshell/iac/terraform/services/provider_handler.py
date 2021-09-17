@@ -86,7 +86,7 @@ class ProviderHandler(object):
         region_flag = False
 
         for attr in clp_resource_attributes:
-            if attr.Name == aws_attr_name_prefix + "AWS Access Key":
+            if attr.Name == aws_attr_name_prefix + "AWS Access Key ID":
                 dec_access_key = shell_helper.api.DecryptPassword(attr.Value).Value
             if attr.Name == aws_attr_name_prefix + "AWS Secret Access Key":
                 dec_secret_key = shell_helper.api.DecryptPassword(attr.Value).Value
