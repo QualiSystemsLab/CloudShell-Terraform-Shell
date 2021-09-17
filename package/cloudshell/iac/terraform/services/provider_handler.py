@@ -83,6 +83,7 @@ class ProviderHandler(object):
     def _set_aws_env_vars_based_on_clp(aws_attr_name_prefix, clp_resource_attributes, shell_helper):
         dec_access_key = ""
         dec_secret_key = ""
+        region_flag = False
 
         for attr in clp_resource_attributes:
             if attr.Name == aws_attr_name_prefix + "AWS Access Key":
@@ -91,7 +92,11 @@ class ProviderHandler(object):
                 dec_secret_key = shell_helper.api.DecryptPassword(attr.Value).Value
             if attr.Name == aws_attr_name_prefix + "Region":
                 os.environ["AWS_DEFAULT_REGION"] = attr.Value
+                region_flag = True
+        if not region_flag:
+            raise ValueError(f"Region was not found on AWS Cloud Provider")
 
+        # We must check both keys exist...if not then the EC2 Execution Server profile would be used (Role)
         if dec_access_key and dec_secret_key:
             os.environ["AWS_ACCESS_KEY_ID"] = dec_access_key
-            os.environ["ARM_CLIENT_SECRET"] = dec_secret_key
+            os.environ["AWS_SECRET_KEY_ACCESS_KEY"] = dec_secret_key
