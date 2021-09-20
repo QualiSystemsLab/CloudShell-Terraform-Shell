@@ -186,7 +186,7 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         for attribute in attributes:
 
             if attribute.Name == f"{model_prefix}{attribute_name}":
-                return attribute.value
+                return attribute.Value
         return ""
 
     def _validate_attributes(self, aws_backend_resource, bucket_name, logger):
