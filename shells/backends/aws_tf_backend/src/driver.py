@@ -140,7 +140,7 @@ class AwsTfBackendDriver (ResourceDriverInterface):
                 self._handle_exception_logging(logger, f"There was an issue accessing the bucket. Error code = "
                                                        f"{client_exception.response['Error']['Code']}")
             except Exception as e:
-                self._handle_exception_logging(logger, "There was an issue accessing the bucket.")
+                self._handle_exception_logging(logger, f"There was an issue accessing the bucket.{e}")
 
     def _create_aws_session(self, api, access_key, secret_key, aws_backend_resource, logger):
         # Keys defines on AWS TF BACKEND RESOURCE
