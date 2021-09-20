@@ -28,7 +28,7 @@ Additional workflow recommendation: it is very easy to customize a Blueprint set
 |Github Terraform Module URL|String|Path to target module. Can be provided in three formats: <br/> 1) https://github.com/{ACCOUNT}/{REPO}/tree/{BRANCH}/{PATH_TO_FOLDER} <br/> 2) https://github.com/{ACCOUNT}/{REPO}/blob/{BRANCH}/{PATH_TO_FOLDER}/{FILENAME}.tf <br/> 3) https://raw.githubusercontent.com/{ACCOUNT}/{REPO}/{BRANCH}/{PATH_TO_FOLDER}/{FILENAME}.tf  | Yes |
 |Terraform Version|String|The version of terraform.exe that will be downloaded and used (If not specified latest version will be used)|  No |
 |Github Token|String| Github PAT (Private Access Token) to be used in order to download TF module. The entire repo will be downloaded and then the referenced TF module will be executed |  Yes |
-|Cloud Provider|String| Reference to the CloudProvider resource that should be used to initialize the Terrafom provider. Supported cloud providers: <br> - Azure Shell <br>- Azure Shell 2G| Yes |
+|Cloud Provider|String| Reference to the CloudProvider resource that should be used to initialize the Terrafom provider. Supported cloud providers: <br> - Azure Shell <br>- Azure Shell 2G <br> - AWS Shell <br> - AWS Shell 2G| Yes |
 |Branch|String| In case specified will override the branch in the Github Terraform Module URL |  No |
 |Terraform Outputs|String| Unmapped and *non-sensitive* TF outputs will be stored as a CSV list of key value pairs on this attribute. This attribute is optional. |  No |
 |Terraform Sensitive Outputs|Password| Unmapped and *sensitive* TF outputs will be stored as a CSV list of key value pairs on this attribute. This attribute must be of type "password. The attribute is optional. |  No |
@@ -92,7 +92,17 @@ Cloud Provider|String| Cloud Provider resource name that holds the authenticatio
 Resource Group|String| The resource group of the Storage Account|
 
 ### AWS Remote Provider Shell (backends\aws_tf_backend)
-Coming soon
+The AWS Remote Provider shell is used in order to enable CloudShell access to AWS S3 storage, to then be used to store the remote state file.</br>
+One must create a resource and fill in the attributes - then specify that resource name as the Remote State Provider.
+Only one type of authentication is allowed, either by Access Key+Secret Key or using the Cloud Provider authentication keys. If both options are specified it will throw an error, so please supply only 1 option.
+
+|Attribute|Type|Description|
+|:-----|:-----|:-----|
+Bucket Name|String| The name of the Bucket to be used |
+Region Name|String| The Region to be used with AWS |
+Access Key|String| Access Key of AWS Account|
+Secret Key|String| Secret Key of AWS Account|
+Cloud Provider|String| Cloud Provider resource name that holds the authentication keys in case not filling the Keys|
 
 \* Additional Remote Backend Providers are coming soon
 
