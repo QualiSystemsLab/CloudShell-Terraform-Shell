@@ -41,7 +41,7 @@ def wipe_uuids(sb: Sandbox):
 
 
 sb = Sandbox()
-#print_uuids(sb)
-#wipe_uuids(sb)
-#data = sb.automation_api.GetSandboxData(sb_id)
+# print_uuids(sb)
+# wipe_uuids(sb)
+# data = sb.automation_api.GetSandboxData(sb_id)
 print("")
