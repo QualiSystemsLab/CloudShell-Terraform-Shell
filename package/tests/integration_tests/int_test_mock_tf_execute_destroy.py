@@ -1,5 +1,6 @@
 from unittest.mock import patch, Mock
 
+# from cloudshell.api.cloudshell_api import NameValuePair
 from cloudshell.api.cloudshell_api import NameValuePair
 from dotenv import load_dotenv
 from tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES

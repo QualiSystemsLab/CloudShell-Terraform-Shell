@@ -8,7 +8,7 @@ from shells.generic_terraform_service.src.data_model import GenericTerraformServ
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from tests.constants import GITHUB_TF_PUBLIC_HELLO_URL_FILE, GITHUB_TF_PUBLIC_HELLO_URL_FOLDER, TERRAFORM_EXEC_FILE, \
     SHELL_NAME, TF_HELLO_FILE
-from tests.integration_tests.helper_objects.integration_context import IntegrationData
+from tests.integration_tests.helper_objects.downloader_integration_context import IntegrationData
 from cloudshell.iac.terraform.tagging.tags import TagsManager
 from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 

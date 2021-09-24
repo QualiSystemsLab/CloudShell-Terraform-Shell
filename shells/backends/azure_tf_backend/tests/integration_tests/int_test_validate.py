@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from tests.integration_tests.helper_objects.integration_context import IntegrationData
+from tests.integration_tests.helper_objects.downloader_integration_context import IntegrationData
 
 
 class TestTerraformBackend(TestCase):
