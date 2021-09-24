@@ -99,4 +99,4 @@ class ProviderHandler(object):
         # We must check both keys exist...if not then the EC2 Execution Server profile would be used (Role)
         if dec_access_key and dec_secret_key:
             os.environ["AWS_ACCESS_KEY_ID"] = dec_access_key
-            os.environ["AWS_SECRET_KEY_ACCESS_KEY"] = dec_secret_key
+            os.environ["AWS_SECRET_ACCESS_KEY"] = dec_secret_key
