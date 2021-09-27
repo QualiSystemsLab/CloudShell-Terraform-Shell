@@ -1,6 +1,8 @@
 SHELL_NAME = "Generic Terraform Service"
 UUID_ATTRIBUTE = f"{SHELL_NAME}.UUID"
 
+INT_TEST_TF_VER = "0.15.1"
+INT_TEST_CLP_RESOURSE = "real_azure"
 
 class ATTRIBUTE_NAMES:
     TF_OUTPUTS = "Terraform Outputs"

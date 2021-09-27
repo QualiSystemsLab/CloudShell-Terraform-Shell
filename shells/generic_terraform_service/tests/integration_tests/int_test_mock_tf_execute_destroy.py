@@ -2,7 +2,7 @@ from unittest.mock import patch, Mock
 
 from cloudshell.api.cloudshell_api import NameValuePair
 from dotenv import load_dotenv
-from tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES
+from tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES, INT_TEST_TF_VER, INT_TEST_CLP_RESOURSE
 from typing import Callable
 
 from tests.integration_tests.helper_objects.integration_context import IntegrationData
@@ -121,12 +121,12 @@ class TestMockTerraformExecuteDestroy(TestCase):
         )
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.{ATTRIBUTE_NAMES.TERRAFORM_VERSION}",
-            os.environ.get("0.15.1"),
+            INT_TEST_TF_VER,
             integration_data
         )
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.{ATTRIBUTE_NAMES.CLOUD_PROVIDER}",
-            os.environ.get("CLP_RESOURSE"),
+            INT_TEST_CLP_RESOURSE,
             integration_data
         )
         self._prepare_service1_before_execute(integration_data)
