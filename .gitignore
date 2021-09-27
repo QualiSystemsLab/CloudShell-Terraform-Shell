@@ -11,6 +11,7 @@ __pycache__/
 .idea/
 venv/
 package/tests/.env
+package/tests/integration_tests/.env
 env/
 build/
 develop-eggs/
