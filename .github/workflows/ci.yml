@@ -58,6 +58,6 @@ jobs:
           AZURE_APPLICATION_KEY_DEC: ${{ secrets.AZURE_APPLICATION_KEY_DEC }}
         run: |
           pwd
-          cd shells/generic_terraform_service
+          cd package/tests/integration_tests
           pwd
           python -m unittest discover -p "int_test_mock*.py"
