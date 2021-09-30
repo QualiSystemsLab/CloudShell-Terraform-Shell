@@ -57,6 +57,7 @@ jobs:
           AZURE_APPLICATION_ID: ${{ secrets.AZURE_APPLICATION_ID }}
           AZURE_APPLICATION_KEY_DEC: ${{ secrets.AZURE_APPLICATION_KEY_DEC }}
         run: |
+          echo ${GH_TF_PRIVATE_AZUREAPP_URL}
           pwd
           cd package/tests/integration_tests
           pwd
