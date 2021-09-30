@@ -48,9 +48,9 @@ class IntegrationData(object):
             self.context.reservation.reservation_id = self._env_vars.cs_res_id
             self.context.reservation.domain = self._env_vars.cs_domain
         else:
-            self.context.reservation.reservation_id = "mock_reservation_id"
             self.context.resource.attributes = ServiceAttributesFactory.create_empty_attributes()
             self.context.reservation = mock.MagicMock()
+            self.context.reservation.reservation_id = "mock_reservation_id"
 
     def set_context_resource_attributes_from_cs(self, the_only_attribute_to_update: str = ""):
         services = self.api.GetReservationDetails(self._env_vars.cs_res_id, disableCache=True) \
