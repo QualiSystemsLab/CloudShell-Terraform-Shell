@@ -129,6 +129,9 @@ class TestRealTerraformExecuteDestroy(TestCase):
             os.environ.get("GH_TF_PRIVATE_AZUREAPP_URL"),
             integration_data
         )
+        print("------------------------------------------")
+        print(os.environ.get("GH_TF_PRIVATE_AZUREAPP_URL"))
+        print("------------------------------------------")
         self._set_attribute_on_service(
             f"{SHELL_NAME}.UUID",
             os.environ.get(""),
