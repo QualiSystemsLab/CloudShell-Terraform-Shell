@@ -20,6 +20,8 @@ class TestMockTerraformExecuteDestroy(TestCase):
     @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
     def setUp(self, patched_api) -> None:
         load_dotenv(Path('int_tests.env'))
+        if os.path.isfile(Path('int_tests_secrets.env')):
+            load_dotenv(Path('int_tests_secrets.env'))
 
         self._prepare_mock_api()
         patched_api.return_value.get_api.return_value = self.mock_api

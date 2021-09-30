@@ -66,4 +66,4 @@ shells/generic_terraform_service/tests/.env
 tests/.env
 shells/backends/azure_tf_backend/tests/.env
 shells/generic_terraform_service/tests/integration_tests/int_tests.env
-package/tests/integration_tests/int_tests.env
+package/tests/integration_tests/int_tests_secrets.env
