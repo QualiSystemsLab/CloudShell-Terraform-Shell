@@ -47,7 +47,7 @@ jobs:
       - name: Test unit tests with unittest
         run: |
           python -m unittest
-      - name: Test integration tests for shells/generic_terraform_service with unittest
+      - name: Test integration tests for package/tests/integration_tests
         env:
           AZUREAPP_TF_INPUTS: ${{ secrets.AZUREAPP_TF_INPUTS }}
           GH_TF_PRIVATE_AZUREAPP_URL: ${{ secrets.GITHUB_TF_PRIVATE_AZUREAPP_URL }}
