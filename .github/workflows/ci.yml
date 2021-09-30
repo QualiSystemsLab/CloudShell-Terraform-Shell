@@ -58,7 +58,8 @@ jobs:
           AZURE_APPLICATION_KEY_DEC: ${{ secrets.AZURE_APPLICATION_KEY_DEC }}
         run: |
           echo "##############################"
-          echo "GH_TF_PRIVATE_AZUREAPP_URL = $GH_TF_PRIVATE_AZUREAPP_URL"
+          echo "GH_TF_PRIVATE_AZUREAPP_URL = $$GH_TF_PRIVATE_AZUREAPP_URL"
+          echo ${#$GH_TF_PRIVATE_AZUREAPP_URL}
           echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
           echo "$GITHUB_CONTEXT"
           echo "##############################"
