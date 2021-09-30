@@ -1,5 +1,5 @@
 from cloudshell.api.cloudshell_api import AttributeNameValue
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from tests.integration_tests.constants import SHELL_NAME
 from typing import Callable
 
