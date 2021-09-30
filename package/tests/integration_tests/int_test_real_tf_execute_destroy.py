@@ -1,5 +1,5 @@
 from cloudshell.api.cloudshell_api import AttributeNameValue
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 from tests.integration_tests.constants import SHELL_NAME
 from typing import Callable
 
@@ -11,7 +11,7 @@ from unittest import TestCase
 
 class TestRealTerraformExecuteDestroy(TestCase):
     def setUp(self) -> None:
-        # load_dotenv()
+        load_dotenv()
         self.integration_data1 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS1"), is_api_real=True)
         self.integration_data2 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS2"), is_api_real=True)
 

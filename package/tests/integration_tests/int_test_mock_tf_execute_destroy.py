@@ -2,7 +2,7 @@ from unittest.mock import patch, Mock
 
 # from cloudshell.api.cloudshell_api import NameValuePair
 from cloudshell.api.cloudshell_api import NameValuePair
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES, INT_TEST_TF_VER, INT_TEST_CLP_RESOURSE
 from typing import Callable
 
@@ -19,7 +19,7 @@ from tests.integration_tests.helper_services.service_attributes_factory import S
 class TestMockTerraformExecuteDestroy(TestCase):
     @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
     def setUp(self, patched_api) -> None:
-        load_dotenv(Path('int_tests.env'))
+        # load_dotenv(Path('int_tests.env'))
 
         self._prepare_mock_api()
         patched_api.return_value.get_api.return_value = self.mock_api
