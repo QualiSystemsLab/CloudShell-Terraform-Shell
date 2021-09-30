@@ -49,12 +49,7 @@ jobs:
           python -m unittest
       - name: Test integration tests for package/tests/integration_tests
         env:
-          AZUREAPP_TF_INPUTS: ${{ secrets.AZUREAPP_TF_INPUTS }}
-          GH_TF_PRIVATE_AZUREAPP_URL: ${{ secrets.GH_TF_PRIVATE_AZUREAPP_URL }}
           GH_TOKEN_DEC: ${{ secrets.GH_TOKEN_DEC }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_APPLICATION_ID: ${{ secrets.AZURE_APPLICATION_ID }}
           AZURE_APPLICATION_KEY_DEC: ${{ secrets.AZURE_APPLICATION_KEY_DEC }}
         run: |
           echo "##############################"
