@@ -1,5 +1,5 @@
-GITHUB_TF_PUBLIC_HELLO_URL_FILE = "https://github.com/QualiSystemsLab/CloudShell-Terraform-Shell/blob/master/package/tests/tests_helper_files/tf_modules/hello/hello.tf"
-GITHUB_TF_PUBLIC_HELLO_URL_FOLDER = "https://github.com/QualiSystemsLab/CloudShell-Terraform-Shell/tree/master/package/tests/tests_helper_files/tf_modules/hello"
+GH_TF_PUBLIC_HELLO_URL_FILE = "https://github.com/QualiSystemsLab/CloudShell-Terraform-Shell/blob/master/package/tests/tests_helper_files/tf_modules/hello/hello.tf"
+GH_TF_PUBLIC_HELLO_URL_FOLDER = "https://github.com/QualiSystemsLab/CloudShell-Terraform-Shell/tree/master/package/tests/tests_helper_files/tf_modules/hello"
 
 
 TF_STATE_FILE_STRING = 'tf_state_file_string'

@@ -126,7 +126,7 @@ class TestRealTerraformExecuteDestroy(TestCase):
         )
         self._set_attribute_on_service(
             f"{SHELL_NAME}.Github Terraform Module URL",
-            os.environ.get("GITHUB_TF_PRIVATE_AZUREAPP_URL"),
+            os.environ.get("GH_TF_PRIVATE_AZUREAPP_URL"),
             integration_data
         )
         self._set_attribute_on_service(
@@ -143,7 +143,7 @@ class TestRealTerraformExecuteDestroy(TestCase):
         )
         self._set_attribute_on_service(
             f"{SHELL_NAME}.Github Terraform Module URL",
-            os.environ.get("GITHUB_TF_PRIVATE_AZUREMSSQL_URL"),
+            os.environ.get("GH_TF_PRIVATE_AZUREMSSQL_URL"),
             integration_data
         )
         self._set_attribute_on_service(

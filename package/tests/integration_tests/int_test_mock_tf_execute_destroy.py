@@ -112,12 +112,12 @@ class TestMockTerraformExecuteDestroy(TestCase):
         )
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.Github Terraform Module URL",
-            os.environ.get("GITHUB_TF_PRIVATE_AZUREAPP_URL"),
+            os.environ.get("GH_TF_PRIVATE_AZUREAPP_URL"),
             integration_data
         )
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.{ATTRIBUTE_NAMES.GITHUB_TOKEN}",
-            os.environ.get("GITHUB_TOKEN_DEC"),
+            os.environ.get("GH_TOKEN_DEC"),
             integration_data
         )
         self._set_attribute_on_mock_service(
@@ -147,7 +147,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
         )
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.Github Terraform Module URL",
-            os.environ.get("GITHUB_TF_PRIVATE_AZUREMSSQL_URL"),
+            os.environ.get("GH_TF_PRIVATE_AZUREMSSQL_URL"),
             integration_data
         )
         self._set_attribute_on_mock_service(
