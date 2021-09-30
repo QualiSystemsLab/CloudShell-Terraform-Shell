@@ -4,7 +4,7 @@ from typing import Callable
 
 from cloudshell.api.cloudshell_api import ResourceInfo
 
-from cloudshell.iac.terraform.constants import AZURE2G_MODEL, ATTRIBUTE_NAMES, AWS2G_MODEL
+from cloudshell.iac.terraform.constants import AZURE2G_MODEL, ATTRIBUTE_NAMES, AWS2G_MODEL, CLP_PROVIDER_MODELS
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
 
@@ -26,20 +26,11 @@ class ProviderHandler(object):
             raise ValueError(f"{clpr_res_fam} currently not supported")
 
         try:
-            if clp_res_model in ['Microsoft Azure', AZURE2G_MODEL]:
+            if clp_res_model in CLP_PROVIDER_MODELS:
                 ProviderHandler._set_cloud_env_vars(
                     clp_details,
                     clp_res_model,
-                    shell_helper,
-                    ProviderHandler._set_azure_env_vars_based_on_clp
-                )
-
-            elif clp_res_model in ['AWS EC2', AWS2G_MODEL]:
-                ProviderHandler._set_cloud_env_vars(
-                    clp_details,
-                    clp_res_model,
-                    shell_helper,
-                    ProviderHandler._set_aws_env_vars_based_on_clp
+                    shell_helper
                 )
             else:
                 shell_helper.logger.error(f"{clp_res_model} currently not supported")
@@ -54,7 +45,6 @@ class ProviderHandler(object):
             clp_details: ResourceInfo,
             clp_res_model: str,
             shell_helper: ShellHelperObject,
-            set_cloud_env_vars_based_on_clp: Callable
     ):
         shell_helper.sandbox_messages.write_message("initializing provider...")
         shell_helper.logger.info("Initializing Environment variables with CloudProvider details")
@@ -64,7 +54,12 @@ class ProviderHandler(object):
         if clp_res_model in [AZURE2G_MODEL, AWS2G_MODEL]:
             cloud_attr_name_prefix = clp_res_model + "."
 
-        set_cloud_env_vars_based_on_clp(cloud_attr_name_prefix, clp_resource_attributes, shell_helper)
+        if clp_res_model in ['AWS EC2', AWS2G_MODEL]:
+            ProviderHandler._set_aws_env_vars_based_on_clp(
+                cloud_attr_name_prefix, clp_resource_attributes, shell_helper)
+        elif clp_res_model in ['Microsoft Azure', AZURE2G_MODEL]:
+            ProviderHandler._set_azure_env_vars_based_on_clp(
+                cloud_attr_name_prefix, clp_resource_attributes, shell_helper)
 
     @staticmethod
     def _set_azure_env_vars_based_on_clp(azure_attr_name_prefix, clp_resource_attributes, shell_helper):

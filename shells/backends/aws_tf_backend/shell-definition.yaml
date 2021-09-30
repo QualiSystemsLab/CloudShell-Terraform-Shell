@@ -22,15 +22,15 @@ node_types:
         type: string
         tags: [ setting, user_input ]
       Region Name:
-        description: The region in which the bucket resides
+        description: The region in which the bucket resides (Mendatory)
         type: string
         tags: [ setting, user_input ]
       Access Key:
-        description: AWS access key
+        description: AWS access key (Use only if Cloud Provider not specified - Must be paried with Secret Key)
         type: cloudshell.datatypes.Password
         tags: [ setting, user_input ]
       Secret Key:
-        description: AWS secret key
+        description: AWS secret key (Use only if Cloud Provider not specified - Must be paried with Access Key)
         type: cloudshell.datatypes.Password
         tags: [ setting, user_input ]
       Cloud Provider:
