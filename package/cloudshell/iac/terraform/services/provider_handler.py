@@ -1,6 +1,5 @@
 import os
 from logging import Logger
-from typing import Callable
 
 from cloudshell.api.cloudshell_api import ResourceInfo
 
