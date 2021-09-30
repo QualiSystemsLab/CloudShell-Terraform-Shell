@@ -9,7 +9,7 @@ from typing import Callable
 from tests.integration_tests.helper_objects.integration_context import IntegrationData
 
 import os
-from unittest import TestCase, mock
+from unittest import TestCase
 
 from pathlib import Path
 
