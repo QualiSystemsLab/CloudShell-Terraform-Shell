@@ -223,6 +223,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
 
 def _decrypt_password(x):
-    result = mock.MagicMock()
+    # result = mock.MagicMock()
+    result = Mock()
     result.Value = x
     return result

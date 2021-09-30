@@ -52,12 +52,6 @@ jobs:
           GH_TOKEN_DEC: ${{ secrets.GH_TOKEN_DEC }}
           AZURE_APPLICATION_KEY_DEC: ${{ secrets.AZURE_APPLICATION_KEY_DEC }}
         run: |
-          echo "##############################"
-          echo "GH_TF_PRIVATE_AZUREAPP_URL = $GH_TF_PRIVATE_AZUREAPP_URL"
-
-          echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-          echo "$GITHUB_CONTEXT"
-          echo "##############################"
           pwd
           cd package/tests/integration_tests
           pwd
