@@ -11,7 +11,7 @@ from unittest import TestCase
 
 class TestRealTerraformExecuteDestroy(TestCase):
     def setUp(self) -> None:
-        load_dotenv()
+        # load_dotenv()
         self.integration_data1 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS1"), is_api_real=True)
         self.integration_data2 = IntegrationData(os.environ.get("SB_SERVICE_ALIAS2"), is_api_real=True)
 
@@ -129,9 +129,6 @@ class TestRealTerraformExecuteDestroy(TestCase):
             os.environ.get("GH_TF_PRIVATE_AZUREAPP_URL"),
             integration_data
         )
-        print("------------------------------------------")
-        print(os.environ.get("GH_TF_PRIVATE_AZUREAPP_URL"))
-        print("------------------------------------------")
         self._set_attribute_on_service(
             f"{SHELL_NAME}.UUID",
             os.environ.get(""),
