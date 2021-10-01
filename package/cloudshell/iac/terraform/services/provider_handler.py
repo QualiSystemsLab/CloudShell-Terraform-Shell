@@ -3,8 +3,11 @@ from logging import Logger
 
 from cloudshell.api.cloudshell_api import ResourceInfo
 
-from cloudshell.iac.terraform.constants import AZURE2G_MODEL, ATTRIBUTE_NAMES, AWS2G_MODEL, CLP_PROVIDER_MODELS
+from cloudshell.iac.terraform.constants import AZURE2G_MODEL, ATTRIBUTE_NAMES, AWS2G_MODEL, CLP_PROVIDER_MODELS, \
+    AWS1G_MODEL, AZURE1G_MODEL
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
+from cloudshell.iac.terraform.services.clp_envvar_handler import BaseCloudProviderEnvVarHandler, \
+    AWSCloudProviderEnvVarHandler, AzureCloudProviderEnvVarHandler
 
 
 class ProviderHandler(object):
@@ -48,49 +51,14 @@ class ProviderHandler(object):
         shell_helper.sandbox_messages.write_message("initializing provider...")
         shell_helper.logger.info("Initializing Environment variables with CloudProvider details")
         clp_resource_attributes = clp_details.ResourceAttributes
+        clp_handler = None
 
-        cloud_attr_name_prefix = ""
-        if clp_res_model in [AZURE2G_MODEL, AWS2G_MODEL]:
-            cloud_attr_name_prefix = clp_res_model + "."
+        if clp_res_model in [AWS1G_MODEL, AWS2G_MODEL]:
+            clp_handler = AWSCloudProviderEnvVarHandler(clp_res_model, clp_resource_attributes, shell_helper)
 
-        if clp_res_model in ['AWS EC2', AWS2G_MODEL]:
-            ProviderHandler._set_aws_env_vars_based_on_clp(
-                cloud_attr_name_prefix, clp_resource_attributes, shell_helper)
-        elif clp_res_model in ['Microsoft Azure', AZURE2G_MODEL]:
-            ProviderHandler._set_azure_env_vars_based_on_clp(
-                cloud_attr_name_prefix, clp_resource_attributes, shell_helper)
+        elif clp_res_model in [AZURE1G_MODEL, AZURE2G_MODEL]:
+            clp_handler = AzureCloudProviderEnvVarHandler(clp_res_model, clp_resource_attributes, shell_helper)
 
-    @staticmethod
-    def _set_azure_env_vars_based_on_clp(azure_attr_name_prefix, clp_resource_attributes, shell_helper):
-        for attr in clp_resource_attributes:
-            if attr.Name == azure_attr_name_prefix + "Azure Subscription ID":
-                os.environ["ARM_SUBSCRIPTION_ID"] = attr.Value
-            if attr.Name == azure_attr_name_prefix + "Azure Tenant ID":
-                os.environ["ARM_TENANT_ID"] = attr.Value
-            if attr.Name == azure_attr_name_prefix + "Azure Application ID":
-                os.environ["ARM_CLIENT_ID"] = attr.Value
-            if attr.Name == azure_attr_name_prefix + "Azure Application Key":
-                dec_client_secret = shell_helper.api.DecryptPassword(attr.Value).Value
-                os.environ["ARM_CLIENT_SECRET"] = dec_client_secret
+        if clp_handler:
+            clp_handler.set_env_vars_based_on_clp()
 
-    @staticmethod
-    def _set_aws_env_vars_based_on_clp(aws_attr_name_prefix, clp_resource_attributes, shell_helper):
-        dec_access_key = ""
-        dec_secret_key = ""
-        region_flag = False
-
-        for attr in clp_resource_attributes:
-            if attr.Name == aws_attr_name_prefix + "AWS Access Key ID":
-                dec_access_key = shell_helper.api.DecryptPassword(attr.Value).Value
-            if attr.Name == aws_attr_name_prefix + "AWS Secret Access Key":
-                dec_secret_key = shell_helper.api.DecryptPassword(attr.Value).Value
-            if attr.Name == aws_attr_name_prefix + "Region":
-                os.environ["AWS_DEFAULT_REGION"] = attr.Value
-                region_flag = True
-        if not region_flag:
-            raise ValueError("Region was not found on AWS Cloud Provider")
-
-        # We must check both keys exist...if not then the EC2 Execution Server profile would be used (Role)
-        if dec_access_key and dec_secret_key:
-            os.environ["AWS_ACCESS_KEY_ID"] = dec_access_key
-            os.environ["AWS_SECRET_ACCESS_KEY"] = dec_secret_key
