@@ -1,7 +1,7 @@
 import os
 from abc import ABCMeta
 
-from cloudshell.api.cloudshell_api import ResourceAttribute
+# from cloudshell.api.cloudshell_api import ResourceAttribute
 
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
@@ -24,8 +24,8 @@ class BaseCloudProviderEnvVarHandler(metaclass=ABCMeta):
 
 
 class AWSCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
-    def __init__(self,
-                 clp_res_model: str, clp_resource_attributes: list[ResourceAttribute], shell_helper: ShellHelperObject):
+    def __init__(self, clp_res_model: str, clp_resource_attributes: list,
+                 shell_helper: ShellHelperObject):
         BaseCloudProviderEnvVarHandler.__init__(self)
         self._clp_res_model = clp_res_model
         self._clp_resource_attributes = clp_resource_attributes
