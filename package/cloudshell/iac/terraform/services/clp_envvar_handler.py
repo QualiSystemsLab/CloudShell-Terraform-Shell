@@ -11,7 +11,7 @@ class BaseCloudProviderEnvVarHandler(metaclass=ABCMeta):
         pass
 
     def set_env_vars_based_on_clp(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     @staticmethod
     def get_attribute_value(clp_res_model, clp_attribute, attr_name_to_check, shell_helper, decrypt=False) -> str:
