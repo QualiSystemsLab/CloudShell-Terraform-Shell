@@ -41,8 +41,8 @@ class ProviderHandler(object):
             shell_helper.logger.error(f"Error Setting environment variables -> {str(e)}")
             raise
 
-    @staticmethod
     def _set_cloud_env_vars(
+            self,
             clp_details: ResourceInfo,
             clp_res_model: str,
             shell_helper: ShellHelperObject,
@@ -60,3 +60,6 @@ class ProviderHandler(object):
 
         if clp_handler:
             clp_handler.set_env_vars_based_on_clp()
+        else:
+            self.logger(f"Was not able to initialize provider as {clp_res_model} is not a supported model")
+            raise ValueError(f"Was not able to initialize provider as {clp_res_model} is not a supported model")
