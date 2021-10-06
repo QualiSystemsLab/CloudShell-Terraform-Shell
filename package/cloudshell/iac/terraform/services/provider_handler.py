@@ -60,4 +60,3 @@ class ProviderHandler(object):
 
         if clp_handler:
             clp_handler.set_env_vars_based_on_clp()
-
