@@ -1,4 +1,3 @@
-import os
 from logging import Logger
 
 from cloudshell.api.cloudshell_api import ResourceInfo
@@ -6,8 +5,8 @@ from cloudshell.api.cloudshell_api import ResourceInfo
 from cloudshell.iac.terraform.constants import AZURE2G_MODEL, ATTRIBUTE_NAMES, AWS2G_MODEL, CLP_PROVIDER_MODELS, \
     AWS1G_MODEL, AZURE1G_MODEL
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
-from cloudshell.iac.terraform.services.clp_envvar_handler import BaseCloudProviderEnvVarHandler, \
-    AWSCloudProviderEnvVarHandler, AzureCloudProviderEnvVarHandler
+from cloudshell.iac.terraform.services.clp_envvar_handler import AWSCloudProviderEnvVarHandler, \
+    AzureCloudProviderEnvVarHandler
 
 
 class ProviderHandler(object):

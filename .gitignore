@@ -61,7 +61,7 @@ docs/_build/
 # PyBuilder
 target/
 cloudshell_config.yml
-shells/generic_terraform_service/tests/.env
-tests/.env
-shells/backends/azure_tf_backend/tests/.env
-package/tests/integration_tests/int_tests_secrets.env
+
+# env files
+*.env
+!*.template.env
