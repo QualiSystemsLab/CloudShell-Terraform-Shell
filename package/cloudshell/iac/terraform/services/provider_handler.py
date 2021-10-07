@@ -61,5 +61,5 @@ class ProviderHandler(object):
         if clp_handler:
             clp_handler.set_env_vars_based_on_clp()
         else:
-            self.logger(f"Was not able to initialize provider as {clp_res_model} is not a supported model")
+            self.logger.error(f"Was not able to initialize provider as {clp_res_model} is not a supported model")
             raise ValueError(f"Was not able to initialize provider as {clp_res_model} is not a supported model")
