@@ -57,15 +57,11 @@ class AzureCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
 
     def set_env_vars_based_on_clp(self):
         for attr in self._clp_resource_attributes:
-            attr_val = self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Subscription ID")
-            if attr_val:
-                os.environ["ARM_SUBSCRIPTION_ID"] = attr_val
-            attr_val = self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Tenant ID")
-            if attr_val:
-                os.environ["Azure Tenant ID"] = attr_val
-            attr_val = self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Application ID")
-            if attr_val:
-                os.environ["ARM_CLIENT_ID"] = attr_val
-            attr_val = self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Application Key", True)
-            if attr_val:
-                os.environ["ARM_CLIENT_SECRET"] = attr_val
+            if self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Subscription ID"):
+                os.environ["ARM_SUBSCRIPTION_ID"] = attr.Value
+            if self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Tenant ID"):
+                os.environ["Azure Tenant ID"] = attr.Value
+            if self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Application ID"):
+                os.environ["ARM_CLIENT_ID"] = attr.Value
+            if self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Application Key", True):
+                os.environ["ARM_CLIENT_SECRET"] = self._shell_helper.api.DecryptPassword(attr.Value).Value
