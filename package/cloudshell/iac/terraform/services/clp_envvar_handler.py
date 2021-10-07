@@ -1,8 +1,6 @@
 import os
 from abc import ABCMeta
 
-# from cloudshell.api.cloudshell_api import ResourceAttribute
-
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
 
@@ -14,13 +12,10 @@ class BaseCloudProviderEnvVarHandler(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @staticmethod
-    def get_attribute_value(clp_res_model, clp_attribute, attr_name_to_check, shell_helper, decrypt=False) -> str:
+    def does_attribute_match(clp_res_model, clp_attribute, attr_name_to_check) -> bool:
         if f"{clp_res_model}.{clp_attribute.Name}" == attr_name_to_check or clp_attribute.Name == attr_name_to_check:
-            if decrypt:
-                return shell_helper.api.DecryptPassword(clp_attribute.Value).Value
-            else:
-                return clp_attribute.Value
-        return ""
+            return True
+        return False
 
 
 class AWSCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
@@ -31,17 +26,17 @@ class AWSCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
         self._clp_resource_attributes = clp_resource_attributes
         self._shell_helper = shell_helper
 
-    def set_aws_env_vars_based_on_clp(self):
+    def set_env_vars_based_on_clp(self):
         dec_access_key = ""
         dec_secret_key = ""
         region_flag = False
 
         for attr in self._clp_resource_attributes:
-            dec_access_key = self.get_attribute_value(
-                self._clp_res_model, attr, "AWS Access Key ID", self._shell_helper, True)
-            dec_secret_key = self.get_attribute_value(
-                self._clp_res_model, attr, "AWS Secret Access Key", self._shell_helper, True)
-            if self.get_attribute_value(self._clp_res_model, attr, self._shell_helper, "Region"):
+            if self.does_attribute_match(self._clp_res_model, attr, "AWS Access Key ID"):
+                dec_access_key = self._shell_helper.api.DecryptPassword(attr.Value).Value
+            if self.does_attribute_match(self._clp_res_model, attr, "AWS Secret Access Key"):
+                dec_secret_key = self._shell_helper.api.DecryptPassword(attr.Value).Value
+            if self.does_attribute_match(self._clp_res_model, attr, "Region"):
                 os.environ["AWS_DEFAULT_REGION"] = attr.Value
                 region_flag = True
         if not region_flag:
@@ -60,17 +55,17 @@ class AzureCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
         self._clp_resource_attributes = clp_resource_attributes
         self._shell_helper = shell_helper
 
-    def _set_azure_env_vars_based_on_clp(self):
+    def set_env_vars_based_on_clp(self):
         for attr in self._clp_resource_attributes:
-            attr_val = self.get_attribute_value(self._clp_res_model, attr, self._shell_helper, "Azure Subscription ID")
+            attr_val = self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Subscription ID")
             if attr_val:
                 os.environ["ARM_SUBSCRIPTION_ID"] = attr_val
-            attr_val = self.get_attribute_value(self._clp_res_model, attr, self._shell_helper, "Azure Tenant ID")
+            attr_val = self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Tenant ID")
             if attr_val:
                 os.environ["Azure Tenant ID"] = attr_val
-            attr_val = self.get_attribute_value(self._clp_res_model, attr, self._shell_helper, "Azure Application ID")
+            attr_val = self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Application ID")
             if attr_val:
                 os.environ["ARM_CLIENT_ID"] = attr_val
-            attr_val = self.get_attribute_value(self._clp_res_model, attr, self._shell_helper, "Azure Application Key", True)
+            attr_val = self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "Azure Application Key", True)
             if attr_val:
                 os.environ["ARM_CLIENT_SECRET"] = attr_val

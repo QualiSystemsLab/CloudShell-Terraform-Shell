@@ -13,8 +13,7 @@ class ProviderHandler(object):
     def __init__(self, logger: Logger):
         self.logger = logger
 
-    @staticmethod
-    def initialize_provider(shell_helper: ShellHelperObject):
+    def initialize_provider(self, shell_helper: ShellHelperObject):
         clp_resource_name = shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.CLOUD_PROVIDER)
         if not clp_resource_name:
             return
@@ -28,11 +27,7 @@ class ProviderHandler(object):
 
         try:
             if clp_res_model in CLP_PROVIDER_MODELS:
-                ProviderHandler._set_cloud_env_vars(
-                    clp_details,
-                    clp_res_model,
-                    shell_helper
-                )
+                self._set_cloud_env_vars(clp_details, clp_res_model, shell_helper)
             else:
                 shell_helper.logger.error(f"{clp_res_model} currently not supported")
                 raise ValueError(f"{clp_res_model} currently not supported")
