@@ -78,7 +78,7 @@ class AzureTfBackendDriver (ResourceDriverInterface):
             if api.DecryptPassword(azure_backend_resource.access_key).Value:
                 if azure_backend_resource.cloud_provider:
                     self._handle_exception_logging(logger, "Only one method of authentication should be filled")
-                credential = api.DecryptPassword(azure_backend_resource.access_key).Value
+                credentials = api.DecryptPassword(azure_backend_resource.access_key).Value
             else:
                 if azure_backend_resource.cloud_provider:
                     clp_details = self._validate_clp(api, azure_backend_resource, logger)
@@ -86,12 +86,12 @@ class AzureTfBackendDriver (ResourceDriverInterface):
                     account_keys = self._get_storage_keys(api, azure_backend_resource, clp_details)
                     if not account_keys.keys:
                         self._handle_exception_logging(logger, "Unable to find access key for the storage account")
-                    credential = account_keys.keys[0].value
+                    credentials = account_keys.keys[0].value
                 else:
                     self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing")
         except Exception as e:
             self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
-        return credential
+        return credentials
 
     def _get_container_client(self, logger, azure_backend_resource, credential):
         try:

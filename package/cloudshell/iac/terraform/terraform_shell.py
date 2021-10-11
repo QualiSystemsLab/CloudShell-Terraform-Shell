@@ -20,6 +20,7 @@ class TerraformShell:
         self._tf_service = ObjectFactory.create_tf_service(driver_context)
         self._logger = logger
         self._config = config or TerraformShellConfig()
+        self._provider_handler = ProviderHandler(self._logger)
 
     def execute_terraform(self):
         # initialize a logger if logger wasn't passed during init
@@ -36,7 +37,7 @@ class TerraformShell:
             tf_proc_executer = ObjectFactory.create_tf_proc_executer(self._config, sandbox_data_handler,
                                                                      shell_helper, tf_working_dir)
             if tf_proc_executer.can_execute_run():
-                ProviderHandler.initialize_provider(shell_helper)
+                self._provider_handler.initialize_provider(shell_helper)
                 tf_proc_executer.init_terraform()
                 tf_proc_executer.tag_terraform()
                 tf_proc_executer.plan_terraform()
@@ -67,7 +68,7 @@ class TerraformShell:
             self._handle_error_output(shell_helper, "Destroy failed due to missing local directory")
 
         try:
-            ProviderHandler.initialize_provider(shell_helper)
+            self._provider_handler.initialize_provider(shell_helper)
             tf_proc_executer = ObjectFactory.create_tf_proc_executer(self._config, sandbox_data_handler,
                                                                      shell_helper, tf_working_dir)
             if tf_proc_executer.can_destroy_run():

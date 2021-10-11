@@ -1,0 +1,85 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+metadata:
+  template_name: Aws Tf Backend
+  template_author: Anonymous
+  template_version: 0.1.0
+  template_icon: shell-icon.png
+
+description: >
+  TOSCA based resource shell
+
+imports:
+  - cloudshell_standard: cloudshell_resource_standard_2_0_3.yaml
+
+node_types:
+
+  vendor.resource.Aws Tf Backend:
+    derived_from: cloudshell.nodes.GenericResource
+    properties:
+      Bucket Name:
+        description: The name of the bucket to be used in order to save the state file
+        type: string
+        tags: [ setting, user_input ]
+      Region Name:
+        description: The region in which the bucket resides (Mendatory)
+        type: string
+        tags: [ setting, user_input ]
+      Access Key:
+        description: AWS access key (Use only if Cloud Provider not specified - Must be paried with Secret Key)
+        type: cloudshell.datatypes.Password
+        tags: [ setting, user_input ]
+      Secret Key:
+        description: AWS secret key (Use only if Cloud Provider not specified - Must be paried with Access Key)
+        type: cloudshell.datatypes.Password
+        tags: [ setting, user_input ]
+      Cloud Provider:
+        description: In case Access Key and Secret Key were not filled - the keys from the cloud provider will be used.
+        type: string
+      #Execution Server Selector:
+      #  description: Execution Server on which the discovery will be executed
+      #  type: string
+      #  tags: [ setting, user_input ]
+      hide_address:
+        type: string
+        default: true
+
+    capabilities:
+      auto_discovery_capability:
+        type: cloudshell.capabilities.AutoDiscovery
+        properties:        
+          enable_auto_discovery:
+            type: boolean
+            default: true
+          auto_discovery_description:
+            type: string
+            default: Describe the auto discovery
+          inventory_description:
+            type: string
+            default: Describe the resource shell template
+          Bucket Name:
+            description: The name of the bucket to be used in order to save the state file
+            type: string
+          Region Name:
+            description: The region in which the bucket resides
+            type: string
+          Access Key:
+            description: AWS access key
+            type: cloudshell.datatypes.Password
+          Secret Key:
+            description: AWS secret key
+            type: cloudshell.datatypes.Password
+          Cloud Provider:
+            description: In case Access Key and Secret Key were not filled - the keys from the cloud provider will be used.
+            type: string
+          #Execution Server Selector:
+          #  description: Execution Server on which the discovery will be executed
+          #  type: string
+
+    artifacts:
+      icon:
+        file: shell-icon.png
+        type: tosca.artifacts.File
+      driver:
+        file: AwsTfBackendDriver.zip
+        type: tosca.artifacts.File

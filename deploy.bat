@@ -8,4 +8,7 @@ xcopy /Q /Y . "C:\Program Files (x86)\QualiSystems\CloudShell\Server\Config\Pypi
 cd ..\..
 cd shells\backends\azure_tf_backend
 shellfoundry install
+cd ..\..
+cd backends\aws_tf_backend
+shellfoundry install
 cd ..\..\..
