@@ -60,7 +60,7 @@ class AzureCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
             if self.does_attribute_match(self._clp_res_model, attr, "Azure Subscription ID"):
                 os.environ["ARM_SUBSCRIPTION_ID"] = attr.Value
             if self.does_attribute_match(self._clp_res_model, attr, "Azure Tenant ID"):
-                os.environ["Azure Tenant ID"] = attr.Value
+                os.environ["ARM_TENANT_ID"] = attr.Value
             if self.does_attribute_match(self._clp_res_model, attr, "Azure Application ID"):
                 os.environ["ARM_CLIENT_ID"] = attr.Value
             if self.does_attribute_match(self._clp_res_model, attr, "Azure Application Key"):
