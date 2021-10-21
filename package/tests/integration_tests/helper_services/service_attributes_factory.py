@@ -5,7 +5,7 @@ from cloudshell.api.cloudshell_api import NameValuePair
 from tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES
 
 
-class ServiceAttributesFactory:
+class ServiceAttributesMockBuilder:
     @staticmethod
     def create_empty_attributes() -> List[dict]:
         attributes = [

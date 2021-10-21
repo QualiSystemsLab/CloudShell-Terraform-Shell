@@ -7,7 +7,7 @@ from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
 from tests.integration_tests.helper_objects.env_vars import EnvVars
-from tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesFactory
+from tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesMockBuilder
 
 
 class IntegrationData(object):
@@ -48,7 +48,7 @@ class IntegrationData(object):
             self.context.reservation.reservation_id = self._env_vars.cs_res_id
             self.context.reservation.domain = self._env_vars.cs_domain
         else:
-            self.context.resource.attributes = ServiceAttributesFactory.create_empty_attributes()
+            self.context.resource.attributes = ServiceAttributesMockBuilder.create_empty_attributes()
             self.context.reservation = mock.MagicMock()
             self.context.reservation.reservation_id = "mock_reservation_id"
 

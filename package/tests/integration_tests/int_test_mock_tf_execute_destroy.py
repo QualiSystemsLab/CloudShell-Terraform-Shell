@@ -13,10 +13,11 @@ from unittest import TestCase
 
 from pathlib import Path
 
-from tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesFactory
+from tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesMockBuilder
 
 
 class TestMockTerraformExecuteDestroy(TestCase):
+
     @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
     def setUp(self, patched_api) -> None:
         load_dotenv(Path('int_tests.env'))
@@ -40,10 +41,10 @@ class TestMockTerraformExecuteDestroy(TestCase):
     def _prepare_mock_services(self):
         self._service1 = Mock()
         self._service1.Alias = os.environ.get("SB_SERVICE_ALIAS1")
-        self._service1.Attributes = ServiceAttributesFactory.create_empty_attributes()
+        self._service1.Attributes = ServiceAttributesMockBuilder.create_empty_attributes()
         self._service2 = Mock()
         self._service2.Alias = os.environ.get("SB_SERVICE_ALIAS2")
-        self._service2.Attributes = ServiceAttributesFactory.create_empty_attributes()
+        self._service2.Attributes = ServiceAttributesMockBuilder.create_empty_attributes()
 
     def _prepare_mock_api(self):
         self.mock_api = Mock()
