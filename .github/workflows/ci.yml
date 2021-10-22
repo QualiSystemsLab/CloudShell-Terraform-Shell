@@ -51,6 +51,10 @@ jobs:
         env:
           GH_TOKEN_DEC: ${{ secrets.GH_TOKEN_DEC }}
           AZURE_APPLICATION_KEY_DEC: ${{ secrets.AZURE_APPLICATION_KEY_DEC }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_APPLICATION_ID: ${{ secrets.AZURE_APPLICATION_ID }}
+
         run: |
           pwd
           cd package/tests/integration_tests
