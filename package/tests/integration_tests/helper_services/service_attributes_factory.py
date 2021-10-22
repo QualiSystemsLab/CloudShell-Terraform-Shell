@@ -2,7 +2,7 @@ from typing import List
 
 from cloudshell.api.cloudshell_api import NameValuePair
 
-from tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES
+from package.tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES
 
 
 class ServiceAttributesMockBuilder:

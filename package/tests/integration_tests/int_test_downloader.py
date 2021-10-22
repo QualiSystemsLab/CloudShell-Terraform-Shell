@@ -6,9 +6,10 @@ from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpda
 from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
 from shells.generic_terraform_service.src.data_model import GenericTerraformService
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
-from tests.constants import GH_TF_PUBLIC_HELLO_URL_FILE, GH_TF_PUBLIC_HELLO_URL_FOLDER, TERRAFORM_EXEC_FILE, \
+from package.tests.constants import GH_TF_PUBLIC_HELLO_URL_FILE, GH_TF_PUBLIC_HELLO_URL_FOLDER, TERRAFORM_EXEC_FILE, \
     SHELL_NAME, TF_HELLO_FILE
-from tests.integration_tests.helper_objects.downloader_integration_context import IntegrationData
+from package.tests.integration_tests.helper_objects.downloader_integration_context import IntegrationData
+
 from cloudshell.iac.terraform.tagging.tags import TagsManager
 from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 
@@ -63,7 +64,7 @@ class TestTerraformDownloader(TestCase):
 
     def test_public_and_private_hello_dl(self):
         self._test_download_terraform_module(GH_TF_PUBLIC_HELLO_URL_FILE, "")
-        self._test_download_terraform_module(os.environ.get("GH_TF_PRIVATE_HELLO_URL"), "")
+        self._test_download_terraform_module(os.environ.get("GITHUB_TF_PRIVATE_HELLO_URL"), "")
         self._test_download_terraform_module(GH_TF_PUBLIC_HELLO_URL_FOLDER, "")
 
     def test_download_terraform_executable(self):

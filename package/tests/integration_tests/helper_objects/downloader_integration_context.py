@@ -17,8 +17,7 @@ class IntegrationData(object):
             self._env_vars.cs_server,
             self._env_vars.cs_user,
             self._env_vars.cs_pass,
-            self._env_vars.cs_domain,
-            os.environ.get("SB_SERVICE_ALIAS")
+            self._env_vars.cs_domain
         )
         self._set_context()
         self._logger = get_qs_logger(log_group=self.context.resource.name)
