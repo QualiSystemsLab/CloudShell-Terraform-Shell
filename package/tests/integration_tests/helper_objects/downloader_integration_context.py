@@ -1,5 +1,4 @@
 from unittest import mock
-import os
 
 from cloudshell.api.cloudshell_api import CloudShellAPISession
 from cloudshell.logging.qs_logger import get_qs_logger
