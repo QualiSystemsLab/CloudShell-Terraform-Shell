@@ -17,7 +17,7 @@ from tests.integration_tests.helper_services.service_attributes_factory import S
 
 
 class TestMockTerraformExecuteDestroy(TestCase):
-
+    @classmethod
     def setUpClass(self):
         load_dotenv(Path('int_tests.env'))
         if os.path.isfile(Path('int_tests_secrets.env')):
