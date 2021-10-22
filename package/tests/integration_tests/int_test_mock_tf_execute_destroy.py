@@ -6,14 +6,14 @@ from dotenv import load_dotenv
 from package.tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES, INT_TEST_TF_VER, INT_TEST_CLP_RESOURSE
 from typing import Callable
 
-from package.tests.integration_tests.helper_objects.integration_context import IntegrationData
+from tests.integration_tests.helper_objects.integration_context import IntegrationData
 
 import os
 from unittest import TestCase
 
 from pathlib import Path
 
-from package.tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesMockBuilder
+from tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesMockBuilder
 
 
 class TestMockTerraformExecuteDestroy(TestCase):

@@ -5,7 +5,7 @@ from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
 
-from package.tests.integration_tests.helper_objects.env_vars import EnvVars
+from tests.integration_tests.helper_objects.env_vars import EnvVars
 
 
 class IntegrationData(object):
