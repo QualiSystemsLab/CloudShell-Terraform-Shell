@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES, INT_TEST_TF_VER, INT_TEST_CLP_RESOURSE
 from typing import Callable
 
-from tests.integration_tests.helper_objects.integration_context import IntegrationData
+from tests.integration_tests.helper_objects.integration_context import MockAPIIntegrationData
 
 import os
 from unittest import TestCase
@@ -19,9 +19,9 @@ from tests.integration_tests.helper_services.service_attributes_factory import S
 class TestMockTerraformExecuteDestroy(TestCase):
     @classmethod
     def setUpClass(self):
-        load_dotenv(Path('int_tests.env'))
-        if os.path.isfile(Path('int_tests_secrets.env')):
-            load_dotenv(Path('int_tests_secrets.env'))
+        load_dotenv(Path('../int_tests.env'))
+        if os.path.isfile(Path('../int_tests_secrets.env')):
+            load_dotenv(Path('../int_tests_secrets.env'))
 
     @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
     def setUp(self, patched_api) -> None:
@@ -37,8 +37,8 @@ class TestMockTerraformExecuteDestroy(TestCase):
         self._prepare_integration_data()
 
     def _prepare_integration_data(self):
-        self.integration_data1 = IntegrationData(self._service1.Alias, False, self.mock_api)
-        self.integration_data2 = IntegrationData(self._service2.Alias, False, self.mock_api)
+        self.integration_data1 = MockAPIIntegrationData(self._service1.Alias, self.mock_api)
+        self.integration_data2 = MockAPIIntegrationData(self._service2.Alias, self.mock_api)
 
     def _prepare_mock_services(self):
         self._service1 = Mock()
@@ -62,16 +62,16 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Generic Execute/Destroy functions ---------------------------------'''
 
-    def run_execute(self, pre_exec_function: Callable, integration_data: IntegrationData):
+    def run_execute(self, pre_exec_function: Callable, integration_data: MockAPIIntegrationData):
         self.pre_exec_prep(pre_exec_function, integration_data)
         integration_data.tf_shell.execute_terraform()
 
-    def run_destroy(self, pre_destroy_function: Callable, integration_data: IntegrationData):
+    def run_destroy(self, pre_destroy_function: Callable, integration_data: MockAPIIntegrationData):
         self.pre_destroy_prep(pre_destroy_function, integration_data)
         integration_data.tf_shell.destroy_terraform()
 
     def run_execute_and_destroy(self, pre_exec_function: Callable, pre_destroy_function: Callable,
-                                integration_data: IntegrationData):
+                                integration_data: MockAPIIntegrationData):
         self.run_execute(pre_exec_function, integration_data)
         self.run_destroy(pre_destroy_function, integration_data)
 
@@ -95,10 +95,10 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Functions : general _pre prep functions ---------------------------------'''
 
-    def pre_exec_prep(self, pre_exec_function: Callable, integration_data: IntegrationData):
+    def pre_exec_prep(self, pre_exec_function: Callable, integration_data: MockAPIIntegrationData):
         pre_exec_function(integration_data)
 
-    def pre_destroy_prep(self, pre_destroy_function: Callable, integration_data: IntegrationData):
+    def pre_destroy_prep(self, pre_destroy_function: Callable, integration_data: MockAPIIntegrationData):
         pre_destroy_function(integration_data)
 
     def clear_sb_data(self):
@@ -106,10 +106,10 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Functions : prep before exec -------------------------------------------'''
 
-    def pre_exec(self, integration_data: IntegrationData):
+    def pre_exec(self, integration_data: MockAPIIntegrationData):
         pass
 
-    def pre_exec_azure_vault(self, integration_data: IntegrationData):
+    def pre_exec_azure_vault(self, integration_data: MockAPIIntegrationData):
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.Terraform Inputs",
             os.environ.get("AZUREAPP_TF_INPUTS"),
@@ -117,7 +117,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
         )
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.Github Terraform Module URL",
-            os.environ.get("GH_TF_PRIVATE_AZUREAPP_URL"),
+            os.environ.get("GITHUB_TF_PRIVATE_AZUREAPP_URL"),
             integration_data
         )
         self._set_attribute_on_mock_service(
@@ -144,7 +144,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
         self.mock_api.GetReservationDetails.return_value.ReservationDescription.Services = [service1]
         integration_data.create_tf_shell()
 
-    def pre_exec_azure_mssql(self, integration_data: IntegrationData):
+    def pre_exec_azure_mssql(self, integration_data: MockAPIIntegrationData):
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.Terraform Inputs",
             os.environ.get("AZUREMSSQL_TF_INPUTS"),
@@ -162,7 +162,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
         )
         self._prepare_service1_before_execute(integration_data)
 
-    def pre_exec_azure_vault_with_remote_access_key_based(self, integration_data: IntegrationData):
+    def pre_exec_azure_vault_with_remote_access_key_based(self, integration_data: MockAPIIntegrationData):
         self.pre_exec_azure_vault(integration_data)
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.Remote State Provider",
@@ -170,7 +170,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
             integration_data
         )
 
-    def pre_exec_azure_vault_with_remote_cloud_cred_based(self, integration_data: IntegrationData):
+    def pre_exec_azure_vault_with_remote_cloud_cred_based(self, integration_data: MockAPIIntegrationData):
         self.pre_exec_azure_vault(integration_data)
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.Remote State Provider",
@@ -178,7 +178,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
             integration_data
         )
 
-    def pre_exec_azure_vault_with_remote_invalid_nonexistent(self, integration_data: IntegrationData):
+    def pre_exec_azure_vault_with_remote_invalid_nonexistent(self, integration_data: MockAPIIntegrationData):
         self.pre_exec_azure_vault(integration_data)
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.Remote State Provider",
@@ -186,7 +186,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
             integration_data
         )
 
-    def pre_exec_azure_vault_with_remote_invalid_wrong(self, integration_data: IntegrationData):
+    def pre_exec_azure_vault_with_remote_invalid_wrong(self, integration_data: MockAPIIntegrationData):
         self.pre_exec_azure_vault(integration_data)
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.Remote State Provider",
@@ -194,7 +194,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
             integration_data
         )
 
-    def pre_exec_azure_vault_without_remote(self, integration_data: IntegrationData):
+    def pre_exec_azure_vault_without_remote(self, integration_data: MockAPIIntegrationData):
         self.pre_exec_azure_vault(integration_data)
         self._set_attribute_on_mock_service(
             f"{SHELL_NAME}.Remote State Provider",
@@ -204,7 +204,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Functions : prep before destroy -----------------------------------------'''
 
-    def pre_destroy(self, integration_data: IntegrationData):
+    def pre_destroy(self, integration_data: MockAPIIntegrationData):
         # As UUID has been created and SB data now contains UUID and Status we must update context so destroy can run
         for attribute in integration_data.context.resource.attributes:
             if attribute.Name == f"{SHELL_NAME}.UUID":
@@ -212,7 +212,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Helper Functions ---------------------------------------------------------'''
     @staticmethod
-    def _set_attribute_on_mock_service(attr_name: str, attr_value: str, integration_data: IntegrationData):
+    def _set_attribute_on_mock_service(attr_name: str, attr_value: str, integration_data: MockAPIIntegrationData):
         for attribute in integration_data.context.resource.attributes:
             if attribute.Name == attr_name:
                 attribute.Value = attr_value
