@@ -57,6 +57,6 @@ jobs:
 
         run: |
           pwd
-          cd package/tests/integration_tests
+          cd package/tests/integration_tests/mock_api_based_tests
           pwd
           python -m unittest discover -p "int_test_mock*.py"
