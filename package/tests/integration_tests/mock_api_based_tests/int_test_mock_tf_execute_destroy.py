@@ -19,6 +19,7 @@ from tests.integration_tests.helper_services.service_attributes_factory import S
 class TestMockTerraformExecuteDestroy(TestCase):
     @classmethod
     def setUpClass(self):
+        print(os.getcwd())
         load_dotenv(Path('../int_tests.env'))
         if os.path.isfile(Path('../int_tests_secrets.env')):
             load_dotenv(Path('../int_tests_secrets.env'))
@@ -42,10 +43,10 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     def _prepare_mock_services(self):
         self._service1 = Mock()
-        self._service1.Alias = os.environ.get("SB_SERVICE_ALIAS1")
+        self._service1.Alias = "MOCK_ALIAS1"
         self._service1.Attributes = ServiceAttributesMockBuilder.create_empty_attributes()
         self._service2 = Mock()
-        self._service2.Alias = os.environ.get("SB_SERVICE_ALIAS2")
+        self._service2.Alias = "MOCK_ALIAS2"
         self._service2.Attributes = ServiceAttributesMockBuilder.create_empty_attributes()
 
     def _prepare_mock_api(self):
