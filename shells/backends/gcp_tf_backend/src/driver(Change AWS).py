@@ -108,10 +108,9 @@ class AwsTfBackendDriver (ResourceDriverInterface):
 
     def _generate_state_file_string(self, aws_backend_resource: AwsTfBackend, tf_state_unique_name: str):
         tf_state_file_string = f'terraform {{\n\
-\tbackend "s3" {{\n\
+\tbackend "gcs" {{\n\
 \t\tbucket = "{aws_backend_resource.bucket_name}"\n\
-\t\tkey    = "{tf_state_unique_name}"\n\
-\t\tregion = "{aws_backend_resource.region_name}"\n\
+\t\tprefix = "{tf_state_unique_name}"\n\
 \t}}\n\
 }}'
         return tf_state_file_string

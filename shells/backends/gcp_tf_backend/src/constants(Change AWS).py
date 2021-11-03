@@ -1,6 +1,11 @@
-AWS1G_MODEL = "AWS EC2"
-AWS2G_MODEL = "Amazon AWS Cloud Provider 2G"
-AWS_MODELS = [AWS1G_MODEL, AWS2G_MODEL]
+GCP1G_MODEL = "Google Cloud Provider"
+# GCP2G_MODEL = "Google Cloud Provider 2G"
+GCP_MODELS = [GCP1G_MODEL]
 
-SECRET_KEY_ATTRIBUTE = 'AWS Secret Access Key'
-ACCESS_KEY_ATTRIBUTE = 'AWS Access Key ID'
+
+###
+# Need to add GCP json
+###
+
+# SECRET_KEY_ATTRIBUTE = 'AWS Secret Access Key'
+# ACCESS_KEY_ATTRIBUTE = 'AWS Access Key ID'

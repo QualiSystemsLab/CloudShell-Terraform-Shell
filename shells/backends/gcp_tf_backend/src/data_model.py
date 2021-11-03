@@ -3,53 +3,6 @@ from cloudshell.shell.core.driver_context import ResourceCommandContext, AutoLoa
 from collections import defaultdict
 
 
-    # @property
-    # def credentials_json_path(self):
-    #     """
-    #     :rtype: str
-    #     """
-    #     return self.attributes['Google Cloud Provider.Credentials Json Path'] if 'Google Cloud Provider.Credentials Json Path' in self.attributes else None
-
-    # @credentials_json_path.setter
-    # def credentials_json_path(self, value):
-    #     """
-    #     Provide a path to a credentials json file or leave empty if you run from an execution server deployed on Google Cloud Compute
-    #     :type value: str
-    #     """
-    #     self.attributes['Google Cloud Provider.Credentials Json Path'] = value
-
-    #     @property
-    # def project(self):
-    #     """
-    #     :rtype: str
-    #     """
-    #     return self.attributes['Google Cloud Provider.project'] if 'Google Cloud Provider.project' in self.attributes else None
-
-    # @project.setter
-    # def project(self, value):
-    #     """
-        
-    #     :type value: str
-    #     """
-    #     self.attributes['Google Cloud Provider.project'] = value
-
-    #     @property
-    # def region(self):
-    #     """
-    #     :rtype: str
-    #     """
-    #     return self.attributes['Google Cloud Provider.Region'] if 'Google Cloud Provider.Region' in self.attributes else None
-
-    # @region.setter
-    # def region(self, value=''):
-    #     """
-    #     The public cloud region to be used by this cloud provider.
-    #     :type value: str
-    #     """
-    #     self.attributes['Google Cloud Provider.Region'] = value
-
-
-
 class LegacyUtils(object):
     def __init__(self):
         self._datamodel_clss_dict = self.__generate_datamodel_classes_dict()
@@ -119,14 +72,14 @@ class LegacyUtils(object):
         return inspect.getmembers(sys.modules[__name__], inspect.isclass)
 
 
-class AwsTfBackend(object):
+class GcpTfBackend(object):
     def __init__(self, name):
         """
         
         """
         self.attributes = {}
         self.resources = {}
-        self._cloudshell_model_name = 'Aws Tf Backend'
+        self._cloudshell_model_name = 'Gcp Tf Backend'
         self._name = name
 
     def add_sub_resource(self, relative_path, sub_resource):
@@ -139,9 +92,9 @@ class AwsTfBackend(object):
         :param context: cloudshell.shell.core.driver_context.ResourceCommandContext
         :type context: cloudshell.shell.core.driver_context.ResourceCommandContext
         :return:
-        :rtype AwsTfBackend
+        :rtype GcpTfBackend
         """
-        result = AwsTfBackend(name=context.resource.name)
+        result = GcpTfBackend(name=context.resource.name)
         for attr in context.resource.attributes:
             result.attributes[attr] = context.resource.attributes[attr]
         return result
@@ -199,14 +152,14 @@ class AwsTfBackend(object):
         Returns the name of the Cloudshell model
         :return:
         """
-        return 'AwsTfBackend'
+        return 'GcpTfBackend'
 
     @property
     def bucket_name(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.Bucket Name'] if 'Aws Tf Backend.Bucket Name' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Bucket Name'] if 'Gcp Tf Backend.Bucket Name' in self.attributes else None
 
     @bucket_name.setter
     def bucket_name(self, value):
@@ -214,59 +167,59 @@ class AwsTfBackend(object):
         The name of the bucket to be used in order to save the state file
         :type value: str
         """
-        self.attributes['Aws Tf Backend.Bucket Name'] = value
+        self.attributes['Gcp Tf Backend.Bucket Name'] = value
 
     @property
     def region_name(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.Region Name'] if 'Aws Tf Backend.Region Name' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Region Name'] if 'Gcp Tf Backend.Region Name' in self.attributes else None
 
     @region_name.setter
     def region_name(self, value):
         """
-        The region in which the bucket resides
+        The region in which the bucket resides (Mendatory)
         :type value: str
         """
-        self.attributes['Aws Tf Backend.Region Name'] = value
+        self.attributes['Gcp Tf Backend.Region Name'] = value
 
     @property
     def access_key(self):
         """
         :rtype: string
         """
-        return self.attributes['Aws Tf Backend.Access Key'] if 'Aws Tf Backend.Access Key' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Access Key'] if 'Gcp Tf Backend.Access Key' in self.attributes else None
 
     @access_key.setter
     def access_key(self, value):
         """
-        AWS access key
+        AWS access key (Use only if Cloud Provider not specified - Must be paried with Secret Key)
         :type value: string
         """
-        self.attributes['Aws Tf Backend.Access Key'] = value
+        self.attributes['Gcp Tf Backend.Access Key'] = value
 
     @property
     def secret_key(self):
         """
         :rtype: string
         """
-        return self.attributes['Aws Tf Backend.Secret Key'] if 'Aws Tf Backend.Secret Key' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Secret Key'] if 'Gcp Tf Backend.Secret Key' in self.attributes else None
 
     @secret_key.setter
     def secret_key(self, value):
         """
-        AWS secret key
+        AWS secret key (Use only if Cloud Provider not specified - Must be paried with Access Key)
         :type value: string
         """
-        self.attributes['Aws Tf Backend.Secret Key'] = value
+        self.attributes['Gcp Tf Backend.Secret Key'] = value
 
     @property
     def cloud_provider(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.Cloud Provider'] if 'Aws Tf Backend.Cloud Provider' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Cloud Provider'] if 'Gcp Tf Backend.Cloud Provider' in self.attributes else None
 
     @cloud_provider.setter
     def cloud_provider(self, value):
@@ -274,14 +227,14 @@ class AwsTfBackend(object):
         In case Access Key and Secret Key were not filled - the keys from the cloud provider will be used.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.Cloud Provider'] = value
+        self.attributes['Gcp Tf Backend.Cloud Provider'] = value
 
     @property
     def hide_address(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.hide_address'] if 'Aws Tf Backend.hide_address' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.hide_address'] if 'Gcp Tf Backend.hide_address' in self.attributes else None
 
     @hide_address.setter
     def hide_address(self, value='true'):
@@ -289,14 +242,14 @@ class AwsTfBackend(object):
         
         :type value: str
         """
-        self.attributes['Aws Tf Backend.hide_address'] = value
+        self.attributes['Gcp Tf Backend.hide_address'] = value
 
     @property
     def user(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.User'] if 'Aws Tf Backend.User' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.User'] if 'Gcp Tf Backend.User' in self.attributes else None
 
     @user.setter
     def user(self, value):
@@ -304,14 +257,14 @@ class AwsTfBackend(object):
         User with administrative privileges
         :type value: str
         """
-        self.attributes['Aws Tf Backend.User'] = value
+        self.attributes['Gcp Tf Backend.User'] = value
 
     @property
     def password(self):
         """
         :rtype: string
         """
-        return self.attributes['Aws Tf Backend.Password'] if 'Aws Tf Backend.Password' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Password'] if 'Gcp Tf Backend.Password' in self.attributes else None
 
     @password.setter
     def password(self, value):
@@ -319,14 +272,14 @@ class AwsTfBackend(object):
         
         :type value: string
         """
-        self.attributes['Aws Tf Backend.Password'] = value
+        self.attributes['Gcp Tf Backend.Password'] = value
 
     @property
     def enable_password(self):
         """
         :rtype: string
         """
-        return self.attributes['Aws Tf Backend.Enable Password'] if 'Aws Tf Backend.Enable Password' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Enable Password'] if 'Gcp Tf Backend.Enable Password' in self.attributes else None
 
     @enable_password.setter
     def enable_password(self, value):
@@ -334,14 +287,14 @@ class AwsTfBackend(object):
         The enable password is required by some CLI protocols such as Telnet and is required according to the device configuration.
         :type value: string
         """
-        self.attributes['Aws Tf Backend.Enable Password'] = value
+        self.attributes['Gcp Tf Backend.Enable Password'] = value
 
     @property
     def power_management(self):
         """
         :rtype: bool
         """
-        return self.attributes['Aws Tf Backend.Power Management'] if 'Aws Tf Backend.Power Management' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Power Management'] if 'Gcp Tf Backend.Power Management' in self.attributes else None
 
     @power_management.setter
     def power_management(self, value=True):
@@ -349,14 +302,14 @@ class AwsTfBackend(object):
         Used by the power management orchestration, if enabled, to determine whether to automatically manage the device power status. Enabled by default.
         :type value: bool
         """
-        self.attributes['Aws Tf Backend.Power Management'] = value
+        self.attributes['Gcp Tf Backend.Power Management'] = value
 
     @property
     def sessions_concurrency_limit(self):
         """
         :rtype: float
         """
-        return self.attributes['Aws Tf Backend.Sessions Concurrency Limit'] if 'Aws Tf Backend.Sessions Concurrency Limit' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Sessions Concurrency Limit'] if 'Gcp Tf Backend.Sessions Concurrency Limit' in self.attributes else None
 
     @sessions_concurrency_limit.setter
     def sessions_concurrency_limit(self, value='1'):
@@ -364,14 +317,14 @@ class AwsTfBackend(object):
         The maximum number of concurrent sessions that the driver will open to the device. Default is 1 (no concurrency).
         :type value: float
         """
-        self.attributes['Aws Tf Backend.Sessions Concurrency Limit'] = value
+        self.attributes['Gcp Tf Backend.Sessions Concurrency Limit'] = value
 
     @property
     def snmp_read_community(self):
         """
         :rtype: string
         """
-        return self.attributes['Aws Tf Backend.SNMP Read Community'] if 'Aws Tf Backend.SNMP Read Community' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.SNMP Read Community'] if 'Gcp Tf Backend.SNMP Read Community' in self.attributes else None
 
     @snmp_read_community.setter
     def snmp_read_community(self, value):
@@ -379,14 +332,14 @@ class AwsTfBackend(object):
         The SNMP Read-Only Community String is like a password. It is sent along with each SNMP Get-Request and allows (or denies) access to device.
         :type value: string
         """
-        self.attributes['Aws Tf Backend.SNMP Read Community'] = value
+        self.attributes['Gcp Tf Backend.SNMP Read Community'] = value
 
     @property
     def snmp_write_community(self):
         """
         :rtype: string
         """
-        return self.attributes['Aws Tf Backend.SNMP Write Community'] if 'Aws Tf Backend.SNMP Write Community' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.SNMP Write Community'] if 'Gcp Tf Backend.SNMP Write Community' in self.attributes else None
 
     @snmp_write_community.setter
     def snmp_write_community(self, value):
@@ -394,14 +347,14 @@ class AwsTfBackend(object):
         The SNMP Write Community String is like a password. It is sent along with each SNMP Set-Request and allows (or denies) chaning MIBs values.
         :type value: string
         """
-        self.attributes['Aws Tf Backend.SNMP Write Community'] = value
+        self.attributes['Gcp Tf Backend.SNMP Write Community'] = value
 
     @property
     def snmp_v3_user(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.SNMP V3 User'] if 'Aws Tf Backend.SNMP V3 User' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.SNMP V3 User'] if 'Gcp Tf Backend.SNMP V3 User' in self.attributes else None
 
     @snmp_v3_user.setter
     def snmp_v3_user(self, value):
@@ -409,14 +362,14 @@ class AwsTfBackend(object):
         Relevant only in case SNMP V3 is in use.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.SNMP V3 User'] = value
+        self.attributes['Gcp Tf Backend.SNMP V3 User'] = value
 
     @property
     def snmp_v3_password(self):
         """
         :rtype: string
         """
-        return self.attributes['Aws Tf Backend.SNMP V3 Password'] if 'Aws Tf Backend.SNMP V3 Password' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.SNMP V3 Password'] if 'Gcp Tf Backend.SNMP V3 Password' in self.attributes else None
 
     @snmp_v3_password.setter
     def snmp_v3_password(self, value):
@@ -424,14 +377,14 @@ class AwsTfBackend(object):
         Relevant only in case SNMP V3 is in use.
         :type value: string
         """
-        self.attributes['Aws Tf Backend.SNMP V3 Password'] = value
+        self.attributes['Gcp Tf Backend.SNMP V3 Password'] = value
 
     @property
     def snmp_v3_private_key(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.SNMP V3 Private Key'] if 'Aws Tf Backend.SNMP V3 Private Key' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.SNMP V3 Private Key'] if 'Gcp Tf Backend.SNMP V3 Private Key' in self.attributes else None
 
     @snmp_v3_private_key.setter
     def snmp_v3_private_key(self, value):
@@ -439,14 +392,14 @@ class AwsTfBackend(object):
         Relevant only in case SNMP V3 is in use.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.SNMP V3 Private Key'] = value
+        self.attributes['Gcp Tf Backend.SNMP V3 Private Key'] = value
 
     @property
     def snmp_v3_authentication_protocol(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.SNMP V3 Authentication Protocol'] if 'Aws Tf Backend.SNMP V3 Authentication Protocol' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.SNMP V3 Authentication Protocol'] if 'Gcp Tf Backend.SNMP V3 Authentication Protocol' in self.attributes else None
 
     @snmp_v3_authentication_protocol.setter
     def snmp_v3_authentication_protocol(self, value='No Authentication Protocol'):
@@ -454,14 +407,14 @@ class AwsTfBackend(object):
         Relevant only in case SNMP V3 is in use.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.SNMP V3 Authentication Protocol'] = value
+        self.attributes['Gcp Tf Backend.SNMP V3 Authentication Protocol'] = value
 
     @property
     def snmp_v3_privacy_protocol(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.SNMP V3 Privacy Protocol'] if 'Aws Tf Backend.SNMP V3 Privacy Protocol' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.SNMP V3 Privacy Protocol'] if 'Gcp Tf Backend.SNMP V3 Privacy Protocol' in self.attributes else None
 
     @snmp_v3_privacy_protocol.setter
     def snmp_v3_privacy_protocol(self, value='No Privacy Protocol'):
@@ -469,14 +422,14 @@ class AwsTfBackend(object):
         Relevant only in case SNMP V3 is in use.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.SNMP V3 Privacy Protocol'] = value
+        self.attributes['Gcp Tf Backend.SNMP V3 Privacy Protocol'] = value
 
     @property
     def snmp_version(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.SNMP Version'] if 'Aws Tf Backend.SNMP Version' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.SNMP Version'] if 'Gcp Tf Backend.SNMP Version' in self.attributes else None
 
     @snmp_version.setter
     def snmp_version(self, value=''):
@@ -484,14 +437,14 @@ class AwsTfBackend(object):
         The version of SNMP to use. Possible values are v1, v2c and v3.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.SNMP Version'] = value
+        self.attributes['Gcp Tf Backend.SNMP Version'] = value
 
     @property
     def enable_snmp(self):
         """
         :rtype: bool
         """
-        return self.attributes['Aws Tf Backend.Enable SNMP'] if 'Aws Tf Backend.Enable SNMP' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Enable SNMP'] if 'Gcp Tf Backend.Enable SNMP' in self.attributes else None
 
     @enable_snmp.setter
     def enable_snmp(self, value=True):
@@ -499,14 +452,14 @@ class AwsTfBackend(object):
         If set to True and SNMP isn???t enabled yet in the device the Shell will automatically enable SNMP in the device when Autoload command is called. SNMP must be enabled on the device for the Autoload command to run successfully. True by default.
         :type value: bool
         """
-        self.attributes['Aws Tf Backend.Enable SNMP'] = value
+        self.attributes['Gcp Tf Backend.Enable SNMP'] = value
 
     @property
     def disable_snmp(self):
         """
         :rtype: bool
         """
-        return self.attributes['Aws Tf Backend.Disable SNMP'] if 'Aws Tf Backend.Disable SNMP' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Disable SNMP'] if 'Gcp Tf Backend.Disable SNMP' in self.attributes else None
 
     @disable_snmp.setter
     def disable_snmp(self, value=False):
@@ -514,14 +467,14 @@ class AwsTfBackend(object):
         If set to True SNMP will be disabled automatically by the Shell after the Autoload command execution is completed. False by default.
         :type value: bool
         """
-        self.attributes['Aws Tf Backend.Disable SNMP'] = value
+        self.attributes['Gcp Tf Backend.Disable SNMP'] = value
 
     @property
     def console_server_ip_address(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.Console Server IP Address'] if 'Aws Tf Backend.Console Server IP Address' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Console Server IP Address'] if 'Gcp Tf Backend.Console Server IP Address' in self.attributes else None
 
     @console_server_ip_address.setter
     def console_server_ip_address(self, value):
@@ -529,14 +482,14 @@ class AwsTfBackend(object):
         The IP address of the console server, in IPv4 format.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.Console Server IP Address'] = value
+        self.attributes['Gcp Tf Backend.Console Server IP Address'] = value
 
     @property
     def console_user(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.Console User'] if 'Aws Tf Backend.Console User' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Console User'] if 'Gcp Tf Backend.Console User' in self.attributes else None
 
     @console_user.setter
     def console_user(self, value):
@@ -544,14 +497,14 @@ class AwsTfBackend(object):
         
         :type value: str
         """
-        self.attributes['Aws Tf Backend.Console User'] = value
+        self.attributes['Gcp Tf Backend.Console User'] = value
 
     @property
     def console_port(self):
         """
         :rtype: float
         """
-        return self.attributes['Aws Tf Backend.Console Port'] if 'Aws Tf Backend.Console Port' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Console Port'] if 'Gcp Tf Backend.Console Port' in self.attributes else None
 
     @console_port.setter
     def console_port(self, value):
@@ -559,14 +512,14 @@ class AwsTfBackend(object):
         The port on the console server, usually TCP port, which the device is associated with.
         :type value: float
         """
-        self.attributes['Aws Tf Backend.Console Port'] = value
+        self.attributes['Gcp Tf Backend.Console Port'] = value
 
     @property
     def console_password(self):
         """
         :rtype: string
         """
-        return self.attributes['Aws Tf Backend.Console Password'] if 'Aws Tf Backend.Console Password' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Console Password'] if 'Gcp Tf Backend.Console Password' in self.attributes else None
 
     @console_password.setter
     def console_password(self, value):
@@ -574,14 +527,14 @@ class AwsTfBackend(object):
         
         :type value: string
         """
-        self.attributes['Aws Tf Backend.Console Password'] = value
+        self.attributes['Gcp Tf Backend.Console Password'] = value
 
     @property
     def cli_connection_type(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.CLI Connection Type'] if 'Aws Tf Backend.CLI Connection Type' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.CLI Connection Type'] if 'Gcp Tf Backend.CLI Connection Type' in self.attributes else None
 
     @cli_connection_type.setter
     def cli_connection_type(self, value='Auto'):
@@ -589,14 +542,14 @@ class AwsTfBackend(object):
         The CLI connection type that will be used by the driver. Possible values are Auto, Console, SSH, Telnet and TCP. If Auto is selected the driver will choose the available connection type automatically. Default value is Auto.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.CLI Connection Type'] = value
+        self.attributes['Gcp Tf Backend.CLI Connection Type'] = value
 
     @property
     def cli_tcp_port(self):
         """
         :rtype: float
         """
-        return self.attributes['Aws Tf Backend.CLI TCP Port'] if 'Aws Tf Backend.CLI TCP Port' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.CLI TCP Port'] if 'Gcp Tf Backend.CLI TCP Port' in self.attributes else None
 
     @cli_tcp_port.setter
     def cli_tcp_port(self, value):
@@ -604,14 +557,14 @@ class AwsTfBackend(object):
         TCP Port to user for CLI connection. If kept empty a default CLI port will be used based on the chosen protocol, for example Telnet will use port 23.
         :type value: float
         """
-        self.attributes['Aws Tf Backend.CLI TCP Port'] = value
+        self.attributes['Gcp Tf Backend.CLI TCP Port'] = value
 
     @property
     def backup_location(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.Backup Location'] if 'Aws Tf Backend.Backup Location' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Backup Location'] if 'Gcp Tf Backend.Backup Location' in self.attributes else None
 
     @backup_location.setter
     def backup_location(self, value):
@@ -619,14 +572,14 @@ class AwsTfBackend(object):
         Used by the save/restore orchestration to determine where backups should be saved.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.Backup Location'] = value
+        self.attributes['Gcp Tf Backend.Backup Location'] = value
 
     @property
     def backup_type(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.Backup Type'] if 'Aws Tf Backend.Backup Type' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Backup Type'] if 'Gcp Tf Backend.Backup Type' in self.attributes else None
 
     @backup_type.setter
     def backup_type(self, value='File System'):
@@ -634,14 +587,14 @@ class AwsTfBackend(object):
         Supported protocols for saving and restoring of configuration and firmware files. Possible values are 'File System' 'FTP' and 'TFTP'. Default value is 'File System'.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.Backup Type'] = value
+        self.attributes['Gcp Tf Backend.Backup Type'] = value
 
     @property
     def backup_user(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.Backup User'] if 'Aws Tf Backend.Backup User' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Backup User'] if 'Gcp Tf Backend.Backup User' in self.attributes else None
 
     @backup_user.setter
     def backup_user(self, value):
@@ -649,14 +602,14 @@ class AwsTfBackend(object):
         Username for the storage server used for saving and restoring of configuration and firmware files.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.Backup User'] = value
+        self.attributes['Gcp Tf Backend.Backup User'] = value
 
     @property
     def backup_password(self):
         """
         :rtype: string
         """
-        return self.attributes['Aws Tf Backend.Backup Password'] if 'Aws Tf Backend.Backup Password' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Backup Password'] if 'Gcp Tf Backend.Backup Password' in self.attributes else None
 
     @backup_password.setter
     def backup_password(self, value):
@@ -664,7 +617,7 @@ class AwsTfBackend(object):
         Password for the storage server used for saving and restoring of configuration and firmware files.
         :type value: string
         """
-        self.attributes['Aws Tf Backend.Backup Password'] = value
+        self.attributes['Gcp Tf Backend.Backup Password'] = value
 
     @property
     def name(self):
@@ -794,7 +747,7 @@ class ResourcePort(object):
         """
         self.attributes = {}
         self.resources = {}
-        self._cloudshell_model_name = 'Aws Tf Backend.ResourcePort'
+        self._cloudshell_model_name = 'Gcp Tf Backend.ResourcePort'
         self._name = name
 
     def add_sub_resource(self, relative_path, sub_resource):
@@ -874,7 +827,7 @@ class ResourcePort(object):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.ResourcePort.MAC Address'] if 'Aws Tf Backend.ResourcePort.MAC Address' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.ResourcePort.MAC Address'] if 'Gcp Tf Backend.ResourcePort.MAC Address' in self.attributes else None
 
     @mac_address.setter
     def mac_address(self, value=''):
@@ -882,14 +835,14 @@ class ResourcePort(object):
         
         :type value: str
         """
-        self.attributes['Aws Tf Backend.ResourcePort.MAC Address'] = value
+        self.attributes['Gcp Tf Backend.ResourcePort.MAC Address'] = value
 
     @property
     def ipv4_address(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.ResourcePort.IPv4 Address'] if 'Aws Tf Backend.ResourcePort.IPv4 Address' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.ResourcePort.IPv4 Address'] if 'Gcp Tf Backend.ResourcePort.IPv4 Address' in self.attributes else None
 
     @ipv4_address.setter
     def ipv4_address(self, value):
@@ -897,14 +850,14 @@ class ResourcePort(object):
         
         :type value: str
         """
-        self.attributes['Aws Tf Backend.ResourcePort.IPv4 Address'] = value
+        self.attributes['Gcp Tf Backend.ResourcePort.IPv4 Address'] = value
 
     @property
     def ipv6_address(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.ResourcePort.IPv6 Address'] if 'Aws Tf Backend.ResourcePort.IPv6 Address' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.ResourcePort.IPv6 Address'] if 'Gcp Tf Backend.ResourcePort.IPv6 Address' in self.attributes else None
 
     @ipv6_address.setter
     def ipv6_address(self, value):
@@ -912,14 +865,14 @@ class ResourcePort(object):
         
         :type value: str
         """
-        self.attributes['Aws Tf Backend.ResourcePort.IPv6 Address'] = value
+        self.attributes['Gcp Tf Backend.ResourcePort.IPv6 Address'] = value
 
     @property
     def port_speed(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.ResourcePort.Port Speed'] if 'Aws Tf Backend.ResourcePort.Port Speed' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.ResourcePort.Port Speed'] if 'Gcp Tf Backend.ResourcePort.Port Speed' in self.attributes else None
 
     @port_speed.setter
     def port_speed(self, value):
@@ -927,7 +880,7 @@ class ResourcePort(object):
         The port speed (e.g 10Gb/s, 40Gb/s, 100Mb/s)
         :type value: str
         """
-        self.attributes['Aws Tf Backend.ResourcePort.Port Speed'] = value
+        self.attributes['Gcp Tf Backend.ResourcePort.Port Speed'] = value
 
     @property
     def name(self):
@@ -982,7 +935,7 @@ class GenericPowerPort(object):
         """
         self.attributes = {}
         self.resources = {}
-        self._cloudshell_model_name = 'Aws Tf Backend.GenericPowerPort'
+        self._cloudshell_model_name = 'Gcp Tf Backend.GenericPowerPort'
         self._name = name
 
     def add_sub_resource(self, relative_path, sub_resource):
@@ -1062,7 +1015,7 @@ class GenericPowerPort(object):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.GenericPowerPort.Model'] if 'Aws Tf Backend.GenericPowerPort.Model' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.GenericPowerPort.Model'] if 'Gcp Tf Backend.GenericPowerPort.Model' in self.attributes else None
 
     @model.setter
     def model(self, value):
@@ -1070,14 +1023,14 @@ class GenericPowerPort(object):
         The device model. This information is typically used for abstract resource filtering.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.GenericPowerPort.Model'] = value
+        self.attributes['Gcp Tf Backend.GenericPowerPort.Model'] = value
 
     @property
     def serial_number(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.GenericPowerPort.Serial Number'] if 'Aws Tf Backend.GenericPowerPort.Serial Number' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.GenericPowerPort.Serial Number'] if 'Gcp Tf Backend.GenericPowerPort.Serial Number' in self.attributes else None
 
     @serial_number.setter
     def serial_number(self, value):
@@ -1085,14 +1038,14 @@ class GenericPowerPort(object):
         
         :type value: str
         """
-        self.attributes['Aws Tf Backend.GenericPowerPort.Serial Number'] = value
+        self.attributes['Gcp Tf Backend.GenericPowerPort.Serial Number'] = value
 
     @property
     def version(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.GenericPowerPort.Version'] if 'Aws Tf Backend.GenericPowerPort.Version' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.GenericPowerPort.Version'] if 'Gcp Tf Backend.GenericPowerPort.Version' in self.attributes else None
 
     @version.setter
     def version(self, value):
@@ -1100,14 +1053,14 @@ class GenericPowerPort(object):
         The firmware version of the resource.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.GenericPowerPort.Version'] = value
+        self.attributes['Gcp Tf Backend.GenericPowerPort.Version'] = value
 
     @property
     def port_description(self):
         """
         :rtype: str
         """
-        return self.attributes['Aws Tf Backend.GenericPowerPort.Port Description'] if 'Aws Tf Backend.GenericPowerPort.Port Description' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.GenericPowerPort.Port Description'] if 'Gcp Tf Backend.GenericPowerPort.Port Description' in self.attributes else None
 
     @port_description.setter
     def port_description(self, value):
@@ -1115,7 +1068,7 @@ class GenericPowerPort(object):
         The description of the port as configured in the device.
         :type value: str
         """
-        self.attributes['Aws Tf Backend.GenericPowerPort.Port Description'] = value
+        self.attributes['Gcp Tf Backend.GenericPowerPort.Port Description'] = value
 
     @property
     def name(self):
@@ -1161,3 +1114,6 @@ class GenericPowerPort(object):
         :type value: str
         """
         self.attributes['CS_PowerPort.Model Name'] = value
+
+
+

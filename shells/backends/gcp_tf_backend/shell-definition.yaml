@@ -17,25 +17,26 @@ node_types:
   vendor.resource.Gcp Tf Backend:
     derived_from: cloudshell.nodes.GenericResource
     properties:
+    
       Bucket Name:
         description: The name of the bucket to be used in order to save the state file
         type: string
         tags: [ setting, user_input ]
-      Region Name:
-        description: The region in which the bucket resides (Mendatory)
+      Prefix:
+        description: GCS prefix inside the bucket. Named states for workspaces are stored in an object called <prefix>/<name>.tfstate (Optional)
         type: string
-        tags: [ setting, user_input ]
-      Access Key:
-        description: AWS access key (Use only if Cloud Provider not specified - Must be paried with Secret Key)
-        type: cloudshell.datatypes.Password
-        tags: [ setting, user_input ]
-      Secret Key:
-        description: AWS secret key (Use only if Cloud Provider not specified - Must be paried with Access Key)
-        type: cloudshell.datatypes.Password
         tags: [ setting, user_input ]
       Cloud Provider:
         description: In case Access Key and Secret Key were not filled - the keys from the cloud provider will be used.
         type: string
+      Credentials Json Path:
+        description: Provide a path to a credentials json file or leave empty if you run from an execution server deployed on Google Cloud Compute
+        type: string
+        tags: [ setting, user_input ]
+      Project:
+        description: Provide a path to a credentials json file or leave empty if you run from an execution server deployed on Google Cloud Compute
+        type: string
+        tags: [ setting, user_input ]
       #Execution Server Selector:
       #  description: Execution Server on which the discovery will be executed
       #  type: string
@@ -43,7 +44,8 @@ node_types:
       hide_address:
         type: string
         default: true
-
+          ## Adding custom attributes to the cloud provider discovery form
+   
     capabilities:
       auto_discovery_capability:
         type: cloudshell.capabilities.AutoDiscovery
@@ -60,15 +62,22 @@ node_types:
           Bucket Name:
             description: The name of the bucket to be used in order to save the state file
             type: string
-          Region Name:
-            description: The region in which the bucket resides
+          # Region Name:
+          #   description: The region in which the bucket resides
+          #   type: string
+          # Access Key:
+          #   description: AWS access key
+          #   type: cloudshell.datatypes.Password
+          # Secret Key:
+          #   description: AWS secret key
+          #   type: cloudshell.datatypes.Password
+          Credentials Json Path:
             type: string
-          Access Key:
-            description: AWS access key
-            type: cloudshell.datatypes.Password
-          Secret Key:
-            description: AWS secret key
-            type: cloudshell.datatypes.Password
+            default:
+            description: Provide a path to a credentials json file or leave empty if you run from an execution server deployed on Google Cloud Compute
+          project:
+            type: string
+            default:                  
           Cloud Provider:
             description: In case Access Key and Secret Key were not filled - the keys from the cloud provider will be used.
             type: string
