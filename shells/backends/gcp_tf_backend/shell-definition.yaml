@@ -33,7 +33,7 @@ node_types:
         description: Provide a path to a credentials json file or leave empty if you run from an execution server deployed on Google Cloud Compute
         type: string
         tags: [ setting, user_input ]
-      Project:
+      project:
         description: Provide a path to a credentials json file or leave empty if you run from an execution server deployed on Google Cloud Compute
         type: string
         tags: [ setting, user_input ]
