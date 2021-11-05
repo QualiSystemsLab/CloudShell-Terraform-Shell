@@ -17,6 +17,8 @@ from tests.integration_tests.helper_services.service_attributes_factory import S
 
 
 class TestMockTerraformExecuteDestroy(TestCase):
+    # region Test Setup
+
     @classmethod
     def setUpClass(self):
         print(os.getcwd())
@@ -51,7 +53,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     def _prepare_mock_api(self):
         self.mock_api = Mock()
-        self.mock_api.DecryptPassword = _decrypt_password
+        self.mock_api.DecryptPassword = self._decrypt_password
         self.mock_api.GetResourceDetails.return_value.ResourceFamilyName = 'Cloud Provider'
         self.mock_api.GetResourceDetails.return_value.ResourceModelName = 'Microsoft Azure'
         self.mock_api.GetResourceDetails.return_value.ResourceAttributes = [
@@ -61,7 +63,9 @@ class TestMockTerraformExecuteDestroy(TestCase):
             NameValuePair(Name="Azure Application Key", Value=os.environ.get("AZURE_APPLICATION_KEY_DEC"))
         ]
 
-    '''------------------------------ Generic Execute/Destroy functions ---------------------------------'''
+    # endregion
+
+    # region Generic Helper Execute/Destroy functions
 
     def run_execute(self, pre_exec_function: Callable, integration_data: MockAPIIntegrationData):
         self.pre_exec_prep(pre_exec_function, integration_data)
@@ -76,29 +80,40 @@ class TestMockTerraformExecuteDestroy(TestCase):
         self.run_execute(pre_exec_function, integration_data)
         self.run_destroy(pre_destroy_function, integration_data)
 
-    '''------------------------------ Test Cases ---------------------------------'''
+    # endregion
+
+    # region Test Cases
 
     @patch('cloudshell.iac.terraform.services.tf_proc_exec.TfProcExec.can_destroy_run')
     @patch('cloudshell.iac.terraform.terraform_shell.SandboxDataHandler')
     @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
     def test_execute_and_destroy_azure_vault(self, patch_api, patched_sbdata_handler, can_destroy_run):
+        # arrange
         can_destroy_run.return_value = True
         patch_api.return_value.get_api.return_value = self.mock_api
         mock_sbdata_handler = Mock()
         mock_sbdata_handler.get_tf_working_dir = self._get_mocked_tf_working_dir
         mock_sbdata_handler.set_tf_working_dir = self._set_mocked_tf_working_dir
         patched_sbdata_handler.return_value = mock_sbdata_handler
+        # act
+        # todo - split execture and destroy to add asserts after each
         self.run_execute_and_destroy(
             pre_exec_function=self.pre_exec_azure_vault,
             pre_destroy_function=self.pre_destroy,
             integration_data=self.integration_data1
         )
+        # assert
+        # todo - add assert
+
+    # endregion
 
     '''------------------------------ Functions : general _pre prep functions ---------------------------------'''
 
+    # todo - remove this layer
     def pre_exec_prep(self, pre_exec_function: Callable, integration_data: MockAPIIntegrationData):
         pre_exec_function(integration_data)
 
+    # todo - remove this layer
     def pre_destroy_prep(self, pre_destroy_function: Callable, integration_data: MockAPIIntegrationData):
         pre_destroy_function(integration_data)
 
@@ -107,6 +122,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     '''------------------------------ Functions : prep before exec -------------------------------------------'''
 
+    # todo - merge with real api and move to helper class
     def pre_exec(self, integration_data: MockAPIIntegrationData):
         pass
 
@@ -211,7 +227,9 @@ class TestMockTerraformExecuteDestroy(TestCase):
             if attribute.Name == f"{SHELL_NAME}.UUID":
                 attribute.Value = integration_data.tf_shell._tf_service.attributes[f"{SHELL_NAME}.UUID"]
 
-    '''------------------------------ Helper Functions ---------------------------------------------------------'''
+    # region Helper Functions
+    #todo - check if makes sense to move to a helper class
+
     @staticmethod
     def _set_attribute_on_mock_service(attr_name: str, attr_value: str, integration_data: MockAPIIntegrationData):
         for attribute in integration_data.context.resource.attributes:
@@ -225,9 +243,10 @@ class TestMockTerraformExecuteDestroy(TestCase):
     def _set_mocked_tf_working_dir(self, tf_working_dir: str):
         self._mocked_tf_working_dir = tf_working_dir
 
+    @staticmethod
+    def _decrypt_password(x):
+        result = Mock()
+        result.Value = x
+        return result
 
-def _decrypt_password(x):
-    # result = mock.MagicMock()
-    result = Mock()
-    result.Value = x
-    return result
+    # endregion

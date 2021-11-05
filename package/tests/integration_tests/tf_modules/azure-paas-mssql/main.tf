@@ -21,8 +21,6 @@ locals {
     "s4" = "S4"
   }
 
-  mgmtServer1 = "165.204.84.17" 
-  mgmtServer2 = "165.204.88.17"
   listOfIps = var.ALLOWED_IPS
   ipList = compact(split(",", var.ALLOWED_IPS))
 
@@ -62,24 +60,6 @@ resource "azurerm_sql_firewall_rule" "ip_list" {
   depends_on = [ azurerm_mssql_server.default ]
 }
 
-resource "azurerm_sql_firewall_rule" "allow_controlserver_one" {
-  name                = "Allow-Control-Server"
-  resource_group_name = var.RESOURCE_GROUP_NAME
-  server_name         = azurerm_mssql_server.default.name
-  start_ip_address    = local.mgmtServer1
-  end_ip_address      = local.mgmtServer1
-  depends_on = [ azurerm_mssql_server.default ]
-}
-
-resource "azurerm_sql_firewall_rule" "allow_controlserver_two" {
-  name                = "Allow-ControlServer-2"
-  resource_group_name = var.RESOURCE_GROUP_NAME
-  server_name         = azurerm_mssql_server.default.name
-  start_ip_address    = local.mgmtServer2
-  end_ip_address      = local.mgmtServer2
-  depends_on = [ azurerm_mssql_server.default ]
-}
-
 resource "azurerm_sql_firewall_rule" "allow_azure_services" {
   name                = "AllowAzureServices"
   resource_group_name = var.RESOURCE_GROUP_NAME
@@ -103,72 +83,4 @@ resource "azurerm_mssql_database" "default" {
   }
   
   tags = merge(local.customTags)
-}
-
-/* Commented out while we are deciding on proper password handling procedures
-resource "random_password" "RO_PASSWORD" { 
-  length = 24
-  special = true
-  override_special = "_%@"
-  min_special = 1
-  min_lower = 1
-  min_upper = 1
-  min_numeric = 1
-}
-
-resource "random_password" "RW_PASSWORD" { 
-  length = 24
-  special = true
-  override_special = "_%@"
-  min_special = 1
-  min_lower = 1
-  min_upper = 1
-  min_numeric = 1
-}
-
-resource "random_password" "WO_PASSWORD" { 
-  length = 24
-  special = true
-  override_special = "_%@"
-  min_special = 1
-  min_lower = 1
-  min_upper = 1
-  min_numeric = 1
-}
-*/
-
-# resource "null_resource" "addUsers" {
-#   depends_on = [ azurerm_mssql_database.default ]
-
-#   provisioner "local-exec" {
-#     on_failure = fail
-#     command = "chmod +x runSQLCMD.sh && ./runSQLCMD.sh ${var.DB_PASSWORD} ${var.RO_PASSWORD} ${var.RW_PASSWORD}"
-#     interpreter = ["/bin/bash", "-c"]
-
-#     environment = {
-#       FQDN = azurerm_mssql_server.default.fully_qualified_domain_name
-#       SERVER_USERNAME = var.SERVER_USERNAME
-#       SERVER_PASSWORD = var.SERVER_PASSWORD
-#       DB_NAME = var.DB_NAME
-#       DB_USER = var.DB_USERNAME
-#       // DB_PASSWORD = var.DB_PASSWORD
-#       RO_USER = "${var.APP_NAME}_RO"
-#       RW_USER = "${var.APP_NAME}_RW"
-#       O_USER = "${var.APP_NAME}_O"
-#       RO_PASS = var.RO_PASSWORD
-#       RW_PASS = var.RW_PASSWORD
-#       O_PASS = var.O_PASSWORD
-#     }
-#   }
-# }
-
-
-output "DB_HOSTNAME" {
-  value = azurerm_mssql_server.default.fully_qualified_domain_name
-}
-output "DB_USER" {
-  value = var.DB_USERNAME
-}
-output "DB_NAME" {
-  value = var.DB_NAME
 }
