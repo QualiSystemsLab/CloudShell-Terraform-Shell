@@ -228,7 +228,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
                 attribute.Value = integration_data.tf_shell._tf_service.attributes[f"{SHELL_NAME}.UUID"]
 
     # region Helper Functions
-    #todo - check if makes sense to move to a helper class
+    # todo - check if makes sense to move to a helper class
 
     @staticmethod
     def _set_attribute_on_mock_service(attr_name: str, attr_value: str, integration_data: MockAPIIntegrationData):
