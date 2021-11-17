@@ -155,6 +155,36 @@ class GcpTfBackend(object):
         return 'GcpTfBackend'
 
     @property
+    def private_key(self):
+        """
+        :rtype: string
+        """
+        return self.attributes['Gcp Tf Backend.Private Key'] if 'Gcp Tf Backend.Private Key' in self.attributes else None
+
+    @private_key.setter
+    def private_key(self, value):
+        """
+        Private key (Use only if Cloud Provider not specified)
+        :type value: string
+        """
+        self.attributes['Gcp Tf Backend.Private Key'] = value
+
+    @property
+    def client_email(self):
+        """
+        :rtype: string
+        """
+        return self.attributes['Gcp Tf Backend.Client Email'] if 'Gcp Tf Backend.Client Email' in self.attributes else None
+
+    @client_email.setter
+    def client_email(self, value):
+        """
+        Client Email (Use only if Cloud Provider not specified)
+        :type value: string
+        """
+        self.attributes['Gcp Tf Backend.Client Email'] = value
+
+    @property
     def bucket_name(self):
         """
         :rtype: str
@@ -170,49 +200,19 @@ class GcpTfBackend(object):
         self.attributes['Gcp Tf Backend.Bucket Name'] = value
 
     @property
-    def region_name(self):
+    def prefix(self):
         """
         :rtype: str
         """
-        return self.attributes['Gcp Tf Backend.Region Name'] if 'Gcp Tf Backend.Region Name' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Prefix'] if 'Gcp Tf Backend.Prefix' in self.attributes else None
 
-    @region_name.setter
-    def region_name(self, value):
+    @prefix.setter
+    def prefix(self, value):
         """
-        The region in which the bucket resides (Mendatory)
+        GCS prefix inside the bucket. Named states for workspaces are stored in an object called <prefix>/<name>.tfstate (Optional)
         :type value: str
         """
-        self.attributes['Gcp Tf Backend.Region Name'] = value
-
-    @property
-    def access_key(self):
-        """
-        :rtype: string
-        """
-        return self.attributes['Gcp Tf Backend.Access Key'] if 'Gcp Tf Backend.Access Key' in self.attributes else None
-
-    @access_key.setter
-    def access_key(self, value):
-        """
-        AWS access key (Use only if Cloud Provider not specified - Must be paried with Secret Key)
-        :type value: string
-        """
-        self.attributes['Gcp Tf Backend.Access Key'] = value
-
-    @property
-    def secret_key(self):
-        """
-        :rtype: string
-        """
-        return self.attributes['Gcp Tf Backend.Secret Key'] if 'Gcp Tf Backend.Secret Key' in self.attributes else None
-
-    @secret_key.setter
-    def secret_key(self, value):
-        """
-        AWS secret key (Use only if Cloud Provider not specified - Must be paried with Access Key)
-        :type value: string
-        """
-        self.attributes['Gcp Tf Backend.Secret Key'] = value
+        self.attributes['Gcp Tf Backend.Prefix'] = value
 
     @property
     def cloud_provider(self):
@@ -224,10 +224,25 @@ class GcpTfBackend(object):
     @cloud_provider.setter
     def cloud_provider(self, value):
         """
-        In case Access Key and Secret Key were not filled - the keys from the cloud provider will be used.
+        In case Private Key and Client Email were not filled - the keys from the cloud provider will be used.
         :type value: str
         """
         self.attributes['Gcp Tf Backend.Cloud Provider'] = value
+
+    @property
+    def project(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Gcp Tf Backend.Project'] if 'Gcp Tf Backend.Project' in self.attributes else None
+
+    @project.setter
+    def project(self, value):
+        """
+        The default project to manage resources in.
+        :type value: str
+        """
+        self.attributes['Gcp Tf Backend.Project'] = value
 
     @property
     def hide_address(self):

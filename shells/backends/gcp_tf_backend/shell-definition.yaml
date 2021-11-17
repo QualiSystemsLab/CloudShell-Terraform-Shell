@@ -17,7 +17,18 @@ node_types:
   vendor.resource.Gcp Tf Backend:
     derived_from: cloudshell.nodes.GenericResource
     properties:
-    
+      Private Key:
+        description: Private key (Use only if Cloud Provider not specified)
+        type: cloudshell.datatypes.Password
+        tags: [ setting, user_input ]
+      # Private Key:
+      #   description: Private key (Use only if Cloud Provider not specified)
+      #   type: string
+      #   tags: [ setting, user_input ]        
+      Client Email:
+        description: Client Email (Use only if Cloud Provider not specified)
+        type: cloudshell.datatypes.Password
+        tags: [ setting, user_input ]
       Bucket Name:
         description: The name of the bucket to be used in order to save the state file
         type: string
@@ -27,14 +38,10 @@ node_types:
         type: string
         tags: [ setting, user_input ]
       Cloud Provider:
-        description: In case Access Key and Secret Key were not filled - the keys from the cloud provider will be used.
+        description: In case Private Key and Client Email were not filled - the keys from the cloud provider will be used.
         type: string
-      Credentials Json Path:
-        description: Provide a path to a credentials json file or leave empty if you run from an execution server deployed on Google Cloud Compute
-        type: string
-        tags: [ setting, user_input ]
-      project:
-        description: Provide a path to a credentials json file or leave empty if you run from an execution server deployed on Google Cloud Compute
+      Project:
+        description: The default project to manage resources in.
         type: string
         tags: [ setting, user_input ]
       #Execution Server Selector:
@@ -62,24 +69,23 @@ node_types:
           Bucket Name:
             description: The name of the bucket to be used in order to save the state file
             type: string
-          # Region Name:
-          #   description: The region in which the bucket resides
+          Prefix:
+            description: GCS prefix inside the bucket. Named states for workspaces are stored in an object called <prefix>/<name>.tfstate (Optional)
+            type: string           
+          # Private Key:
+          #   description: Private key
           #   type: string
-          # Access Key:
-          #   description: AWS access key
-          #   type: cloudshell.datatypes.Password
-          # Secret Key:
-          #   description: AWS secret key
-          #   type: cloudshell.datatypes.Password
-          Credentials Json Path:
-            type: string
-            default:
-            description: Provide a path to a credentials json file or leave empty if you run from an execution server deployed on Google Cloud Compute
-          project:
+          Private Key:
+            description: Private key
+            type: cloudshell.datatypes.Password
+          Client Email:
+            description: Client Email
+            type: cloudshell.datatypes.Password
+          Project:
             type: string
             default:                  
           Cloud Provider:
-            description: In case Access Key and Secret Key were not filled - the keys from the cloud provider will be used.
+            description: In case Private Key and Client Email were not filled - the keys from the cloud provider will be used.
             type: string
           #Execution Server Selector:
           #  description: Execution Server on which the discovery will be executed
