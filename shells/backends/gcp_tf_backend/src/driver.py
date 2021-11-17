@@ -133,10 +133,11 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                     # GCP1G_MODEL:
                     clp_details = self._validate_clp(api, gcp_backend_resource, logger)
                     if clp_details.ResourceModelName == GCP1G_MODEL:
+                        clp_json_path = self._fill_backend_sercret_vars_data(api, clp_details.ResourceAttributes)
                         # account_keys = self._get_storage_keys(api, azure_backend_resource, clp_details)
-                        model_prefix = ""
-                        json_path = self._get_attrbiute_value_from_clp(
-                            clp_details.ResourceAttributes, model_prefix, CREDENTIALS_JSON_PATH)
+                        # model_prefix = ""
+                        # json_path = self._get_attrbiute_value_from_clp(
+                        #     clp_details.ResourceAttributes, model_prefix, CREDENTIALS_JSON_PATH)
                         # self._handle_exception_logging(logger, f"json_pa {json_path}")
                         # logger.exception(f"json_path: {json_path}") 
                         # with open('C:\\out.txt', 'w') as f:
@@ -145,30 +146,17 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                         #         print(f"JSON path: {json_path}")
                         #         print(f"gcp_backend_resource: {gcp_backend_resource.cloud_provider}")  
                         # if json_path:
-                        os.environ[GOOGLE_APPLICATION_CREDENTIALS] = "C:\\Users\\CSadmin123456\\CS\\tf-gcp\\prod.json"
+                        # logger.exception(f"json_path: {clp_json_path}")
+                        json = "C:\\Users\\CSadmin123456\\CS\\tf-gcp\\prod.json"
+                        # logger.exception(f"def: {json}")
+                        os.environ[GOOGLE_APPLICATION_CREDENTIALS] = clp_json_path
+                        # os.environ[GOOGLE_APPLICATION_CREDENTIALS] = "C:\\Users\\CSadmin123456\\CS\\tf-gcp\\prod.json"
             except Exception as e:
-                self._handle_exception_logging(logger, f"There was an issue accessing GCP. {e}") 
+                # self._handle_exception_logging(logger, f"There was an issue accessing GCP. {e}")
+                self._handle_exception_logging(logger, f"CLP: {clp_json_path}  DEF: {json}") 
             bucket_name = gcp_backend_resource.bucket_name
             if bucket_name:      
                 self._validate_bucket_exists(bucket_name, context)
-
-    # def _get_storage_keys(self, api, azure_backend_resource, clp_details):
-    #     azure_model_prefix = ""
-    #     if clp_details.ResourceModelName == AZURE2G_MODEL:
-    #         azure_model_prefix = AZURE2G_MODEL + "."
-    #     self._fill_backend_sercret_vars_data(api, azure_model_prefix, clp_details.ResourceAttributes)
-    #     credentials = ServicePrincipalCredentials(
-    #         tenant=self._backend_secret_vars["tenant_id"],
-    #         client_id=self._backend_secret_vars["client_id"],
-    #         secret=self._backend_secret_vars["client_secret"]
-    #     )
-    #     storage_client = StorageManagementClient(
-    #         credentials=credentials, subscription_id=self._backend_secret_vars["subscription_id"]
-    #     )
-    #     account_keys = storage_client.storage_accounts.list_keys(
-    #         azure_backend_resource.resource_group, azure_backend_resource.storage_account_name
-    #     )
-    #     return account_keys
 
     def _get_attrbiute_value_from_clp(self, attributes, model_prefix, attribute_name) -> str:
         for attribute in attributes:
@@ -178,21 +166,24 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         return ""
 
 
-    # def _fill_backend_sercret_vars_data(self, api, azure_model_prefix, clp_resource_attributes):
-    #         self._backend_secret_vars = {}
-    #         for attr in clp_resource_attributes:
-    #             if attr.Name == azure_model_prefix + "Azure Subscription ID":
-    #                 self._backend_secret_vars["subscription_id"] = attr.Value
-    #             if attr.Name == azure_model_prefix + "Azure Tenant ID":
-    #                 self._backend_secret_vars["tenant_id"] = attr.Value
-    #             if attr.Name == azure_model_prefix + "Azure Application ID":
-    #                 self._backend_secret_vars["client_id"] = attr.Value
-    #             if attr.Name == azure_model_prefix + "Azure Application Key":
-    #                 dec_client_secret = api.DecryptPassword(attr.Value).Value
-    #                 self._backend_secret_vars["client_secret"] = dec_client_secret
+    def _fill_backend_sercret_vars_data(self, api, clp_resource_attributes):
+        gcp_model_prefix = ""
+        self._backend_secret_vars = {}
+        for attr in clp_resource_attributes:
+            if attr.Name == "CREDENTIALS JSON PATH":
+                json_path_new = attr.Value
+                return json_path_new
+                # self._backend_secret_vars["subscription_id"] = attr.Value
+            # if attr.Name == azure_model_prefix + "Azure Tenant ID":
+            #     self._backend_secret_vars["tenant_id"] = attr.Value
+            # if attr.Name == azure_model_prefix + "Azure Application ID":
+            #     self._backend_secret_vars["client_id"] = attr.Value
+            # if attr.Name == azure_model_prefix + "Azure Application Key":
+            #     dec_client_secret = api.DecryptPassword(attr.Value).Value
+            #     self._backend_secret_vars["client_secret"] = dec_client_secret   
 
-    def _create_clp_gcp_session(self, json_path):
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = json_path
+    # def _create_clp_gcp_session(self, json_path):
+    #     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = json_path
 
 
     def _validate_clp(self, api, gcp_backend_resource, logger):
