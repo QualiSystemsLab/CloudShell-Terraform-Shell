@@ -82,6 +82,9 @@ class GCPCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = attr.Value
             if self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "PROJECT"):
                 os.environ["project"] = attr.Value
+                project_flag = True
+        if not project_flag:
+            raise ValueError("Project ID was not found on GCP Cloud Provider")        
 
 # class GCPCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
 #     def __init__(self, clp_res_model: str, clp_resource_attributes: list,
