@@ -60,7 +60,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         resource.add_sub_resource('1', port1)
         return resource.create_autoload_details()
         '''
-        gcp_service = self._can_connect(context)
+        gcp_service = self._can_conntect_to_gcp(context)
         if not gcp_service:
             raise ValueError("Can't connect to GCP")
         return AutoLoadDetails([], [])
@@ -79,19 +79,15 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             except Exception as e:
                 self._handle_exception_logging(logger, f"There was an issue accessing the bucket.{e}")        
 
-    def _can_connect(self, context):
-        # api = CloudShellSessionContext(context).get_api()
+    def _can_conntect_to_gcp(self, context):
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
         project_id = gcp_backend_resource.project
         create_session=self._create_gcp_session(context, project_id)
-
         client = discovery.build('compute', 'v1')
         response = client.healthChecks().list(project=project_id).execute()
-        # return response
         return len(response) > 0
 
     def _generate_state_file_string(self, gcp_backend_resource: GcpTfBackend):
-
         tf_state_file_string = f'terraform {{\n\
 \tbackend "gcs" {{\n\
 \t\tbucket = "{gcp_backend_resource.bucket_name}"\n\
@@ -101,195 +97,58 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         return tf_state_file_string
 
 
-    def _create_gcp_session(self, context, project):
+    def _create_gcp_session(self, context, project_id):
         with LoggingSessionContext(context) as logger:
             api = CloudShellSessionContext(context).get_api()
             gcp_backend_resource = GcpTfBackend.create_from_context(context)
             try:
                 private_key = api.DecryptPassword(gcp_backend_resource.private_key).Value.replace("\\n", "\n")
                 email = api.DecryptPassword(gcp_backend_resource.client_email).Value
-                project_id = project
                 if not project_id:
                     self._handle_exception_logging(logger, "Project id must be filled")
-                # Keys defines on AWS TF BACKEND RESOURCE
+                # Key and email defines on GCP TF BACKEND RESOURCE
                 if private_key and email:
                     if gcp_backend_resource.cloud_provider:
                         self._handle_exception_logging(logger, "Only one method of authentication should be filled")
-                    # bucket_name = gcp_backend_resource.bucket_name
                     with open(DYNAMIC_JSON, 'w', encoding='utf-8') as f:
                         json.dump({ "type": TYPE_ACCOUNT, "project_id": project_id, "private_key": private_key, "client_email": email,"auth_uri": AUTH_URI, "token_uri": TOKEN_URI }, f, ensure_ascii=False, indent=4)
                     os.environ[GOOGLE_APPLICATION_CREDENTIALS] = DYNAMIC_JSON
-                # Keys not defines on AWS TF BACKEND RESOURCE (CLP reference should have been set)
+                # Keys not defines on GCP TF BACKEND RESOURCE (CLP reference should have been set)
                 else:
                     # CLP had not been set...
                     if not gcp_backend_resource.cloud_provider:
                         self._handle_exception_logging(logger, "At least one method of authentication should be filled")
                     # Check a correct CLP has been reference
-                    # clp_details = api.GetResourceDetails(aws_backend_resource.cloud_provider)
-                    # print(f"gcp_backend_resource: {gcp_backend_resource.cloud_provider}")
-                    # self._handle_exception_logging(logger, f"gcp_backend_resource: {gcp_backend_resource.cloud_provider}")
-                    # logger.exception(f"gcp_backend_resource: {gcp_backend_resource.cloud_provider}")
-                    # if gcp_backend_resource.cloud_provider == GCP1G_MODEL:
-                    # GCP1G_MODEL:
-                    clp_details = self._validate_clp(api, gcp_backend_resource, logger)
-                    if clp_details.ResourceModelName == GCP1G_MODEL:
-                        print(clp_details.ResourceModelName)
-                        myactual=api.GetResourceDetails(clp_details.Name)
+                    clp_details = api.GetResourceDetails
+                    clp_resource_details = self._validate_clp(clp_details, gcp_backend_resource, logger)
+                    if clp_resource_details.ResourceModelName == GCP1G_MODEL:
+                        myactual=clp_details(clp_resource_details.Name)
                         clp_json_path = self._fill_backend_sercret_vars_data(myactual, GCP1G_MODEL)
-                        # account_keys = self._get_storage_keys(api, azure_backend_resource, clp_details)
-                        # model_prefix = ""
-                        # json_path = self._get_attrbiute_value_from_clp(
-                        #     clp_details.ResourceAttributes, model_prefix, CREDENTIALS_JSON_PATH)
-                        # self._handle_exception_logging(logger, f"json_pa {json_path}")
-                        # logger.exception(f"json_path: {json_path}") 
-                        # with open('C:\\out.txt', 'w') as f:
-                        #     with redirect_stdout(f):
-                        #         print('data')
-                        #         print(f"JSON path: {json_path}")
-                        #         print(f"gcp_backend_resource: {gcp_backend_resource.cloud_provider}")  
-                        # if json_path:
-                        # logger.exception(f"json_path: {clp_json_path}")
-                        # json = "C:\\Users\\CSadmin123456\\CS\\tf-gcp\\prod.json"
-                        # logger.exception(f"def: {json}")
                         os.environ[GOOGLE_APPLICATION_CREDENTIALS] = clp_json_path
-                        # self._handle_exception_logging(logger, f"CLP: {clp_json_path}  DEF: {json}") 
-                        # os.environ[GOOGLE_APPLICATION_CREDENTIALS] = "C:\\Users\\CSadmin123456\\CS\\tf-gcp\\prod.json"
             except Exception as e:
                 self._handle_exception_logging(logger, f"There was an issue accessing GCP. {e}")
             bucket_name = gcp_backend_resource.bucket_name
             if bucket_name:      
                 self._validate_bucket_exists(bucket_name, context)
 
-    def _get_attrbiute_value_from_clp(self, attributes, model_prefix, attribute_name) -> str:
-        for attribute in attributes:
-
-            if attribute.Name == f"{model_prefix}{attribute_name}":
-                return attribute.Value
-        return ""
-
-
     def _fill_backend_sercret_vars_data(self, myactual, clp):
-        print(myactual)
         for attr in  myactual.ResourceAttributes:
             if attr.Name == "Google Cloud Provider.Credentials Json Path":
                 clp_json_path = attr.Value
-        # gcp_model_prefix = ""
-        # self._backend_secret_vars = {}
-        # for attr in clp_resource_attributes:
-        #     if attr.Name == gcp_model_prefix + "CREDENTIALS JSON PATH":
-        #         json_path_new = attr.Value
                 return clp_json_path
-                # self._backend_secret_vars["subscription_id"] = attr.Value
-            # if attr.Name == azure_model_prefix + "Azure Tenant ID":
-            #     self._backend_secret_vars["tenant_id"] = attr.Value
-            # if attr.Name == azure_model_prefix + "Azure Application ID":
-            #     self._backend_secret_vars["client_id"] = attr.Value
-            # if attr.Name == azure_model_prefix + "Azure Application Key":
-            #     dec_client_secret = api.DecryptPassword(attr.Value).Value
-            #     self._backend_secret_vars["client_secret"] = dec_client_secret   
-
-    # def _create_clp_gcp_session(self, json_path):
-    #     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = json_path
 
 
-    def _validate_clp(self, api, gcp_backend_resource, logger):
-        clp_resource_name = gcp_backend_resource.cloud_provider
-        clp_details = api.GetResourceDetails(clp_resource_name)
-        clp_res_model = clp_details.ResourceModelName
-        clpr_res_fam = clp_details.ResourceFamilyName
+    def _validate_clp(self, clp_details, gcp_backend_resource, logger):
+        # clp_resource_name = gcp_backend_resource.cloud_provider
+        clp_details_resource_name = clp_details(gcp_backend_resource.cloud_provider)
+        clp_res_model = clp_details_resource_name.ResourceModelName
+        clpr_res_fam = clp_details_resource_name.ResourceFamilyName
         if (clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider') or \
                 clp_res_model not in GCP_MODELS:
             logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
             raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
-        return clp_details
+        return clp_details_resource_name
 
     def _handle_exception_logging(self, logger, msg):
         logger.exception(msg)
         raise ValueError(msg)
-
-    # </editor-fold>
-
-# if __name__ == "__main__":
-#     import mock
-#     from cloudshell.shell.core.driver_context import CancellationContext
-
-
-#     shell_name = "Gcp Tf Backend"
-
-#     cancellation_context = mock.create_autospec(CancellationContext)
-#     context = mock.create_autospec(ResourceCommandContext)
-#     context.resource = mock.MagicMock()
-#     context.reservation = mock.MagicMock()
-#     context.connectivity = mock.MagicMock()
-#     context.reservation.reservation_id = "a29b2b18-d065-44c0-9ae6-3de9263541f7"
-#     context.resource.address = "127.0.0.1"
-#     context.resource.name = "myname"
-#     context.resource.attributes = dict()
-#     context.resource.attributes[f"{shell_name}.User"] = "admin"
-#     context.resource.attributes[f"{shell_name}.Password"] = "admin"
-#     context.resource.attributes[f"{shell_name}.SNMP Read Community"] = "<READ_COMMUNITY_STRING>"
-
-#     driver = GcpTfBackendDriver()
-
-#     # print driver.run_custom_command(context, custom_command="sh run", cancellation_context=cancellation_context)
-#     # driver.initialize(context)
-#     # result = driver.get_inventory(context)
-#     result = driver.get_inventory(context)
-#     # print(result)
-#     print('done')
-
-
-if __name__ == "__main__":
-    import mock
-    from cloudshell.shell.core.driver_context import CancellationContext
-
-
-    shell_name = "Gcp Tf Backend"
-    # model_name = ""
-
-    from cloudshell.api.cloudshell_api import CloudShellAPISession
-
-
-    host="localhost"
-    username="admin"
-    password="admin"
-    domain="Global"
-
-    pythonApi = CloudShellAPISession(host, username, password, domain)
-    print(pythonApi)
-
-    authToken = pythonApi.authentication.xmlrpc_token # Use "pythonApi.token_id" with cloudshell-automation-api version 2020.1.0.178672 and below
-    print(authToken)
-    # connectivity.admin_auth_token = authToken
-
-    cancellation_context = mock.create_autospec(CancellationContext)
-    context = mock.create_autospec(ResourceCommandContext)
-    # context.resource = mock.MagicMock()
-    context.resource = mock.MagicMock()
-    # context.reservation = mock.MagicMock()
-    context.reservation = mock.MagicMock()
-    # context.connectivity = mock.MagicMock()
-    context.connectivity = mock.MagicMock()
-    context.connectivity.serverAddress = host
-    context.connectivity.server_address = host
-    # context.reservation.reservation_id = "c13a6d18-07fe-4651-89c5-f3ee70220d0b"
-    context.resource.address = host
-    context.resource.connectivity.server_address=host
-    context.resource.name = "myname"
-    context.connectivity.admin_auth_token = authToken
-    context.resource.attributes = dict()
-    context.resource.attributes["{}.Project".format(shell_name)] = "alexs-project-239406"
-    context.resource.attributes["{}.Cloud Provider".format(shell_name)] = "test-GCP"
-    # context.resource.attributes["{}.Client Email".format(shell_name)] = 'AWJdt6fWWmRupkI9qOUcbzf+cB/+BSk3k1D7ELiR6HTT+bcepfvD/zWVcnYU3GkdeqO/Ridyjfn0DSZqERycuA=='
-    # "oleksandr-r@alexs-project-239406.iam.gserviceaccount.com"
-    # context.resource.attributes["{}.Password".format(shell_name)] = password
-    # context.resource.attributes["{}.SNMP Read Community".format(shell_name)] = "<READ_COMMUNITY_STRING>"
-    # 'C:\\Users\\CSadmin123456\\CS\\tf-gcp\\prod.json'
-    driver = GcpTfBackendDriver()
-
-    # print driver.run_custom_command(context, custom_command="sh run", cancellation_context=cancellation_context)
-    driver.initialize(context)
-    result = driver.get_inventory(context)
-    # result = driver.example_command(context)
-    print(result)
-    print('done')
