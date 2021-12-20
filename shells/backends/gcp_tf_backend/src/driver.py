@@ -60,7 +60,8 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         resource.add_sub_resource('1', port1)
         return resource.create_autoload_details()
         '''
-        gcp_service = self._can_conntect_to_gcp(context)
+        logger = LoggingSessionContext(context)
+        gcp_service = self._can_conntect_to_gcp(context, logger)
         if not gcp_service:
             raise ValueError("Can't connect to GCP")
         return AutoLoadDetails([], [])
@@ -69,20 +70,20 @@ class GcpTfBackendDriver (ResourceDriverInterface):
     # </editor-fold>
 
     # <editor-fold desc="Validate S3 Bucket Exists">
-    def _validate_bucket_exists(self, bucket_name, context):
-        with LoggingSessionContext(context) as logger:
-            try:
-                storage_client = storage.Client()
-                get_bucket = storage_client.get_bucket(bucket_name)
-                if len(str(get_bucket)) < 0:
-                    raise ValueError('Could not connect: Check credentials')  
-            except Exception as e:
-                self._handle_exception_logging(logger, f"There was an issue accessing the bucket.{e}")        
+    def _validate_bucket_exists(self, bucket_name, context, logger):
+        # with LoggingSessionContext(context) as logger:
+        try:
+            storage_client = storage.Client()
+            get_bucket = storage_client.get_bucket(bucket_name)
+            if len(str(get_bucket)) < 0:
+                raise ValueError(f"Bucket {bucket_name} not found")  
+        except Exception as e:
+            self._raise_and_log(logger, f"There was an issue accessing the bucket.{e}")        
 
-    def _can_conntect_to_gcp(self, context):
+    def _can_conntect_to_gcp(self, context, logger):
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
         project_id = gcp_backend_resource.project
-        create_session=self._create_gcp_session(context, project_id)
+        create_session=self._create_gcp_session(context, project_id, logger)
         client = discovery.build('compute', 'v1')
         response = client.healthChecks().list(project=project_id).execute()
         return len(response) > 0
@@ -97,39 +98,39 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         return tf_state_file_string
 
 
-    def _create_gcp_session(self, context, project_id):
-        with LoggingSessionContext(context) as logger:
-            api = CloudShellSessionContext(context).get_api()
-            gcp_backend_resource = GcpTfBackend.create_from_context(context)
-            try:
-                private_key = api.DecryptPassword(gcp_backend_resource.private_key).Value.replace("\\n", "\n")
-                email = api.DecryptPassword(gcp_backend_resource.client_email).Value
-                if not project_id:
-                    self._handle_exception_logging(logger, "Project id must be filled")
-                # Key and email defines on GCP TF BACKEND RESOURCE
-                if private_key and email:
-                    if gcp_backend_resource.cloud_provider:
-                        self._handle_exception_logging(logger, "Only one method of authentication should be filled")
-                    with open(DYNAMIC_JSON, 'w', encoding='utf-8') as f:
-                        json.dump({ "type": TYPE_ACCOUNT, "project_id": project_id, "private_key": private_key, "client_email": email,"auth_uri": AUTH_URI, "token_uri": TOKEN_URI }, f, ensure_ascii=False, indent=4)
-                    os.environ[GOOGLE_APPLICATION_CREDENTIALS] = DYNAMIC_JSON
-                # Keys not defines on GCP TF BACKEND RESOURCE (CLP reference should have been set)
-                else:
-                    # CLP had not been set...
-                    if not gcp_backend_resource.cloud_provider:
-                        self._handle_exception_logging(logger, "At least one method of authentication should be filled")
-                    # Check a correct CLP has been reference
-                    clp_details = api.GetResourceDetails
-                    clp_resource_details = self._validate_clp(clp_details, gcp_backend_resource, logger)
-                    if clp_resource_details.ResourceModelName == GCP1G_MODEL:
-                        myactual=clp_details(clp_resource_details.Name)
-                        clp_json_path = self._fill_backend_sercret_vars_data(myactual, GCP1G_MODEL)
-                        os.environ[GOOGLE_APPLICATION_CREDENTIALS] = clp_json_path
-            except Exception as e:
-                self._handle_exception_logging(logger, f"There was an issue accessing GCP. {e}")
-            bucket_name = gcp_backend_resource.bucket_name
-            if bucket_name:      
-                self._validate_bucket_exists(bucket_name, context)
+    def _create_gcp_session(self, context, project_id, logger):
+        # with LoggingSessionContext(context) as logger:
+        api = CloudShellSessionContext(context).get_api()
+        gcp_backend_resource = GcpTfBackend.create_from_context(context)
+        try:
+            private_key = api.DecryptPassword(gcp_backend_resource.private_key).Value.replace("\\n", "\n")
+            email = api.DecryptPassword(gcp_backend_resource.client_email).Value
+            if not project_id:
+                self._raise_and_log(logger, "Project id must be filled")
+            # Key and email defines on GCP TF BACKEND RESOURCE
+            if private_key and email:
+                if gcp_backend_resource.cloud_provider:
+                    self._raise_and_log(logger, "Only one method of authentication should be filled")
+                with open(DYNAMIC_JSON, 'w', encoding='utf-8') as f:
+                    json.dump({ "type": TYPE_ACCOUNT, "project_id": project_id, "private_key": private_key, "client_email": email,"auth_uri": AUTH_URI, "token_uri": TOKEN_URI }, f, ensure_ascii=False, indent=4)
+                os.environ[GOOGLE_APPLICATION_CREDENTIALS] = DYNAMIC_JSON
+            # Keys not defines on GCP TF BACKEND RESOURCE (CLP reference should have been set)
+            else:
+                # CLP had not been set...
+                if not gcp_backend_resource.cloud_provider:
+                    self._raise_and_log(logger, "At least one method of authentication should be filled")
+                # Check a correct CLP has been reference
+                clp_details = api.GetResourceDetails
+                clp_resource_details = self._get_and_validate_clp(clp_details, gcp_backend_resource, logger)
+                if clp_resource_details.ResourceModelName == GCP1G_MODEL:
+                    myactual=clp_details(clp_resource_details.Name)
+                    clp_json_path = self._fill_backend_sercret_vars_data(myactual, GCP1G_MODEL)
+                    os.environ[GOOGLE_APPLICATION_CREDENTIALS] = clp_json_path
+        except Exception as e:
+            self._raise_and_log(logger, f"There was an issue accessing GCP. {e}")
+        bucket_name = gcp_backend_resource.bucket_name
+        if bucket_name:      
+            self._validate_bucket_exists(bucket_name, context)
 
     def _fill_backend_sercret_vars_data(self, myactual, clp):
         for attr in  myactual.ResourceAttributes:
@@ -138,7 +139,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 return clp_json_path
 
 
-    def _validate_clp(self, clp_details, gcp_backend_resource, logger):
+    def _get_and_validate_clp(self, clp_details, gcp_backend_resource, logger):
         # clp_resource_name = gcp_backend_resource.cloud_provider
         clp_details_resource_name = clp_details(gcp_backend_resource.cloud_provider)
         clp_res_model = clp_details_resource_name.ResourceModelName
@@ -149,6 +150,6 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
         return clp_details_resource_name
 
-    def _handle_exception_logging(self, logger, msg):
+    def _raise_and_log(self, logger, msg):
         logger.exception(msg)
         raise ValueError(msg)
