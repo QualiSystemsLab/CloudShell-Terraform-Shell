@@ -63,7 +63,8 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         logger = LoggingSessionContext(context)
         gcp_service = self._can_conntect_to_gcp(context, logger)
         if not gcp_service:
-            raise ValueError("Can't connect to GCP")
+            self._raise_and_log(logger, "Can't connect to GCP")  
+            # raise ValueError("Can't connect to GCP")
         return AutoLoadDetails([], [])
         os.remove(DYNAMIC_JSON)
 
