@@ -63,7 +63,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         logger = LoggingSessionContext(context)
         gcp_service = self._can_conntect_to_gcp(context, logger)
         if not gcp_service:
-            self._raise_and_log(logger, "Can't connect to GCP")  
+            self._raise_and_log(logger, "There was an issue accessing GCP, please check authentication credentials.")  
             # raise ValueError("Can't connect to GCP")
         return AutoLoadDetails([], [])
         os.remove(DYNAMIC_JSON)
@@ -79,7 +79,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             if len(str(get_bucket)) < 0:
                 raise ValueError(f"Bucket {bucket_name} not found")  
         except Exception as e:
-            self._raise_and_log(logger, f"There was an issue accessing the bucket.{e}")        
+            self._raise_and_log(logger, f"There was an issue accessing the bucket {bucket_name}.{e}")        
 
     def _can_conntect_to_gcp(self, context, logger):
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
