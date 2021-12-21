@@ -131,7 +131,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             self._raise_and_log(logger, f"There was an issue accessing GCP. {e}")
         bucket_name = gcp_backend_resource.bucket_name
         if bucket_name:      
-            self._validate_bucket_exists(bucket_name, context)
+            self._validate_bucket_exists(bucket_name, context, logger)
 
     def _fill_backend_sercret_vars_data(self, myactual, clp):
         for attr in  myactual.ResourceAttributes:

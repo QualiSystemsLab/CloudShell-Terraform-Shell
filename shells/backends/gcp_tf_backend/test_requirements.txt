@@ -1,7 +1,7 @@
 nose
 coverage
 unittest2
-mock
+mock==4.0.3
 teamcity-messages
-jsonpickle
+jsonpickle==2.0.0
 nose-exclude
