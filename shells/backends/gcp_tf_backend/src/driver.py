@@ -66,7 +66,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 self._raise_and_log(logger, "There was an issue accessing GCP, please check authentication credentials.")  
             # raise ValueError("Can't connect to GCP")
         except Exception as e:
-            self._raise_and_log(logger, f"There was an issue accessing GCP. {e}")    
+            self._raise_and_log(logger, f"There was an issue initialization GCP provider resource. {e}")    
         return AutoLoadDetails([], [])
         os.remove(DYNAMIC_JSON)
 
