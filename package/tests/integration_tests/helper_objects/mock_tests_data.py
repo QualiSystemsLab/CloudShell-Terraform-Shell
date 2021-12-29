@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from package.tests.integration_tests.helper_objects.integration_context import MockAPIIntegrationData
 from package.tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesMockBuilder
 
-from cloudshell.api.cloudshell_api import NameValuePair, AttributeNameValue
+from cloudshell.api.cloudshell_api import NameValuePair
 
 
 class MockTestsData(object):
