@@ -15,6 +15,8 @@ from package.tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAME
 
 
 class TestMockTerraformExecuteDestroy(TestCase):
+    # region Test Setup
+
     @classmethod
     def setUpClass(self):
         print(os.getcwd())
@@ -24,22 +26,27 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
     @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
     def setUp(self, patched_api) -> None:
+
         self.test_data_object = MockTestsData()
         patched_api.return_value.get_api.return_value = self.test_data_object.mock_api
         self.test_data_object.prepare_integration_data()
 
-    '''------------------------------ Test Cases ---------------------------------'''
+    # endregion
+
+    # region Test Cases
 
     @patch('cloudshell.iac.terraform.services.tf_proc_exec.TfProcExec.can_destroy_run')
     @patch('cloudshell.iac.terraform.terraform_shell.SandboxDataHandler')
     @patch('cloudshell.iac.terraform.services.object_factory.CloudShellSessionContext')
     def test_execute_and_destroy_azure_vault(self, patch_api, patched_sbdata_handler, can_destroy_run):
+        # arrange
         can_destroy_run.return_value = True
         patch_api.return_value.get_api.return_value = self.test_data_object.mock_api
         mock_sbdata_handler = Mock()
         mock_sbdata_handler.get_tf_working_dir = self.test_data_object._get_mocked_tf_working_dir
         mock_sbdata_handler.set_tf_working_dir = self.test_data_object._set_mocked_tf_working_dir
         patched_sbdata_handler.return_value = mock_sbdata_handler
+
 
         pre_exec_azure_vault(self.test_data_object)
         self.test_data_object.integration_data1.tf_shell.execute_terraform()

@@ -20,20 +20,3 @@ data "azurerm_key_vault_secret" "keyvault_get" {
   name         = var.SECRET_NAME
   key_vault_id = data.azurerm_key_vault.keyvault.id
 }
-
-output "SECRET_VALUE"{
-  value = data.azurerm_key_vault_secret.keyvault_get.value
-  sensitive = true
-}
-
-output "SECRET_VALUE_2" {
-  value = "my_secret"
-  sensitive = true
-}
-
-output "BLA1" {
-  value = "bla1"
-}
-output "BLA2" {
-  value = "bla2"
-}
