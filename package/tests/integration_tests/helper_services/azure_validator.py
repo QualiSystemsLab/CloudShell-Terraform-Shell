@@ -1,3 +1,4 @@
+'''
 import os
 from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.resource import ResourceManagementClient
@@ -18,3 +19,4 @@ class AzureValidator(object):
 
         for item in self._client.resource_groups.list():
             print(item)
+'''
