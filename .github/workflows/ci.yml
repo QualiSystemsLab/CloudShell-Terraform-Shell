@@ -50,13 +50,14 @@ jobs:
       - name: Test integration tests for package/tests/integration_tests
         env:
           GH_TOKEN_DEC: ${{ secrets.GH_TOKEN_DEC }}
+          CURRENT_BRANCH: ${{ env.GITHUB_HEAD_REF_SLUG }}
           AZURE_APPLICATION_KEY_DEC: ${{ secrets.AZURE_APPLICATION_KEY_DEC }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_APPLICATION_ID: ${{ secrets.AZURE_APPLICATION_ID }}
-          CURRENT_BRANCH = ${{ env.GITHUB_HEAD_REF_SLUG }}
+
 
         run: |
           pwd
-          echo " - ${{ env.GITHUB_HEAD_REF_SLUG }}"
+          echo "The branch is: ${{ env.GITHUB_HEAD_REF_SLUG }}"
           python -m unittest discover -p "package/tests/integration_tests/mock_api_based_tests/int_test_mock*.py"
