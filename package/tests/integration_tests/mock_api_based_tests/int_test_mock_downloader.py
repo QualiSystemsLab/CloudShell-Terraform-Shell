@@ -13,7 +13,7 @@ from shells.generic_terraform_service.src.data_model import GenericTerraformServ
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from package.tests.constants import GH_TF_PUBLIC_HELLO_URL_FILE, GH_TF_PUBLIC_HELLO_URL_FOLDER, TERRAFORM_EXEC_FILE, \
     SHELL_NAME, TF_HELLO_FILE, MOCK_ALIAS2, MOCK_ALIAS1
-# from package.tests.integration_tests.helper_objects.downloader_integration_context import IntegrationData
+
 from package.tests.integration_tests.helper_objects.integration_context import MockAPIIntegrationData
 
 from cloudshell.iac.terraform.tagging.tags import TagsManager

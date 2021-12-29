@@ -7,7 +7,8 @@ from package.tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAME
 from package.tests.integration_tests.helper_objects.mock_tests_data import MockTestsData
 
 
-def pre_exec_azure_vault(mock_tests_data: MockTestsData):
+
+def pre_exec_azure_vault(mock_tests_data: MockTestsData, azure_vault_url: str):
     set_attribute_on_mock_service(
         f"{SHELL_NAME}.{ATTRIBUTE_NAMES.TF_INPUTS}",
         os.environ.get("AZUREAPP_TF_INPUTS"),
@@ -15,7 +16,7 @@ def pre_exec_azure_vault(mock_tests_data: MockTestsData):
     )
     set_attribute_on_mock_service(
         f"{SHELL_NAME}.{ATTRIBUTE_NAMES.GITHUB_TERRAFORM_MODULE_URL}",
-        os.environ.get("GITHUB_TF_PRIVATE_AZUREAPP_URL"),
+        azure_vault_url,
         mock_tests_data.integration_data1
     )
     set_attribute_on_mock_service(
