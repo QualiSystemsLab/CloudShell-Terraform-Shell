@@ -59,5 +59,6 @@ jobs:
 
         run: |
           pwd
-          echo "The branch is: ${{ env.GITHUB_HEAD_REF_SLUG }}"
+          echo "1: The branch is: ${{ env.GITHUB_HEAD_REF_SLUG }}"
+          echo "2: The branch is: ${GITHUB_REF##*/}
           python -m unittest discover -p "package/tests/integration_tests/mock_api_based_tests/int_test_mock*.py"
