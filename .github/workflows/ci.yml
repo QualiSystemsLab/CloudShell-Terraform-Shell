@@ -54,8 +54,9 @@ jobs:
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_APPLICATION_ID: ${{ secrets.AZURE_APPLICATION_ID }}
-          #CURRENT_BRANCH = ${GITHUB_REF##*/}
+          CURRENT_BRANCH = ${{ env.GITHUB_HEAD_REF_SLUG }}
 
         run: |
           pwd
+          echo " - ${{ env.GITHUB_HEAD_REF_SLUG }}"
           python -m unittest discover -p "package/tests/integration_tests/mock_api_based_tests/int_test_mock*.py"
