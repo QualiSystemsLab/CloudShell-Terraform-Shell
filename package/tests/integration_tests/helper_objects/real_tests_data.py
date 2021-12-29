@@ -1,11 +1,7 @@
 import os
-from unittest.mock import Mock
 
-from package.tests.integration_tests.helper_objects.integration_context import MockAPIIntegrationData, \
-    RealAPIIntegrationData
-from package.tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesMockBuilder
+from package.tests.integration_tests.helper_objects.integration_context import RealAPIIntegrationData
 
-from cloudshell.api.cloudshell_api import NameValuePair
 
 class RealTestsData(object):
     def __init__(self):

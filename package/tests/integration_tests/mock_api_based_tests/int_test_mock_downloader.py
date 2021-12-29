@@ -38,8 +38,6 @@ class TestTerraformDownloader(TestCase):
                                                                                             self._service2]
         self._prepare_integration_data()
 
-
-
         service_resource = GenericTerraformService.create_from_context(self.integration_data1.context)
 
         sandbox_messages = SandboxMessagesService(

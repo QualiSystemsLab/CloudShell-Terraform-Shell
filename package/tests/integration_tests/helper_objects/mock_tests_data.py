@@ -56,16 +56,8 @@ class MockTestsData(object):
     def _set_mocked_tf_working_dir(self, tf_working_dir: str):
         self._mocked_tf_working_dir = tf_working_dir
 
-    '''
-    @staticmethod
-    def _set_service_attributes_values(sandbox_id: str, tf_service_name: str,
-                                       attr_update_req: list[AttributeNameValue]):
-        print("")
-        pass
-    '''
 
 def _decrypt_password(x):
     result = Mock()
     result.Value = x
     return result
-

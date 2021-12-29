@@ -47,7 +47,6 @@ class TestMockTerraformExecuteDestroy(TestCase):
         mock_sbdata_handler.set_tf_working_dir = self.test_data_object._set_mocked_tf_working_dir
         patched_sbdata_handler.return_value = mock_sbdata_handler
 
-
         pre_exec_azure_vault(self.test_data_object)
         self.test_data_object.integration_data1.tf_shell.execute_terraform()
 

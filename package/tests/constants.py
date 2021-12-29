@@ -11,5 +11,3 @@ SHELL_NAME = "Generic Terraform Service"
 
 MOCK_ALIAS1 = "MOCK_ALIAS1"
 MOCK_ALIAS2 = "MOCK_ALIAS2"
-
-
