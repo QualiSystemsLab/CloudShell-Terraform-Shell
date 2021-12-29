@@ -85,6 +85,9 @@ class TerraformShell:
                 not LocalDir.does_working_dir_exists(sandbox_data_handler.get_tf_working_dir()):
             self._handle_error_output(shell_helper, f"Missing local folder {sandbox_data_handler.get_tf_working_dir()}")
 
+    def get_tf_service(self):
+        return self._tf_service
+
     @staticmethod
     def _destroy_passed(sandbox_data_handler):
         return sandbox_data_handler.get_status(DESTROY_STATUS) == DESTROY_PASSED

@@ -13,7 +13,7 @@ class BaseCloudProviderEnvVarHandler(metaclass=ABCMeta):
 
     @staticmethod
     def does_attribute_match(clp_res_model, clp_attribute, attr_name_to_check) -> bool:
-        if f"{clp_res_model}.{clp_attribute.Name}" == attr_name_to_check or clp_attribute.Name == attr_name_to_check:
+        if f"{clp_res_model}.{attr_name_to_check}" == clp_attribute.Name or attr_name_to_check == clp_attribute.Name:
             return True
         return False
 

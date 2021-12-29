@@ -6,13 +6,16 @@ from cloudshell.iac.terraform import TerraformShell, TerraformShellConfig
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 
-from tests.integration_tests.helper_objects.env_vars import EnvVars
-from tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesMockBuilder
+# from tests.integration_tests.helper_objects.env_vars import EnvVars
+from package.tests.integration_tests.helper_objects.env_vars import EnvVars
+# from tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesMockBuilder
+from package.tests.integration_tests.helper_services.service_attributes_factory import ServiceAttributesMockBuilder
+
 from abc import ABCMeta
 
 
 class BaseIntegrationData(metaclass=ABCMeta):
-    def __init__(self, service_name: str, is_api_real: bool = True, mock_api: Mock = None):
+    def __init__(self, service_name: str):
         self._sb_service_alias = service_name
         self._logger = get_qs_logger(log_group=service_name)
 
