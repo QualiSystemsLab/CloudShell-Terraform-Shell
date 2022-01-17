@@ -59,21 +59,20 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         resource.add_sub_resource('1', port1)
         return resource.create_autoload_details()
         '''
-        logger = LoggingSessionContext(context)
-        try:
-            gcp_service = self._can_conntect_to_gcp(context, logger)
-            if not gcp_service:
-                self._raise_and_log(logger, "There was an issue accessing GCP, please check authentication credentials.")  
-            # raise ValueError("Can't connect to GCP")
-        except Exception as e:
-            self._raise_and_log(logger, f"There was an issue initialization GCP provider resource. {e}")    
-        return AutoLoadDetails([], [])
-        os.remove(DYNAMIC_JSON)
+        with LoggingSessionContext(context) as logger:
+            try:
+                gcp_service = self._can_conntect_to_gcp(context, logger)
+                if not gcp_service:
+                    self._raise_and_log(logger, "There was an issue accessing GCP, please check authentication credentials.")  
+                # raise ValueError("Can't connect to GCP")
+            except Exception as e:
+                raise ValueError(f"There was an issue initialization GCP provider resource. {e}")    
+            return AutoLoadDetails([], [])
+            os.remove(DYNAMIC_JSON)
 
     # </editor-fold>
-
     # <editor-fold desc="Validate S3 Bucket Exists">
-    def _validate_bucket_exists(self, bucket_name, context, logger):
+    def _validate_bucket_exists(self, bucket_name: str, context, logger):
         # with LoggingSessionContext(context) as logger:
         try:
             storage_client = storage.Client()
@@ -83,14 +82,14 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         except Exception as e:
             self._raise_and_log(logger, f"There was an issue accessing the bucket {bucket_name}.{e}")        
 
-    def _can_conntect_to_gcp(self, context, logger):
+    def _can_conntect_to_gcp(self, context, logger) -> bool:
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
         project_id = gcp_backend_resource.project
         create_session=self._create_gcp_session(context, project_id, logger)
         client = discovery.build('compute', 'v1')
         response = client.healthChecks().list(project=project_id).execute()
         return len(response) > 0
-
+# Do we need to delete state file? Where we will exute funct _generate_state_file_string?
     def _generate_state_file_string(self, gcp_backend_resource: GcpTfBackend):
         tf_state_file_string = f'terraform {{\n\
 \tbackend "gcs" {{\n\
@@ -101,15 +100,15 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         return tf_state_file_string
 
 
-    def _create_gcp_session(self, context, project_id, logger):
+    def _create_gcp_session(self, context, project_id: str, logger):
+        if not project_id:
+            self._raise_and_log(logger, "Project id must be filled")
         # with LoggingSessionContext(context) as logger:
         api = CloudShellSessionContext(context).get_api()
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
         # try:
         private_key = api.DecryptPassword(gcp_backend_resource.private_key).Value.replace("\\n", "\n")
         email = api.DecryptPassword(gcp_backend_resource.client_email).Value
-        if not project_id:
-            self._raise_and_log(logger, "Project id must be filled")
         # Key and email defines on GCP TF BACKEND RESOURCE
         if private_key and email:
             if gcp_backend_resource.cloud_provider:
@@ -125,33 +124,34 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             # Check a correct CLP has been reference
             clp_details = api.GetResourceDetails
             clp_resource_details = self._get_and_validate_clp(clp_details, gcp_backend_resource, logger)
-            if clp_resource_details.ResourceModelName == GCP1G_MODEL:
-                myactual=clp_details(clp_resource_details.Name)
-                clp_json_path = self._fill_backend_sercret_vars_data(myactual, GCP1G_MODEL)
-                os.environ[GOOGLE_APPLICATION_CREDENTIALS] = clp_json_path
+            # if clp_resource_details.ResourceModelName == GCP1G_MODEL:
+            #     myactual=clp_details(clp_resource_details.Name)
+            clp_json_path = self._fill_backend_sercret_vars_data(clp_resource_details)
+            os.environ[GOOGLE_APPLICATION_CREDENTIALS] = clp_json_path
         # except Exception as e:
         #     self._raise_and_log(logger, f"There was an issue accessing GCP. {e}")
         bucket_name = gcp_backend_resource.bucket_name
         if bucket_name:      
             self._validate_bucket_exists(bucket_name, context, logger)
 
-    def _fill_backend_sercret_vars_data(self, myactual, clp):
-        for attr in  myactual.ResourceAttributes:
+    def _fill_backend_sercret_vars_data(self, clp_resource_details) -> str:
+        for attr in  clp_resource_details.ResourceAttributes:
             if attr.Name == "Google Cloud Provider.Credentials Json Path":
                 clp_json_path = attr.Value
                 return clp_json_path
 
 
-    def _get_and_validate_clp(self, clp_details, gcp_backend_resource, logger):
+    def _get_and_validate_clp(self, clp_details, gcp_backend_resource: str, logger) -> str:
         # clp_resource_name = gcp_backend_resource.cloud_provider
-        clp_details_resource_name = clp_details(gcp_backend_resource.cloud_provider)
-        clp_res_model = clp_details_resource_name.ResourceModelName
-        clpr_res_fam = clp_details_resource_name.ResourceFamilyName
+        clp_details_resource = clp_details(gcp_backend_resource.cloud_provider)
+        clp_res_model = clp_details_resource.ResourceModelName
+        clpr_res_fam = clp_details_resource.ResourceFamilyName
         if (clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider') or \
                 clp_res_model not in GCP_MODELS:
             logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
             raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
-        return clp_details_resource_name
+        clp_name=clp_details(clp_details_resource.Name) 
+        return clp_name
 
     def _raise_and_log(self, logger, msg):
         logger.exception(msg)
