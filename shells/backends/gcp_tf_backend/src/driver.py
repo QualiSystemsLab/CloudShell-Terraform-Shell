@@ -108,7 +108,8 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
         # try:
         private_key = api.DecryptPassword(gcp_backend_resource.private_key).Value.replace("\\n", "\n")
-        email = api.DecryptPassword(gcp_backend_resource.client_email).Value
+        email = gcp_backend_resource.client_email
+        # email = api.DecryptPassword(gcp_backend_resource.client_email).Value
         # Key and email defines on GCP TF BACKEND RESOURCE
         if private_key and email:
             if gcp_backend_resource.cloud_provider:

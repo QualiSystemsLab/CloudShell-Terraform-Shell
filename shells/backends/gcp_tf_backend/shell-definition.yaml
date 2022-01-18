@@ -25,10 +25,14 @@ node_types:
       #   description: Private key (Use only if Cloud Provider not specified)
       #   type: string
       #   tags: [ setting, user_input ]        
+      # Client Email:
+      #   description: Client Email (Use only if Cloud Provider not specified)
+      #   type: cloudshell.datatypes.Password
+      #   tags: [ setting, user_input ]
       Client Email:
         description: Client Email (Use only if Cloud Provider not specified)
-        type: cloudshell.datatypes.Password
-        tags: [ setting, user_input ]
+        type: string
+        tags: [ setting, user_input ]      
       Bucket Name:
         description: The name of the bucket to be used in order to save the state file
         type: string
@@ -80,7 +84,7 @@ node_types:
             type: cloudshell.datatypes.Password
           Client Email:
             description: Client Email
-            type: cloudshell.datatypes.Password
+            type: string
           Project:
             type: string
             default:                  

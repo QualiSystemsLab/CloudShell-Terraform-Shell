@@ -172,7 +172,7 @@ class GcpTfBackend(object):
     @property
     def client_email(self):
         """
-        :rtype: string
+        :rtype: str
         """
         return self.attributes['Gcp Tf Backend.Client Email'] if 'Gcp Tf Backend.Client Email' in self.attributes else None
 
@@ -180,7 +180,7 @@ class GcpTfBackend(object):
     def client_email(self, value):
         """
         Client Email (Use only if Cloud Provider not specified)
-        :type value: string
+        :type value: str
         """
         self.attributes['Gcp Tf Backend.Client Email'] = value
 
