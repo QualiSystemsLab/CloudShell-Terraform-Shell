@@ -21,12 +21,9 @@ class TestGcpTfBackendDriver(unittest.TestCase):
     def test_000_something(self):
         pass
 
-
 if __name__ == '__main__':
     import sys
     sys.exit(unittest.main())
-
-
 
 if __name__ == "__main__":
     import mock
@@ -75,7 +72,6 @@ if __name__ == "__main__":
     # context.resource.attributes["{}.SNMP Read Community".format(shell_name)] = "<READ_COMMUNITY_STRING>"
     # 'C:\\Users\\CSadmin123456\\CS\\tf-gcp\\prod.json'
     driver = GcpTfBackendDriver()
-
     # print driver.run_custom_command(context, custom_command="sh run", cancellation_context=cancellation_context)
     driver.initialize(context)
     result = driver.get_inventory(context)

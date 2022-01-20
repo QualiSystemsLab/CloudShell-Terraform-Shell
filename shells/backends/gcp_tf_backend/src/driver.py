@@ -5,14 +5,15 @@ from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionCo
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext    
 
 from googleapiclient import discovery
-from google.oauth2 import service_account
+# from google.oauth2 import service_account
 from google.cloud import storage
 import os
 import json
 
-from constants import GCP_MODELS, GCP1G_MODEL, CREDENTIALS_JSON_PATH, AUTH_URI, TOKEN_URI, TYPE_ACCOUNT, DYNAMIC_JSON, GOOGLE_APPLICATION_CREDENTIALS
+from constants import GCP_MODELS, AUTH_URI, TOKEN_URI, TYPE_ACCOUNT, DYNAMIC_JSON, GOOGLE_APPLICATION_CREDENTIALS
 from data_model import GcpTfBackend
 # from contextlib import redirect_stdout
+
 
 class GcpTfBackendDriver (ResourceDriverInterface):
 
@@ -63,7 +64,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             try:
                 gcp_service = self._can_conntect_to_gcp(context, logger)
                 if not gcp_service:
-                    self._raise_and_log(logger, "There was an issue accessing GCP, please check authentication credentials.")  
+                    self._raise_and_log(logger, "There was an issue accessing GCP, please check authentication credentials.")
                 # raise ValueError("Can't connect to GCP")
             except Exception as e:
                 raise ValueError(f"There was an issue initialization GCP provider resource. {e}")    
@@ -80,12 +81,12 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             if len(str(get_bucket)) < 0:
                 raise ValueError(f"Bucket {bucket_name} not found")  
         except Exception as e:
-            self._raise_and_log(logger, f"There was an issue accessing the bucket {bucket_name}.{e}")        
+            self._raise_and_log(logger, f"There was an issue accessing the bucket {bucket_name}.{e}")
 
     def _can_conntect_to_gcp(self, context, logger) -> bool:
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
         project_id = gcp_backend_resource.project
-        create_session=self._create_gcp_session(context, project_id, logger)
+        create_session = self._create_gcp_session(context, project_id, logger)
         client = discovery.build('compute', 'v1')
         response = client.healthChecks().list(project=project_id).execute()
         return len(response) > 0
@@ -143,7 +144,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             if gcp_backend_resource.cloud_provider:
                 self._raise_and_log(logger, "Only one method of authentication should be filled")
             with open(DYNAMIC_JSON, 'w', encoding='utf-8') as f:
-                json.dump({ "type": TYPE_ACCOUNT, "project_id": project_id, "private_key": private_key, "client_email": email,"auth_uri": AUTH_URI, "token_uri": TOKEN_URI }, f, ensure_ascii=False, indent=4)
+                json.dump({"type": TYPE_ACCOUNT, "project_id": project_id, "private_key": private_key, "client_email": email, "auth_uri": AUTH_URI, "token_uri": TOKEN_URI}, f, ensure_ascii=False, indent=4)
             os.environ[GOOGLE_APPLICATION_CREDENTIALS] = DYNAMIC_JSON
         # Keys not defines on GCP TF BACKEND RESOURCE (CLP reference should have been set)
         else:
@@ -160,11 +161,11 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         # except Exception as e:
         #     self._raise_and_log(logger, f"There was an issue accessing GCP. {e}")
         bucket_name = gcp_backend_resource.bucket_name
-        if bucket_name:      
+        if bucket_name:
             self._validate_bucket_exists(bucket_name, context, logger)
 
     def _fill_backend_sercret_vars_data(self, clp_resource_details) -> str:
-        for attr in  clp_resource_details.ResourceAttributes:
+        for attr in clp_resource_details.ResourceAttributes:
             if attr.Name == "Google Cloud Provider.Credentials Json Path":
                 clp_json_path = attr.Value
                 return clp_json_path
@@ -178,7 +179,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 clp_res_model not in GCP_MODELS:
             logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
             raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
-        clp_name=clp_details(clp_details_resource.Name) 
+        clp_name = clp_details(clp_details_resource.Name)
         return clp_name
 
     def _raise_and_log(self, logger, msg):
