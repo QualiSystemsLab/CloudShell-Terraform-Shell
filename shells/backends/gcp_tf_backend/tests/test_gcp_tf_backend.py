@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
+from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadResource, \
+    AutoLoadAttribute, AutoLoadDetails, CancellationContext
+from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
+from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
 """
 Tests for `GcpTfBackendDriver`
@@ -21,6 +26,7 @@ class TestGcpTfBackendDriver(unittest.TestCase):
     def test_000_something(self):
         pass
 
+
 if __name__ == '__main__':
     import sys
     sys.exit(unittest.main())
@@ -29,22 +35,20 @@ if __name__ == "__main__":
     import mock
     from cloudshell.shell.core.driver_context import CancellationContext
 
-
     shell_name = "Gcp Tf Backend"
     # model_name = ""
 
     from cloudshell.api.cloudshell_api import CloudShellAPISession
 
-
-    host="localhost"
-    username="admin"
-    password="admin"
-    domain="Global"
+    host = "localhost"
+    username = "admin"
+    password = "admin"
+    domain = "Global"
 
     pythonApi = CloudShellAPISession(host, username, password, domain)
     print(pythonApi)
 
-    authToken = pythonApi.authentication.xmlrpc_token # Use "pythonApi.token_id" with cloudshell-automation-api version 2020.1.0.178672 and below
+    authToken = pythonApi.authentication.xmlrpc_token  # Use "pythonApi.token_id" with cloudshell-automation-api version 2020.1.0.178672 and below
     print(authToken)
     # connectivity.admin_auth_token = authToken
 
@@ -60,7 +64,7 @@ if __name__ == "__main__":
     context.connectivity.server_address = host
     # context.reservation.reservation_id = "c13a6d18-07fe-4651-89c5-f3ee70220d0b"
     context.resource.address = host
-    context.resource.connectivity.server_address=host
+    context.resource.connectivity.server_address = host
     context.resource.name = "myname"
     context.connectivity.admin_auth_token = authToken
     context.resource.attributes = dict()

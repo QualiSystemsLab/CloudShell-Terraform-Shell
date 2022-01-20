@@ -2,7 +2,7 @@ from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterf
 from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadResource, \
     AutoLoadAttribute, AutoLoadDetails, CancellationContext
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
-from cloudshell.shell.core.session.logging_session import LoggingSessionContext    
+from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
 from googleapiclient import discovery
 # from google.oauth2 import service_account
@@ -67,7 +67,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                     self._raise_and_log(logger, "There was an issue accessing GCP, please check authentication credentials.")
                 # raise ValueError("Can't connect to GCP")
             except Exception as e:
-                raise ValueError(f"There was an issue initialization GCP provider resource. {e}")    
+                raise ValueError(f"There was an issue initialization GCP provider resource. {e}")
             return AutoLoadDetails([], [])
             os.remove(DYNAMIC_JSON)
 
@@ -79,7 +79,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             storage_client = storage.Client()
             get_bucket = storage_client.get_bucket(bucket_name)
             if len(str(get_bucket)) < 0:
-                raise ValueError(f"Bucket {bucket_name} not found")  
+                raise ValueError(f"Bucket {bucket_name} not found")
         except Exception as e:
             self._raise_and_log(logger, f"There was an issue accessing the bucket {bucket_name}.{e}")
 
