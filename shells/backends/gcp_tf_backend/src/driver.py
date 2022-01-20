@@ -89,16 +89,44 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         client = discovery.build('compute', 'v1')
         response = client.healthChecks().list(project=project_id).execute()
         return len(response) > 0
-# Do we need to delete state file? Where we will exute funct _generate_state_file_string?
-    def _generate_state_file_string(self, gcp_backend_resource: GcpTfBackend):
+
+    def get_backend_data(self, context, tf_state_unique_name: str) -> str:
+        with LoggingSessionContext(context) as logger:
+            gcp_backend_resource = GcpTfBackend.create_from_context(context)
+            tf_state_file_string = self._generate_state_file_string(gcp_backend_resource, tf_state_unique_name)
+            backend_data = {"tf_state_file_string": tf_state_file_string}
+            try:
+                gcp_service = self._can_conntect_to_gcp(context, logger)
+            except Exception as e:
+                self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
+
+            logger.info(f"Returning backend data for creating provider file :\n{backend_data}")
+            # response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
+            response = json.dumps({"backend_data": backend_data})
+            return response
+
+    def delete_tfstate_file(self, context, tf_state_unique_name: str):
+        """Deletes a blob from the bucket."""
+        with LoggingSessionContext(context) as logger:
+            gcp_backend_resource = GcpTfBackend.create_from_context(context)
+            try:
+                gcp_service = self._can_conntect_to_gcp(context, logger)
+                storage_client = storage.Client()
+                bucket_name = gcp_backend_resource.bucket_name
+                bucket = storage_client.bucket(bucket_name)
+                blob = bucket.blob(tf_state_unique_name)
+                blob.delete()
+            except Exception as e:
+                raise ValueError(f"{tf_state_unique_name} file was not removed from backend provider")
+
+    def _generate_state_file_string(self, gcp_backend_resource: GcpTfBackend, tf_state_unique_name: str):
         tf_state_file_string = f'terraform {{\n\
 \tbackend "gcs" {{\n\
 \t\tbucket = "{gcp_backend_resource.bucket_name}"\n\
-\t\tprefix = "{gcp_backend_resource.prefix}"\n\
+\t\tprefix = "{tf_state_unique_name}"\n\
 \t}}\n\
 }}'
         return tf_state_file_string
-
 
     def _create_gcp_session(self, context, project_id: str, logger):
         if not project_id:
@@ -140,7 +168,6 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             if attr.Name == "Google Cloud Provider.Credentials Json Path":
                 clp_json_path = attr.Value
                 return clp_json_path
-
 
     def _get_and_validate_clp(self, clp_details, gcp_backend_resource: str, logger) -> str:
         # clp_resource_name = gcp_backend_resource.cloud_provider
