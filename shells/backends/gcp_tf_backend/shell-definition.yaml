@@ -17,28 +17,12 @@ node_types:
   vendor.resource.Gcp Tf Backend:
     derived_from: cloudshell.nodes.GenericResource
     properties:
-      Private Key:
-        description: Private key (Use only if Cloud Provider not specified)
-        type: cloudshell.datatypes.Password
-        tags: [ setting, user_input ]
-      # Private Key:
-      #   description: Private key (Use only if Cloud Provider not specified)
-      #   type: string
-      #   tags: [ setting, user_input ]        
-      # Client Email:
-      #   description: Client Email (Use only if Cloud Provider not specified)
-      #   type: cloudshell.datatypes.Password
-      #   tags: [ setting, user_input ]
-      Client Email:
-        description: Client Email (Use only if Cloud Provider not specified)
+      Credentials Json Path:
+        description: Credentials Json Path (Use only if Cloud Provider not specified)
         type: string
         tags: [ setting, user_input ]      
       Bucket Name:
         description: The name of the bucket to be used in order to save the state file
-        type: string
-        tags: [ setting, user_input ]
-      Prefix:
-        description: GCS prefix inside the bucket. Named states for workspaces are stored in an object called <prefix>/<name>.tfstate (Optional)
         type: string
         tags: [ setting, user_input ]
       Cloud Provider:
@@ -72,18 +56,12 @@ node_types:
             default: Describe the resource shell template
           Bucket Name:
             description: The name of the bucket to be used in order to save the state file
-            type: string
-          Prefix:
-            description: GCS prefix inside the bucket. Named states for workspaces are stored in an object called <prefix>/<name>.tfstate (Optional)
-            type: string           
+            type: string       
           # Private Key:
           #   description: Private key
           #   type: string
-          Private Key:
-            description: Private key
-            type: cloudshell.datatypes.Password
-          Client Email:
-            description: Client Email
+          Credentials Json Path:
+            description: Credentials Json Path
             type: string
           Project:
             type: string

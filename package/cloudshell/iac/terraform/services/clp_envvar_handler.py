@@ -67,8 +67,6 @@ class AzureCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
                 os.environ["ARM_CLIENT_SECRET"] = self._shell_helper.api.DecryptPassword(attr.Value).Value
 
 
-
-
 class GCPCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
     def __init__(self, clp_res_model, clp_resource_attributes, shell_helper):
         BaseCloudProviderEnvVarHandler.__init__(self)
@@ -81,7 +79,7 @@ class GCPCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
             if self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "CREDENTIALS JSON PATH"):
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = attr.Value
             if self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "PROJECT"):
-                os.environ["project"] = attr.Value
+                os.environ["GOOGLE_PROJECT"] = attr.Value
                 project_flag = True
         if not project_flag:
             raise ValueError("Project ID was not found on GCP Cloud Provider")        

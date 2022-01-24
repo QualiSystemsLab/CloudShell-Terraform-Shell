@@ -155,19 +155,34 @@ class GcpTfBackend(object):
         return 'GcpTfBackend'
 
     @property
-    def credentials_json_path(self):
+    def private_key(self):
+        """
+        :rtype: string
+        """
+        return self.attributes['Gcp Tf Backend.Private Key'] if 'Gcp Tf Backend.Private Key' in self.attributes else None
+
+    @private_key.setter
+    def private_key(self, value):
+        """
+        Private key (Use only if Cloud Provider not specified)
+        :type value: string
+        """
+        self.attributes['Gcp Tf Backend.Private Key'] = value
+
+    @property
+    def client_email(self):
         """
         :rtype: str
         """
-        return self.attributes['Gcp Tf Backend.Credentials Json Path'] if 'Gcp Tf Backend.Credentials Json Path' in self.attributes else None
+        return self.attributes['Gcp Tf Backend.Client Email'] if 'Gcp Tf Backend.Client Email' in self.attributes else None
 
-    @credentials_json_path.setter
-    def credentials_json_path(self, value):
+    @client_email.setter
+    def client_email(self, value):
         """
-        Credentials Json Path (Use only if Cloud Provider not specified)
+        Client Email (Use only if Cloud Provider not specified)
         :type value: str
         """
-        self.attributes['Gcp Tf Backend.Credentials Json Path'] = value
+        self.attributes['Gcp Tf Backend.Client Email'] = value
 
     @property
     def bucket_name(self):
@@ -183,6 +198,21 @@ class GcpTfBackend(object):
         :type value: str
         """
         self.attributes['Gcp Tf Backend.Bucket Name'] = value
+
+    @property
+    def prefix(self):
+        """
+        :rtype: str
+        """
+        return self.attributes['Gcp Tf Backend.Prefix'] if 'Gcp Tf Backend.Prefix' in self.attributes else None
+
+    @prefix.setter
+    def prefix(self, value):
+        """
+        GCS prefix inside the bucket. Named states for workspaces are stored in an object called <prefix>/<name>.tfstate (Optional)
+        :type value: str
+        """
+        self.attributes['Gcp Tf Backend.Prefix'] = value
 
     @property
     def cloud_provider(self):

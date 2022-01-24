@@ -14,7 +14,7 @@ from constants import GCP_MODELS, AUTH_URI, TOKEN_URI, TYPE_ACCOUNT, DYNAMIC_JSO
 from data_model import GcpTfBackend
 # from contextlib import redirect_stdout
 
-
+#####!!! Don't create json file, use input path, retrive env var to GCP creds in _backend_secret_vars for backend, remove unused imports(do the same as in aws,azure)
 class GcpTfBackendDriver (ResourceDriverInterface):
 
     def __init__(self):
@@ -69,7 +69,6 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             except Exception as e:
                 raise ValueError(f"There was an issue initialization GCP provider resource. {e}")
             return AutoLoadDetails([], [])
-            os.remove(DYNAMIC_JSON)
 
     # </editor-fold>
     # <editor-fold desc="Validate S3 Bucket Exists">
@@ -86,24 +85,27 @@ class GcpTfBackendDriver (ResourceDriverInterface):
     def _can_conntect_to_gcp(self, context, logger) -> bool:
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
         project_id = gcp_backend_resource.project
-        create_session = self._create_gcp_session(context, project_id, logger)
+        self._create_gcp_session(context, project_id, logger)
         client = discovery.build('compute', 'v1')
         response = client.healthChecks().list(project=project_id).execute()
         return len(response) > 0
 
     def get_backend_data(self, context, tf_state_unique_name: str) -> str:
+        self._backend_secret_vars = {}
+
         with LoggingSessionContext(context) as logger:
             gcp_backend_resource = GcpTfBackend.create_from_context(context)
             tf_state_file_string = self._generate_state_file_string(gcp_backend_resource, tf_state_unique_name)
             backend_data = {"tf_state_file_string": tf_state_file_string}
+            project_id = gcp_backend_resource.project
             try:
-                gcp_service = self._can_conntect_to_gcp(context, logger)
+                gcp_service = self._create_gcp_session(context, project_id, logger)
+                self._backend_secret_vars = {"credentials": gcp_service}
             except Exception as e:
-                self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
+                self._raise_and_log(logger, "Inputs for Cloud Backend Access missing or incorrect")
 
             logger.info(f"Returning backend data for creating provider file :\n{backend_data}")
-            # response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
-            response = json.dumps({"backend_data": backend_data})
+            response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
             return response
 
     def delete_tfstate_file(self, context, tf_state_unique_name: str):
@@ -132,20 +134,15 @@ class GcpTfBackendDriver (ResourceDriverInterface):
     def _create_gcp_session(self, context, project_id: str, logger):
         if not project_id:
             self._raise_and_log(logger, "Project id must be filled")
-        # with LoggingSessionContext(context) as logger:
         api = CloudShellSessionContext(context).get_api()
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
-        # try:
-        private_key = api.DecryptPassword(gcp_backend_resource.private_key).Value.replace("\\n", "\n")
-        email = gcp_backend_resource.client_email
-        # email = api.DecryptPassword(gcp_backend_resource.client_email).Value
-        # Key and email defines on GCP TF BACKEND RESOURCE
-        if private_key and email:
+        json_path = gcp_backend_resource.credentials_json_path
+        # json_path defines on GCP TF BACKEND RESOURCE
+        if json_path:
             if gcp_backend_resource.cloud_provider:
                 self._raise_and_log(logger, "Only one method of authentication should be filled")
-            with open(DYNAMIC_JSON, 'w', encoding='utf-8') as f:
-                json.dump({"type": TYPE_ACCOUNT, "project_id": project_id, "private_key": private_key, "client_email": email, "auth_uri": AUTH_URI, "token_uri": TOKEN_URI}, f, ensure_ascii=False, indent=4)
-            os.environ[GOOGLE_APPLICATION_CREDENTIALS] = DYNAMIC_JSON
+            os.environ[GOOGLE_APPLICATION_CREDENTIALS] = json_path
+            os.environ["GOOGLE_PROJECT"] = project_id
         # Keys not defines on GCP TF BACKEND RESOURCE (CLP reference should have been set)
         else:
             # CLP had not been set...
@@ -156,13 +153,15 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             clp_resource_details = self._get_and_validate_clp(clp_details, gcp_backend_resource, logger)
             # if clp_resource_details.ResourceModelName == GCP1G_MODEL:
             #     myactual=clp_details(clp_resource_details.Name)
-            clp_json_path = self._fill_backend_sercret_vars_data(clp_resource_details)
-            os.environ[GOOGLE_APPLICATION_CREDENTIALS] = clp_json_path
+            json_path = self._fill_backend_sercret_vars_data(clp_resource_details)
+            os.environ[GOOGLE_APPLICATION_CREDENTIALS] = json_path
+            os.environ["GOOGLE_PROJECT"] = project_id
         # except Exception as e:
         #     self._raise_and_log(logger, f"There was an issue accessing GCP. {e}")
         bucket_name = gcp_backend_resource.bucket_name
         if bucket_name:
             self._validate_bucket_exists(bucket_name, context, logger)
+        return json_path
 
     def _fill_backend_sercret_vars_data(self, clp_resource_details) -> str:
         for attr in clp_resource_details.ResourceAttributes:
