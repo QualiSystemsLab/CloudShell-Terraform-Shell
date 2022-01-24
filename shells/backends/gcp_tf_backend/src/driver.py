@@ -109,13 +109,16 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         """Deletes a blob from the bucket."""
         with LoggingSessionContext(context) as logger:
             gcp_backend_resource = GcpTfBackend.create_from_context(context)
+            project_id = gcp_backend_resource.project
             try:
-                gcp_service = self._can_conntect_to_gcp(context, logger)
+                gcp_service = self._create_gcp_session(context, project_id, logger)
                 storage_client = storage.Client()
                 bucket_name = gcp_backend_resource.bucket_name
-                bucket = storage_client.bucket(bucket_name)
-                blob = bucket.blob(tf_state_unique_name)
-                blob.delete()
+                bucket = storage_client.get_bucket(bucket_name)
+                """Delete object under folder"""
+                blobs = list(bucket.list_blobs(prefix=tf_state_unique_name))
+                bucket.delete_blobs(blobs)
+                print(f"Folder {tf_state_unique_name} deleted.")
             except Exception as e:
                 raise ValueError(f"{tf_state_unique_name} file was not removed from backend provider")
 
