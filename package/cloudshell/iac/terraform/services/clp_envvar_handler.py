@@ -82,4 +82,4 @@ class GCPCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
                 os.environ["GOOGLE_PROJECT"] = attr.Value
                 project_flag = True
         if not project_flag:
-            raise ValueError("Project ID was not found on GCP Cloud Provider")        
+            raise ValueError("Project ID was not found on GCP Cloud Provider")
