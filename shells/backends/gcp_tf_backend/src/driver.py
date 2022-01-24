@@ -71,7 +71,6 @@ class GcpTfBackendDriver (ResourceDriverInterface):
     # </editor-fold>
     # <editor-fold desc="Validate S3 Bucket Exists">
     def _validate_bucket_exists(self, bucket_name: str, context, logger):
-        # with LoggingSessionContext(context) as logger:
         try:
             storage_client = storage.Client()
             get_bucket = storage_client.get_bucket(bucket_name)
@@ -149,13 +148,9 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             # Check a correct CLP has been reference
             clp_details = api.GetResourceDetails
             clp_resource_details = self._get_and_validate_clp(clp_details, gcp_backend_resource, logger)
-            # if clp_resource_details.ResourceModelName == GCP1G_MODEL:
-            #     myactual=clp_details(clp_resource_details.Name)
             json_path = self._fill_backend_sercret_vars_data(clp_resource_details)
             os.environ[GOOGLE_APPLICATION_CREDENTIALS] = json_path
             os.environ["GOOGLE_PROJECT"] = project_id
-        # except Exception as e:
-        #     self._raise_and_log(logger, f"There was an issue accessing GCP. {e}")
         bucket_name = gcp_backend_resource.bucket_name
         if bucket_name:
             self._validate_bucket_exists(bucket_name, context, logger)
@@ -168,7 +163,6 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 return clp_json_path
 
     def _get_and_validate_clp(self, clp_details, gcp_backend_resource: str, logger) -> str:
-        # clp_resource_name = gcp_backend_resource.cloud_provider
         clp_details_resource = clp_details(gcp_backend_resource.cloud_provider)
         clp_res_model = clp_details_resource.ResourceModelName
         clpr_res_fam = clp_details_resource.ResourceFamilyName
