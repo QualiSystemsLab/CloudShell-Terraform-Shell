@@ -9,7 +9,7 @@ from google.cloud import storage
 import os
 import json
 
-from constants import GCP_MODELS, AUTH_URI, TOKEN_URI, TYPE_ACCOUNT, DYNAMIC_JSON, GOOGLE_APPLICATION_CREDENTIALS
+from constants import GCP_MODELS, GOOGLE_APPLICATION_CREDENTIALS
 from data_model import GcpTfBackend
 # from contextlib import redirect_stdout
 
