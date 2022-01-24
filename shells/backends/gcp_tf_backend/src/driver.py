@@ -11,9 +11,8 @@ import json
 
 from constants import GCP_MODELS, GOOGLE_APPLICATION_CREDENTIALS
 from data_model import GcpTfBackend
-# from contextlib import redirect_stdout
 
-#####!!! Don't create json file, use input path, retrive env var to GCP creds in _backend_secret_vars for backend, remove unused imports(do the same as in aws,azure)
+
 class GcpTfBackendDriver (ResourceDriverInterface):
 
     def __init__(self):
