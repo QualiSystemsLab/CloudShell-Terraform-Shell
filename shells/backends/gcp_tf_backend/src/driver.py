@@ -118,7 +118,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 """Delete object under folder"""
                 blobs = list(bucket.list_blobs(prefix=tf_state_unique_name))
                 bucket.delete_blobs(blobs)
-                print(f"Folder {tf_state_unique_name} deleted.")
+                logger.info(f"Folder {tf_state_unique_name} deleted.")
             except Exception as e:
                 raise ValueError(f"{tf_state_unique_name} file was not removed from backend provider")
 
