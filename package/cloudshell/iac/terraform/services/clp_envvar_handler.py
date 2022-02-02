@@ -75,11 +75,16 @@ class GCPCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
         self._shell_helper = shell_helper
 
     def set_env_vars_based_on_clp(self):
+        project_flag = False
+        cred_flag = False
         for attr in self._clp_resource_attributes:
-            if self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "CREDENTIALS JSON PATH"):
+            if self.does_attribute_match(self._clp_res_model, attr, "Google Cloud Provider.Credentials Json Path"):
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = attr.Value
-            if self.does_attribute_match(self._clp_res_model, attr, self._shell_helper, "PROJECT"):
+                self._shell_helper.sandbox_messages.write_message(f"GOOGLE_APPLICATION_CREDENTIALS: {attr.Value}")
+                cred_flag = True
+            if self.does_attribute_match(self._clp_res_model, attr, "Google Cloud Provider.project"):
                 os.environ["GOOGLE_PROJECT"] = attr.Value
+                self._shell_helper.sandbox_messages.write_message(f"GOOGLE_PROJECT: {attr.Value}")
                 project_flag = True
-        if not project_flag:
-            raise ValueError("Project ID was not found on GCP Cloud Provider")
+        if not cred_flag and not project_flag:
+            self._shell_helper.sandbox_messages.write_message("Project ID was not found on GCP Cloud Provider")
