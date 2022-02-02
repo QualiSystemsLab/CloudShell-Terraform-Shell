@@ -118,11 +118,11 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 bucket = storage_client.get_bucket(bucket_name)
                 """Delete object under folder"""
                 blobs = list(bucket.list_blobs(prefix=tf_state_unique_name))
-                if len(blobs) == 0 :
+                if len(blobs) == 0:
                     logger.exception(f"Folder {tf_state_unique_name} not exists.")
-                elif len(blobs) > 1 :
+                elif len(blobs) > 1:
                     logger.exception(f"There are more than 1 Folder {tf_state_unique_name} currenlty {len(blobs)} folders exist.")
-                else :
+                else:
                     bucket.delete_blobs(blobs)
                     logger.info(f"Folder {tf_state_unique_name} deleted.")
             except Exception as e:
