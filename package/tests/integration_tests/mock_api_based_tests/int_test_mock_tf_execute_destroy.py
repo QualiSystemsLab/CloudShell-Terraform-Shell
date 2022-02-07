@@ -49,8 +49,8 @@ class TestMockTerraformExecuteDestroy(TestCase):
 
         azure_vault_private_url = os.environ.get("GITHUB_TF_PRIVATE_AZUREAPP_URL")
         azure_vault_public_url = f'{os.environ.get("GITHUB_TF_PUBLIC_AZUREAPP_URL_PRE")}' \
-                           f'{os.environ.get("CURRENT_BRANCH")}' \
-                           f'{os.environ.get("GITHUB_TF_PUBLIC_AZUREAPP_URL_POST")}'
+                                 f'{os.environ.get("CURRENT_BRANCH")}' \
+                                 f'{os.environ.get("GITHUB_TF_PUBLIC_AZUREAPP_URL_POST")}'
         for url in [azure_vault_private_url, azure_vault_public_url]:
             pre_exec_azure_vault(self.test_data_object, url)
             self.test_data_object.integration_data1.tf_shell.execute_terraform()

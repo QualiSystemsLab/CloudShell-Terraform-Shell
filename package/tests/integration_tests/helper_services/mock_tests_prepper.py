@@ -7,7 +7,6 @@ from package.tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAME
 from package.tests.integration_tests.helper_objects.mock_tests_data import MockTestsData
 
 
-
 def pre_exec_azure_vault(mock_tests_data: MockTestsData, azure_vault_url: str):
     set_attribute_on_mock_service(
         f"{SHELL_NAME}.{ATTRIBUTE_NAMES.TF_INPUTS}",
