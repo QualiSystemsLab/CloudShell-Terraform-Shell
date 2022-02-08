@@ -1,6 +1,5 @@
-GCP1G_MODEL = "Google Cloud Provider"
-# GCP2G_MODEL = "Google Cloud Provider 2G"
-GCP_MODELS = [GCP1G_MODEL]
+GCP2G_MODEL = "Google Cloud Provider"
+GCP_MODELS = [GCP2G_MODEL]
 
 CREDENTIALS_JSON_PATH = 'Credentials Json Path'
 AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'

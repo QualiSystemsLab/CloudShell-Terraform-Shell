@@ -3,7 +3,7 @@ from logging import Logger
 from cloudshell.api.cloudshell_api import ResourceInfo
 
 from cloudshell.iac.terraform.constants import AZURE2G_MODEL, ATTRIBUTE_NAMES, AWS2G_MODEL, CLP_PROVIDER_MODELS, \
-    AWS1G_MODEL, AZURE1G_MODEL, GCP1G_MODEL
+    AWS1G_MODEL, AZURE1G_MODEL, GCP2G_MODEL
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from cloudshell.iac.terraform.services.clp_envvar_handler import AWSCloudProviderEnvVarHandler, \
     AzureCloudProviderEnvVarHandler, GCPCloudProviderEnvVarHandler
@@ -53,7 +53,7 @@ class ProviderHandler(object):
         elif clp_res_model in [AZURE1G_MODEL, AZURE2G_MODEL]:
             clp_handler = AzureCloudProviderEnvVarHandler(clp_res_model, clp_resource_attributes, shell_helper)
 
-        elif clp_res_model in [GCP1G_MODEL]:
+        elif clp_res_model in [GCP2G_MODEL]:
             clp_handler = GCPCloudProviderEnvVarHandler(clp_res_model, clp_resource_attributes, shell_helper)
 
         if clp_handler:
