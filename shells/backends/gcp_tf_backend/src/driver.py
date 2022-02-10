@@ -8,6 +8,7 @@ from googleapiclient import discovery
 from google.cloud import storage
 import os
 import json
+import sys
 
 from constants import GCP_MODELS, GOOGLE_APPLICATION_CREDENTIALS
 from data_model import GcpTfBackend
@@ -62,7 +63,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             try:
                 gcp_service = self._can_conntect_to_gcp(context, logger)
                 if not gcp_service:
-                    self._raise_and_log(logger, "There was an issue accessing GCP, please check authentication credentials.")
+                    logger.exception("There was an issue accessing GCP, please check authentication credentials.")
             except Exception as e:
                 self._raise_and_log(logger, f"There was an issue initialization GCP provider resource. {e}")
             return AutoLoadDetails([], [])
@@ -74,7 +75,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             storage_client = storage.Client()
             get_bucket = storage_client.get_bucket(bucket_name)
             if len(str(get_bucket)) < 0:
-                self._raise_and_log(logger, f"Bucket {bucket_name} not found")
+                logger.exception(f"Bucket {bucket_name} not found")
         except Exception as e:
             self._raise_and_log(logger, f"There was an issue accessing the bucket {bucket_name}.{e}")
 
@@ -118,9 +119,9 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 """Delete object under folder"""
                 blobs = list(bucket.list_blobs(prefix=tf_state_unique_name))
                 if len(blobs) == 0:
-                    self._raise_and_log(logger, f"Folder {tf_state_unique_name} not exists.")
+                    logger.exception(f"Folder {tf_state_unique_name} not exists.")
                 elif len(blobs) > 1:
-                    self._raise_and_log(logger, f"There are more than 1 Folder {tf_state_unique_name} currenlty {len(blobs)} folders exist.")
+                    logger.exception(f"There are more than 1 Folder {tf_state_unique_name} currenlty {len(blobs)} folders exist.")
                 else:
                     bucket.delete_blobs(blobs)
                     logger.info(f"Folder {tf_state_unique_name} deleted.")
@@ -145,14 +146,14 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         # json_path defines on GCP TF BACKEND RESOURCE
         if json_path:
             if gcp_backend_resource.cloud_provider:
-                self._raise_and_log(logger, "Only one method of authentication should be filled")
+                logger.exception("Only one method of authentication should be filled")
             os.environ[GOOGLE_APPLICATION_CREDENTIALS] = json_path
             os.environ["GOOGLE_PROJECT"] = project_id
         # Keys not defines on GCP TF BACKEND RESOURCE (CLP reference should have been set)
         else:
             # CLP had not been set...
             if not gcp_backend_resource.cloud_provider:
-                self._raise_and_log(logger, "At least one method of authentication should be filled")
+                logger.exception("At least one method of authentication should be filled")
 
             # Check a correct CLP has been reference
             clp_details = api.GetResourceDetails
@@ -177,10 +178,16 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         clpr_res_fam = clp_details_resource.ResourceFamilyName
         if (clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider') or \
                 clp_res_model not in GCP_MODELS:
-            self._raise_and_log(logger, f"Cloud Provider does not have the expected type:{clpr_res_fam}")
+            logger.exception(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
         clp_name = clp_details(clp_details_resource.Name)
         return clp_name
 
-    def _raise_and_log(self, logger, msg):
+    def _raise_and_log(self, logger, msg, error_type=None):
         logger.exception(msg)
+        if error_type:
+            raise error_type(msg)
+
+        (err_type, value, traceback) = sys.exc_info()
+        if err_type:
+            raise   # re-raising original exception
         raise RuntimeError(msg)
