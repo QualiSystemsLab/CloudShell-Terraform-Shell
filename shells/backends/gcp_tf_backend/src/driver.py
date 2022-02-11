@@ -63,7 +63,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             try:
                 gcp_service = self._can_conntect_to_gcp(context, logger)
                 if not gcp_service:
-                    logger.warning("There was an issue accessing GCP, please check authentication credentials.")
+                    raise RuntimeError("There was an issue accessing GCP, please check authentication credentials.")
             except Exception as e:
                 self._raise_and_log(logger, f"There was an issue initialization GCP provider resource. {e}")
             return AutoLoadDetails([], [])
@@ -75,7 +75,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             storage_client = storage.Client()
             get_bucket = storage_client.get_bucket(bucket_name)
             if len(str(get_bucket)) < 0:
-                logger.warning(f"Bucket {bucket_name} not found")
+                self._raise_and_log(logger, f"Bucket {bucket_name} not found")
         except Exception as e:
             self._raise_and_log(logger, f"There was an issue accessing the bucket {bucket_name}.{e}")
 
@@ -119,12 +119,12 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 """Delete object under folder"""
                 blobs = list(bucket.list_blobs(prefix=tf_state_unique_name))
                 if len(blobs) == 0:
-                    logger.warning(f"Folder {tf_state_unique_name} not exists.")
+                    self._raise_and_log(logger, f"Folder {tf_state_unique_name} not exists.")
                 elif len(blobs) > 1:
-                    logger.warning(f"There are more than 1 Folder {tf_state_unique_name} currenlty {len(blobs)} folders exist.")
+                    self._raise_and_log(logger, f"There are more than 1 Folder {tf_state_unique_name} currenlty {len(blobs)} folders exist.")
                 else:
                     bucket.delete_blobs(blobs)
-                    logger.warning(f"Folder {tf_state_unique_name} deleted.")
+                    logger.info(f"Folder {tf_state_unique_name} deleted.")
             except Exception as e:
                 self._raise_and_log(logger, f"{tf_state_unique_name} file was not removed from backend provider.{e}")
 
@@ -139,21 +139,21 @@ class GcpTfBackendDriver (ResourceDriverInterface):
 
     def _create_gcp_session(self, context, project_id: str, logger):
         if not project_id:
-            logger.warning("Project id must be filled")
+            self._raise_and_log(logger, "Project id must be filled", error_type=ValueError)
         api = CloudShellSessionContext(context).get_api()
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
         json_path = gcp_backend_resource.credentials_json_path
         # json_path defines on GCP TF BACKEND RESOURCE
         if json_path:
             if gcp_backend_resource.cloud_provider:
-                logger.warning("Only one method of authentication should be filled")
+                lself._raise_and_log(logger, "Only one method of authentication should be filled", error_type=ValueError)
             os.environ[GOOGLE_APPLICATION_CREDENTIALS] = json_path
             os.environ["GOOGLE_PROJECT"] = project_id
         # Keys not defines on GCP TF BACKEND RESOURCE (CLP reference should have been set)
         else:
             # CLP had not been set...
             if not gcp_backend_resource.cloud_provider:
-                logger.warning("At least one method of authentication should be filled")
+                self._raise_and_log(logger,"At least one method of authentication should be filled", error_type=ValueError)
 
             # Check a correct CLP has been reference
             clp_details = api.GetResourceDetails
