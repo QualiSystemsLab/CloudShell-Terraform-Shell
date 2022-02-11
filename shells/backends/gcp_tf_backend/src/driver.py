@@ -146,14 +146,14 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         # json_path defines on GCP TF BACKEND RESOURCE
         if json_path:
             if gcp_backend_resource.cloud_provider:
-                lself._raise_and_log(logger, "Only one method of authentication should be filled", error_type=ValueError)
+                self._raise_and_log(logger, "Only one method of authentication should be filled", error_type=ValueError)
             os.environ[GOOGLE_APPLICATION_CREDENTIALS] = json_path
             os.environ["GOOGLE_PROJECT"] = project_id
         # Keys not defines on GCP TF BACKEND RESOURCE (CLP reference should have been set)
         else:
             # CLP had not been set...
             if not gcp_backend_resource.cloud_provider:
-                self._raise_and_log(logger,"At least one method of authentication should be filled", error_type=ValueError)
+                self._raise_and_log(logger, "At least one method of authentication should be filled", error_type=ValueError)
 
             # Check a correct CLP has been reference
             clp_details = api.GetResourceDetails
