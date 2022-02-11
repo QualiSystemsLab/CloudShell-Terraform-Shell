@@ -11,4 +11,7 @@ shellfoundry install
 cd ..\..
 cd backends\aws_tf_backend
 shellfoundry install
+cd ..\..
+cd backends\gcp_tf_backend
+shellfoundry install
 cd ..\..\..

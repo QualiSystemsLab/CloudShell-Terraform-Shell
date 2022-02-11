@@ -1,0 +1,83 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+metadata:
+  template_name: Gcp Tf Backend
+  template_author: Anonymous
+  template_version: 0.1.0
+  template_icon: shell-icon.png
+
+description: >
+  TOSCA based resource shell
+
+imports:
+  - cloudshell_standard: cloudshell_resource_standard_2_0_3.yaml
+
+node_types:
+
+  vendor.resource.Gcp Tf Backend:
+    derived_from: cloudshell.nodes.GenericResource
+    properties:
+      Credentials Json Path:
+        description: Credentials Json Path (Use only if Cloud Provider not specified)
+        type: string
+        tags: [ setting, user_input ]      
+      Bucket Name:
+        description: The name of the bucket to be used in order to save the state file
+        type: string
+        tags: [ setting, user_input ]
+      Cloud Provider:
+        description: In case Private Key and Client Email were not filled - the keys from the cloud provider will be used.
+        type: string
+      Project:
+        description: The default project to manage resources in.
+        type: string
+        tags: [ setting, user_input ]
+      #Execution Server Selector:
+      #  description: Execution Server on which the discovery will be executed
+      #  type: string
+      #  tags: [ setting, user_input ]
+      hide_address:
+        type: string
+        default: true
+          ## Adding custom attributes to the cloud provider discovery form
+   
+    capabilities:
+      auto_discovery_capability:
+        type: cloudshell.capabilities.AutoDiscovery
+        properties:        
+          enable_auto_discovery:
+            type: boolean
+            default: true
+          auto_discovery_description:
+            type: string
+            default: Describe the auto discovery
+          inventory_description:
+            type: string
+            default: Describe the resource shell template
+          Bucket Name:
+            description: The name of the bucket to be used in order to save the state file
+            type: string       
+          # Private Key:
+          #   description: Private key
+          #   type: string
+          Credentials Json Path:
+            description: Credentials Json Path
+            type: string
+          Project:
+            type: string
+            default:                  
+          Cloud Provider:
+            description: In case Private Key and Client Email were not filled - the keys from the cloud provider will be used.
+            type: string
+          #Execution Server Selector:
+          #  description: Execution Server on which the discovery will be executed
+          #  type: string
+
+
+    artifacts:
+      icon:
+        file: shell-icon.png
+        type: tosca.artifacts.File
+      driver:
+        file: GcpTfBackendDriver.zip
+        type: tosca.artifacts.File
