@@ -44,7 +44,21 @@ jobs:
           python -m pip install --upgrade pip
           chmod +x ci_deploy.sh
           ./ci_deploy.sh
-      - name: Test with unittest
+      - name: Test unit tests with unittest
         run: |
           python -m unittest
+      - name: Test integration tests for package/tests/integration_tests
+        env:
+          GH_TOKEN_DEC: ${{ secrets.GH_TOKEN_DEC }}
+          CURRENT_BRANCH: ${{ env.BRANCH_NAME }}
+          AZURE_APPLICATION_KEY_DEC: ${{ secrets.AZURE_APPLICATION_KEY_DEC }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_APPLICATION_ID: ${{ secrets.AZURE_APPLICATION_ID }}
 
+
+        run: |
+          pwd
+          echo "1: ${{ env.BRANCH_NAME }}"
+
+          python -m unittest discover -p "package/tests/integration_tests/mock_api_based_tests/int_test_mock*.py"

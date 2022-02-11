@@ -1,46 +1,58 @@
 import os
 from unittest import TestCase
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 from cloudshell.iac.terraform.downloaders.downloader import Downloader
 from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpdater
 from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
 from shells.generic_terraform_service.src.data_model import GenericTerraformService
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
-from tests.constants import GITHUB_TF_PUBLIC_HELLO_URL_FILE, GITHUB_TF_PUBLIC_HELLO_URL_FOLDER, TERRAFORM_EXEC_FILE, \
+from package.tests.constants import GH_TF_PUBLIC_HELLO_URL_FILE, GH_TF_PUBLIC_HELLO_URL_FOLDER, TERRAFORM_EXEC_FILE, \
     SHELL_NAME, TF_HELLO_FILE
-from tests.integration_tests.helper_objects.integration_context import IntegrationData
+# from package.tests.integration_tests.helper_objects.downloader_integration_context import IntegrationData
+from package.tests.integration_tests.helper_objects.integration_context import RealAPIIntegrationData
+
 from cloudshell.iac.terraform.tagging.tags import TagsManager
 from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 
 
 class TestTerraformDownloader(TestCase):
-    def setUp(self) -> None:
-        self.integration_data = IntegrationData()
+    @classmethod
+    def setUpClass(self):
+        load_dotenv(Path('../int_tests.env'))
+        if os.path.isfile(Path('../int_tests_secrets.env')):
+            load_dotenv(Path('../int_tests_secrets.env'))
 
-        service_resource = GenericTerraformService.create_from_context(self.integration_data.context)
+    def setUp(self) -> None:
+        self.integration_data1 = RealAPIIntegrationData(os.environ.get("SB_SERVICE_ALIAS1"))
+        self.integration_data2 = RealAPIIntegrationData(os.environ.get("SB_SERVICE_ALIAS2"))
+
+        service_resource = GenericTerraformService.create_from_context(self.integration_data1.context)
 
         sandbox_messages = SandboxMessagesService(
-            self.integration_data.real_api,
-            self.integration_data.context.reservation.reservation_id,
-            self.integration_data.context.resource.name,
+            self.integration_data1.api,
+            self.integration_data1.context.reservation.reservation_id,
+            self.integration_data1.context.resource.name,
             False
         )
 
         live_status_updater = LiveStatusUpdater(
-            self.integration_data.real_api,
-            self.integration_data.context.reservation.reservation_id,
+            self.integration_data1.api,
+            self.integration_data1.context.reservation.reservation_id,
             False
         )
 
-        default_tags = TagsManager(self.integration_data.context.reservation)
+        default_tags = TagsManager(self.integration_data1.context.reservation)
 
         attr_handler = ServiceAttrHandler(service_resource)
 
         self._driver_helper = ShellHelperObject(
-            self.integration_data.real_api,
-            self.integration_data.context.reservation.reservation_id,
+            self.integration_data1.api,
+            self.integration_data1.context.reservation.reservation_id,
             service_resource,
-            self.integration_data._logger,
+            self.integration_data1._logger,
             sandbox_messages,
             live_status_updater,
             attr_handler,
@@ -48,11 +60,11 @@ class TestTerraformDownloader(TestCase):
         )
 
     def _test_download_terraform_module(self, url: str, branch: str):
-        self.integration_data.context.resource.attributes[
+        self.integration_data1.context.resource.attributes[
             f"{SHELL_NAME}.Github Terraform Module URL"] = url
         self._driver_helper.tf_service.attributes[
             f"{SHELL_NAME}.Github Terraform Module URL"] = url
-        self.integration_data.context.resource.attributes[
+        self.integration_data1.context.resource.attributes[
             f"{SHELL_NAME}.Branch"] = branch
         self._driver_helper.tf_service.attributes[
             f"{SHELL_NAME}.Branch"] = branch
@@ -62,9 +74,9 @@ class TestTerraformDownloader(TestCase):
         self.assertTrue(os.path.exists(os.path.join(tf_workingdir, TF_HELLO_FILE)))
 
     def test_public_and_private_hello_dl(self):
-        self._test_download_terraform_module(GITHUB_TF_PUBLIC_HELLO_URL_FILE, "")
+        self._test_download_terraform_module(GH_TF_PUBLIC_HELLO_URL_FILE, "")
         self._test_download_terraform_module(os.environ.get("GITHUB_TF_PRIVATE_HELLO_URL"), "")
-        self._test_download_terraform_module(GITHUB_TF_PUBLIC_HELLO_URL_FOLDER, "")
+        self._test_download_terraform_module(GH_TF_PUBLIC_HELLO_URL_FOLDER, "")
 
     def test_download_terraform_executable(self):
         downloader = Downloader(self._driver_helper)

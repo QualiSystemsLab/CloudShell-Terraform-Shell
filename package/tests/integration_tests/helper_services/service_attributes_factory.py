@@ -1,11 +1,14 @@
+from typing import List
+
 from cloudshell.api.cloudshell_api import NameValuePair
 
-from tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES
+# from tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES
+from package.tests.integration_tests.constants import SHELL_NAME, ATTRIBUTE_NAMES
 
 
-class ServiceAttributesFactory:
+class ServiceAttributesMockBuilder:
     @staticmethod
-    def create_empty_attributes() -> list[dict]:
+    def create_empty_attributes() -> List[dict]:
         attributes = [
             NameValuePair(Name=f"{SHELL_NAME}.{ATTRIBUTE_NAMES.REMOTE_STATE_PROVIDER}", Value=""),
             NameValuePair(Name=f"{SHELL_NAME}.{ATTRIBUTE_NAMES.BRANCH}", Value=""),
