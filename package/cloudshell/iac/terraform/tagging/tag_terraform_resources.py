@@ -1,4 +1,5 @@
 import re
+import enum
 import sys
 import traceback
 from typing import List
@@ -10,16 +11,17 @@ from inspect import getframeinfo, stack
 from functools import wraps
 import json
 
-
-# =====================================================================================================================
+### Added
 from cloudshell.iac.terraform.models.exceptions import TerraformAutoTagsError
 
+# =====================================================================================================================
 
+#commented out some contants and methods but isnt required
 class Constants:
     TAGS = "tags"  # used for tag aws and azure resources in terraform
     LABELS = "labels"  # used for tag kubernetes resources in terraform
-    # COLONY_VARIABLES_FILE_NAME = "variables.colony.tfvars"
-    # COLONY_TAGS_FILE_NAME = "colony_tags.json"
+    # TORQUE_VARIABLES_FILE_NAME = "variables.torque.tfvars"
+    # TORQUE_TAGS_FILE_NAME = "torque_tags.json"
     OVERRIDE_LOG_FILE_NAME = "override_log"
     EXCLUDE_FROM_TAGGING_FILE_NAME = "exclude_from_tagging.json"
     # TERRAFORM_FOLDER_NAME = "terraform"
@@ -30,9 +32,9 @@ class Constants:
     #                         Constants.TERRAFORM_FOLDER_NAME)
 
     # @staticmethod
-    # def get_colony_tags_path(main_folder: str):
+    # def get_torque_tags_path(main_folder: str):
     #     return os.path.join(main_folder,
-    #                         Constants.COLONY_TAGS_FILE_NAME)
+    #                         Constants.TORQUE_TAGS_FILE_NAME)
 
     @staticmethod
     def get_override_log_path(main_folder: str):
@@ -43,6 +45,7 @@ class Constants:
     def get_exclude_from_tagging_file_path(main_folder: str):
         return os.path.join(main_folder,
                             Constants.EXCLUDE_FROM_TAGGING_FILE_NAME)
+
 
 # =====================================================================================================================
 
@@ -80,7 +83,7 @@ class ExceptionWrapper:
 
 # =====================================================================================================================
 
-
+#modified
 class LoggerHelper:
     log_instance = None
 
@@ -118,29 +121,6 @@ class LoggerHelper:
     @staticmethod
     def write_error(msg: str, code_line: int = None):
         LoggerHelper.actual_write("error", LoggerHelper.log_instance, msg, code_line)
-
-# =====================================================================================================================
-
-
-def parse_comma_separated_string(params_string: str = None) -> dict:
-    res = {}
-
-    if not params_string:
-        return res
-
-    key_values = params_string.split(",")
-
-    for item in key_values:
-        parts = item.split("=")
-        if len(parts) != 2:
-            raise ValueError("Line must be comma-separated list of key=values: key1=val1, key2=val2...")
-
-        key = parts[0].strip()
-        val = parts[1].strip()
-
-        res[key] = val
-
-    return res
 
 
 # =====================================================================================================================
@@ -184,54 +164,99 @@ class TerraformResource:
 
 # =====================================================================================================================
 
+#modified
 @ExceptionWrapper.wrap_class
 class OverrideTagsTemplatesCreator:
-    def __init__(self, tags_dict: dict):
-        # self.colony_tags_file_path = colony_tags_file_path
-        self.colony_tags_dict = tags_dict
-        self.colony_tags_flat_map = ""  # will be "map(<tag1>,<tag2>,...)"
-        self.colony_autoScaling_tags_flat_maps_list = ""  # will be list(<autoScalingTag1>,<autoScalingTag2>....)
+    def __init__(self, tags_dict: dict, terraform_version: str):
+        # self.torque_tags_file_path = torque_tags_file_path
+        self.torque_tags_dict = tags_dict
+        self.torque_tags_flat_map = ""  # will be "map(<tag1Name>,<tag1Value>,...)" or "tomap({<tag1Name>=<tag1Value>,...})"
+        self.torque_autoScaling_tags_flat_maps_list = ""  # will be list(<autoScalingTag1>,<autoScalingTag2>....) or tolist([<autoScalingTag1>, <autoScalingTag1>...])
+        self._terraform_syntax = TerraformSyntaxVersion.get_terraform_syntax(terraform_version)
+        self._map_key_value_separator = self._get_map_key_value_separator()
 
-        # if os.path.exists(self.colony_tags_file_path):
-        #     LoggerHelper.write_info(f"Reading colony tags from \"{self.colony_tags_file_path}\"")
+        # if os.path.exists(self.torque_tags_file_path):
+        #     LoggerHelper.write_info(f"Reading torque tags from \"{self.torque_tags_file_path}\"")
         #     self._read_and_save_tags_from_file()
         # else:
-        #     LoggerHelper.write_error(f"\"{self.colony_tags_file_path}\" does not exists")
-        #     LoggerHelper.write_error(f"Could not find colony tags file, exit the tagging process")
+        #     LoggerHelper.write_error(f"\"{self.torque_tags_file_path}\" does not exists")
+        #     LoggerHelper.write_error(f"Could not find torque tags file, exit the tagging process")
         #     exit(1)
 
         LoggerHelper.write_info(f"Initiate default tags templates")
-        self._init_colony_tags_flat_map()
-        self._init_colony_autoScaling_tags_flat_maps_list()
+        self._init_torque_tags_flat_map()
+        self._init_torque_autoScaling_tags_flat_maps_list()
 
-    # def _read_and_save_tags_from_file(self):
-    #     with open(self.colony_tags_file_path) as tags_file:
-    #         tags = json.load(tags_file)
-    #         for k, v in tags.items():
-    #             self.colony_tags_dict[k] = v
+    def _get_map_key_value_separator(self):
+        # In terraform 0.12.0 and above map is used as follows: "tomap({<tag1Name>=<tag1Value>,...})"
+        if self._terraform_syntax == TerraformSyntaxVersion.zero_twelve_and_above:
+            return '='
+        # In terraform 0.11.x and below map is used as follows: "map(<tag1Name>,<tag1Value>,...)"
+        return ','
 
-    def _init_colony_tags_flat_map(self):
-        colony_tags_to_list = []
-        for key, value in self.colony_tags_dict.items():
-            colony_tags_to_list.append(f"\"{key}\",\"{value}\"")
+    def _get_map_tags_template(self, map_values: str):
+        # In terraform 0.12.0 and above map is used as follows: "tomap({<tag1Name>=<tag1Value>,...})"
+        if self._terraform_syntax == TerraformSyntaxVersion.zero_twelve_and_above:
+            return f"tomap({{{map_values}}})"
+        # In terraform 0.11.x and below map is used as follows: "map(<tag1Name>,<tag1Value>,...)"
+        return f"map({map_values})"
 
-        if not colony_tags_to_list:
+    def _get_list_tags_template(self, list_values: str):
+        # In terraform 0.12.0 and above list is used as follows: "tolist([<tag1>, <tag2>...])"
+        if self._terraform_syntax == TerraformSyntaxVersion.zero_twelve_and_above:
+            return f"\ntolist([\n\t\t{list_values}\n])"
+        # In terraform 0.11.x and below list is used as follows: "list(<tag1>,<tag2>....)"
+        return f"\nlist(\n\t\t{list_values}\n)"
+
+    def _get_terraform_syntax_string_template(self, terraform_str: str):
+        # In version 0.11.x and below using terraform syntax like "map", "merge", "concat", and more
+        # must be wrapped in "${}"
+        if self._terraform_syntax == TerraformSyntaxVersion.zero_eleven_and_below:
+            return f"\"${{{terraform_str}}}\""
+        # In terraform 0.12.0 and above you can use terraform syntax as is
+        return terraform_str
+
+    def get_single_group_string(self, single_str: str):
+        # In version 0.11.x and below using terraform syntax like "map", "merge", "concat", and more
+        # must be wrapped in "${}"
+        single_group_match = RegexHelper.get_single_group_match_from_regex_result(text=single_str,
+                                                                        pattern=RegexHelper.SINGLE_VAR_PATTERN)
+        # In terraform 0.12.0 and above you can call the string as is,
+        # but it also excepts string interpolation syntax from terraform 0.11.0 and below
+        if single_group_match is None and self._terraform_syntax == TerraformSyntaxVersion.zero_twelve_and_above:
+            return single_str
+        return single_group_match
+
+    def _read_and_save_tags_from_file(self):
+        with open(self.torque_tags_file_path) as tags_file:
+            tags = json.load(tags_file)
+            for k, v in tags.items():
+                self.torque_tags_dict[k] = v
+
+    def _init_torque_tags_flat_map(self):
+        torque_tags_to_list = []
+        for key, value in self.torque_tags_dict.items():
+            torque_tags_to_list.append(f"\"{key}\"{self._map_key_value_separator}\"{value}\"")
+
+        if not torque_tags_to_list:
             return
-        map_value = " , ".join(colony_tags_to_list)
-        self.colony_tags_flat_map = f"map({map_value})"
+        map_value = " , ".join(torque_tags_to_list)
+        self.torque_tags_flat_map = self._get_map_tags_template(map_value)
 
-    def _init_colony_autoScaling_tags_flat_maps_list(self):
-        colony_tags_to_list = []
-        for key, value in self.colony_tags_dict.items():
-            colony_tags_to_list.append(f"map(\"key\",\"{key}\",\"value\",\"{value}\",\"propagate_at_launch\",\"true\")")
+    def _init_torque_autoScaling_tags_flat_maps_list(self):
+        torque_tags_to_list = []
+        for key, value in self.torque_tags_dict.items():
+            map_value = "\"key\"{0}\"{1}\",\"value\"{0}\"{2}\",\"propagate_at_launch\"{0}\"true\"". \
+                format(self._map_key_value_separator, key, value)
+            torque_tags_to_list.append(self._get_map_tags_template(map_value))
 
-        if not colony_tags_to_list:
+        if not torque_tags_to_list:
             return
 
         # All the \t and \n in here is just so that the override will look good and readable
         # (in case we need to look at it)
-        list_of_maps_value = " ,\n\t\t".join(colony_tags_to_list)
-        self.colony_autoScaling_tags_flat_maps_list = f"\nlist(\n\t\t{list_of_maps_value}\n)"
+        list_of_maps_value = " ,\n\t\t".join(torque_tags_to_list)
+        self.torque_autoScaling_tags_flat_maps_list = self._get_list_tags_template(list_of_maps_value)
 
     def _get_basic_override_tags_template(self, resource_type: str, resource_name: str, tags: str) -> str:
         tags_label = Constants.LABELS if resource_type.startswith("kubernetes_") else Constants.TAGS
@@ -245,34 +270,37 @@ resource \"{RESOURCE_TYPE}\" \"{RESOURCE_NAME}\" {{
              TAGS_VALUE=tags)
 
     def get_merge_tags_template(self, resource_type: str, resource_name: str, client_str_tags: str) -> str:
-        if not self.colony_tags_flat_map:
+        if not self.torque_tags_flat_map:
             return ""
 
         separator = ", " if not client_str_tags.replace(" ", "").endswith(",") else " "
+        merge_str = f"merge({client_str_tags}{separator}{self.torque_tags_flat_map})"
 
         return self._get_basic_override_tags_template(resource_type=resource_type,
                                                       resource_name=resource_name,
-                                                      tags=f"\"${{merge({client_str_tags}{separator}{self.colony_tags_flat_map})}}\"")
+                                                      tags=self._get_terraform_syntax_string_template(merge_str))
 
     def get_concat_tags_template(self, resource_type: str, resource_name: str, client_str_tags: str) -> str:
-        if not self.colony_autoScaling_tags_flat_maps_list:
+        if not self.torque_autoScaling_tags_flat_maps_list:
             return ""
 
         separator = ", " if not client_str_tags.replace(" ", "").endswith(",") else " "
+        concat_str = f"concat({client_str_tags}{separator}{self.torque_autoScaling_tags_flat_maps_list})"
 
         return self._get_basic_override_tags_template(resource_type=resource_type,
                                                       resource_name=resource_name,
-                                                      tags=f"\"${{concat({client_str_tags}{separator}{self.colony_autoScaling_tags_flat_maps_list})}}\"")
+                                                      tags=self._get_terraform_syntax_string_template(concat_str))
 
-    def get_colony_tags_with_client_dict_tags_template(self, resource_type: str, resource_name: str, client_dict_tags: dict) -> str:
+    def get_torque_tags_with_client_dict_tags_template(self, resource_type: str, resource_name: str,
+                                                       client_dict_tags: dict) -> str:
         tags = {} if not client_dict_tags else client_dict_tags
         # To add out tags to the client dict tags AND to OVERRIDE them in case we have the same tag names
-        for key, value in self.colony_tags_dict.items():
+        for key, value in self.torque_tags_dict.items():
             tags[key] = value
 
         all_tags_in_str_list = []
         for key, value in tags.items():
-            all_tags_in_str_list.append(f"{key} = \"{value}\"")
+            all_tags_in_str_list.append(f"\"{key}\" = \"{value}\"")
 
         if not all_tags_in_str_list:
             return ""
@@ -284,9 +312,10 @@ resource \"{RESOURCE_TYPE}\" \"{RESOURCE_NAME}\" {{
                                                       resource_name=resource_name,
                                                       tags=all_tags_as_str)
 
-    def get_colony_tags_with_autoscaling_client_dict_tags_template(self, resource_type: str, resource_name: str, client_list_dict_tags: list) -> str:
+    def get_torque_tags_with_autoscaling_client_dict_tags_template(self, resource_type: str, resource_name: str,
+                                                                   client_list_dict_tags: list) -> str:
         list_of_tags_dict = [] if not client_list_dict_tags else client_list_dict_tags
-        for key, value in self.colony_tags_dict.items():
+        for key, value in self.torque_tags_dict.items():
             single_tag_dict = {"key": key, "value": value, "propagate_at_launch": "true"}
             list_of_tags_dict.append(single_tag_dict)
 
@@ -302,6 +331,31 @@ resource \"{RESOURCE_TYPE}\" \"{RESOURCE_NAME}\" {{
         return self._get_basic_override_tags_template(resource_type=resource_type,
                                                       resource_name=resource_name,
                                                       tags=all_tags_as_str)
+
+
+# =====================================================================================================================
+
+class TerraformSyntaxVersion(enum.Enum):
+    zero_eleven_and_below = 0
+    zero_twelve_and_above = 1
+
+    @staticmethod
+    def get_terraform_syntax(terraform_version: str):
+        version_arr = terraform_version.split(".")
+        if len(version_arr) == 3:
+            if int(version_arr[0]) == 0:
+                # If version is at most 0.11.x
+                if int(version_arr[1]) <= 11:
+                    return TerraformSyntaxVersion.zero_eleven_and_below
+                # If version is at least 0.12.0
+                else:
+                    return TerraformSyntaxVersion.zero_twelve_and_above
+            # Version is at least 1.x.x
+            else:
+                return TerraformSyntaxVersion.zero_twelve_and_above
+        # If did not receive a valid version then return the default version syntax.
+        else:
+            return TerraformSyntaxVersion.zero_eleven_and_below
 
 
 # =====================================================================================================================
@@ -422,7 +476,7 @@ class ResourcesTagger:
         override_file_path = os.path.join(self.tf_file_info.file_dir, f"{file_without_ext}_override.tf")
         return override_file_path
 
-    def _get_colony_tags_with_client_string_tags(self, terraform_resource: TerraformResource) -> str:
+    def _get_torque_tags_with_client_string_tags(self, terraform_resource: TerraformResource) -> str:
         client_tags = terraform_resource.tags.replace("\n", "")
 
         # It's important that we search for MERGED_TAGS_PATTERN before we search for SINGLE_VAR_PATTERN because
@@ -431,8 +485,7 @@ class ResourcesTagger:
         parsed_client_tags = RegexHelper.get_single_group_match_from_regex_result(text=client_tags,
                                                                                   pattern=RegexHelper.MERGED_TAGS_PATTERN)
         if not parsed_client_tags:  # if not find concat pattern then try to fall back to single var pattern
-            parsed_client_tags = RegexHelper.get_single_group_match_from_regex_result(text=client_tags,
-                                                                                      pattern=RegexHelper.SINGLE_VAR_PATTERN)
+            parsed_client_tags = self.tags_creator.get_single_group_string(client_tags)
 
         # If succeed to find any pattern then create a new merge tags template
         if parsed_client_tags:
@@ -444,7 +497,7 @@ class ResourcesTagger:
         else:  # Otherwise raise an error
             raise Exception("Unable to process client tags")
 
-    def _get_colony_tags_with_autoscaling_client_string_tags(self, terraform_resource: TerraformResource) -> str:
+    def _get_torque_tags_with_autoscaling_client_string_tags(self, terraform_resource: TerraformResource) -> str:
         client_tags = terraform_resource.tags.replace("\n", "")
         # Try at first to find a concat pattern.
         # It's important that we search for CONCAT_LIST_TAGS_PATTERN before we search for SINGLE_VAR_PATTERN because
@@ -453,8 +506,7 @@ class ResourcesTagger:
         parsed_client_tags = RegexHelper.get_single_group_match_from_regex_result(text=client_tags,
                                                                                   pattern=RegexHelper.CONCAT_LIST_TAGS_PATTERN)
         if not parsed_client_tags:  # if not find concat pattern then try to fall back to single var pattern
-            parsed_client_tags = RegexHelper.get_single_group_match_from_regex_result(text=client_tags,
-                                                                                      pattern=RegexHelper.SINGLE_VAR_PATTERN)
+            parsed_client_tags = self.tags_creator.get_single_group_string(client_tags)
         # If succeed to find any pattern then create a new concat tags template
         if parsed_client_tags:
             return self.tags_creator.get_concat_tags_template(
@@ -464,14 +516,14 @@ class ResourcesTagger:
         else:  # Otherwise raise an error
             raise Exception("Unable to process client tags")
 
-    def _get_colony_tags_with_client_dict_tags(self, terraform_resource: TerraformResource) -> str:
-        return self.tags_creator.get_colony_tags_with_client_dict_tags_template(
+    def _get_torque_tags_with_client_dict_tags(self, terraform_resource: TerraformResource) -> str:
+        return self.tags_creator.get_torque_tags_with_client_dict_tags_template(
             resource_type=terraform_resource.resource_type,
             resource_name=terraform_resource.resource_name,
             client_dict_tags=terraform_resource.tags)
 
-    def _get_colony_tags_with_autoscaling_client_dict_tags(self, terraform_resource: TerraformResource) -> str:
-        return self.tags_creator.get_colony_tags_with_autoscaling_client_dict_tags_template(
+    def _get_torque_tags_with_autoscaling_client_dict_tags(self, terraform_resource: TerraformResource) -> str:
+        return self.tags_creator.get_torque_tags_with_autoscaling_client_dict_tags_template(
             resource_type=terraform_resource.resource_type,
             resource_name=terraform_resource.resource_name,
             client_list_dict_tags=terraform_resource.tags)
@@ -487,18 +539,18 @@ class ResourcesTagger:
                 # {key = "C" , value = "D", propagate_at_launch =  "True"}]
                 if not terraform_resource.tags or type(terraform_resource.tags) is list:
                     override_file_stream.write(
-                        self._get_colony_tags_with_autoscaling_client_dict_tags(terraform_resource))
+                        self._get_torque_tags_with_autoscaling_client_dict_tags(terraform_resource))
                 # i.e tags is most likely = "${concat(<List_of_maps1>,<List_of_maps2>,....)}" or "${<List_of_maps>}"
                 elif type(terraform_resource.tags) is str:
                     override_file_stream.write(
-                        self._get_colony_tags_with_autoscaling_client_string_tags(terraform_resource))
+                        self._get_torque_tags_with_autoscaling_client_string_tags(terraform_resource))
             else:
                 # if we don't have tags or the tags are dict like "  key1="value1" , key2="value2"  "
                 if not terraform_resource.tags or type(terraform_resource.tags) is dict:
-                    override_file_stream.write(self._get_colony_tags_with_client_dict_tags(terraform_resource))
+                    override_file_stream.write(self._get_torque_tags_with_client_dict_tags(terraform_resource))
                 # i.e tags is most likely = "${merge(<map1>,<map2>,....)}" or "${<map>}"
                 elif type(terraform_resource.tags) is str:
-                    override_file_stream.write(self._get_colony_tags_with_client_string_tags(terraform_resource))
+                    override_file_stream.write(self._get_torque_tags_with_client_string_tags(terraform_resource))
 
     def create_override_file(self, untaggable_resources_types: List[str] = []):
         tf_file_resources = Hcl2Parser.get_tf_file_resources(self.tf_file_info.file_path)
@@ -521,11 +573,8 @@ class ResourcesTagger:
 #                                         M          A       I       N
 # =====================================================================================================================
 
-
+# modified
 def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
-    # plan_var_file_command = ""
-    # if os.path.exists(os.path.join(main_tf_dir_path, Constants.COLONY_VARIABLES_FILE_NAME)):
-    #     plan_var_file_command = f"-var-file={Constants.COLONY_VARIABLES_FILE_NAME}"
 
     inputs = []
 
@@ -557,15 +606,16 @@ def _get_untaggable_resources_types_from_plan_output(text: str) -> List[str]:
                                                         RegexHelper.UNSUPPORTED_TAGS_OR_LABELS_PATTERN_2])
     return untaggable_resources
 
-
-def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dict, inputs_dict: dict = dict()):
+#modified
+def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dict, inputs_dict: dict = dict(), terraform_version: str = ""):
     if not os.path.exists(main_dir_path):
         raise TerraformAutoTagsError(f"Path {main_dir_path} does not exist")
     tfs_folder_path = main_dir_path
     # log_path = Constants.get_override_log_path(main_dir_path)
-    # colony_tags_file_path = Constants.get_colony_tags_path(main_dir_path)
+    # torque_tags_file_path = Constants.get_torque_tags_path(main_dir_path)
     exclude_from_tagging_file_path = Constants.get_exclude_from_tagging_file_path(main_dir_path)
 
+    # modified
     LoggerHelper.init_logging(logger)
 
     LoggerHelper.write_info(f"Trying to preform terraform init & plan in the directory '{tfs_folder_path}'"
@@ -578,13 +628,11 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
         # Error Code 3 mark to the outside tf script (that run me) that there was an error but not because of
         # the override procedure (but because the client tf file has compile errors even before we started the
         # override procedure)
-
-        # Had to change exit(3) to "raise" so exception can be handled outside
-        #exit(3)
         raise TerraformAutoTagsError("Validation errors during Terraform Init/Plan when applying automated tags")
     LoggerHelper.write_info(f"terraform init & plan passed successfully")
 
-    tags_templates_creator = OverrideTagsTemplatesCreator(tags_dict)
+    #modified
+    tags_templates_creator = OverrideTagsTemplatesCreator(tags_dict, terraform_version=terraform_version)
 
     all_tf_files = FilesHelper.get_all_files(tfs_folder_path, ".tf")
     all_tf_files_without_overrides = [file for file in all_tf_files if not file.file_name.endswith("_override.tf")]
@@ -605,6 +653,8 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
 
     LoggerHelper.write_info(f"Trying to preform terraform init & plan in the directory '{tfs_folder_path}'"
                             " in order to check for any untaggable resources in the override files")
+    
+    # modified
     # Check (by analyzing the terraform plan output) to see if any of the override files
     # has a "tags/labels" that was assigned to untaggable resources
     stdout, stderr, return_code = _perform_terraform_init_plan(tfs_folder_path, inputs_dict)
@@ -639,27 +689,32 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
             # new override files the validation passes.
             # If it's still not pass that we probably did something wrong and we need to exit with error
             LoggerHelper.write_info(f"Trying to preform one final terraform init & plan in the directory '{tfs_folder_path}'"
-                                    " in order to check for any validation errors in the new override files")
-
+                " in order to check for any validation errors in the new override files")
+            # modified
             stdout, stderr, return_code = _perform_terraform_init_plan(tfs_folder_path, inputs_dict)
             if return_code != 0 or stderr:
                 LoggerHelper.write_error("Errors were found in the last validation check:"
                                          f" (Return_code is {return_code})"
                                          f"\n\nErrors are:\n{stderr}\n")
                 LoggerHelper.write_error("Tagging terraform resources operation has FAILED !!!!!")
-                # Had to change exit(1) to "raise" so exception can be handled outside
-                # exit(1)
-                raise TerraformAutoTagsError("Validation errors during Terraform Init/Plan "
-                                             "when applying automated tags")
+                exit(1)
 
         else:
             LoggerHelper.write_warning("No untaggable resources were found, but errors in plan file do exists")
             LoggerHelper.write_error("Tagging terraform resources operation has FAILED !!!!!")
-            # Had to change exit(1) to "raise" so exception can be handled outside
-            # exit(1)
-            raise TerraformAutoTagsError("No untaggable resources were found, but there is an error in Terraform "
-                                         "Plan when applying automated tags. Please check the logs for more details")
+            exit(1)
     else:
         LoggerHelper.write_info("No errors founds in plan output")
 
     LoggerHelper.write_info("Successfully finish creating override files to tf files\n\n\n\n")
+
+
+def _validate_terraform_version_arg(terraform_version_arg: str) -> bool:
+    if not terraform_version_arg:
+        return False
+
+    version_arr = terraform_version.split(".")
+    if len(version_arr) != 3:
+        return False
+
+    return version_arr[0].isdigit() and version_arr[1].isdigit()

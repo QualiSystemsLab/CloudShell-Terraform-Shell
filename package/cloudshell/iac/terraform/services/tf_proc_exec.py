@@ -115,7 +115,9 @@ class TfProcExec(object):
             self._shell_helper.logger.info(self._tf_working_dir)
             self._shell_helper.logger.info(tags_dict)
 
-            start_tagging_terraform_resources(self._tf_working_dir, self._shell_helper.logger, tags_dict, inputs_dict)
+            terraform_version = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.TERRAFORM_VERSION)
+
+            start_tagging_terraform_resources(self._tf_working_dir, self._shell_helper.logger, tags_dict, inputs_dict, terraform_version)
             self._set_service_status("Progress 40", "Tagging Passed")
         except Exception:
             self._set_service_status("Offline", "Tagging Failed")
