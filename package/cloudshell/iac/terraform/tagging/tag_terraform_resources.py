@@ -1,3 +1,22 @@
+# entrypoint is package/cloudshell/iac/terraform/services/tf_proc_exec.py def tag_terraform
+
+# tags changes
+
+# - remove/comment out main (only uses start_tagging_terraform_resources function)
+# - add "from cloudshell.iac.terraform.models.exceptions import TerraformAutoTagsError"
+# - verify imports are the same (need to add to dependencies file if different and require specific version)
+# - modify method definition params
+# - modify logger to use logger from module
+# - _perform_terraform_init_plan is heavily changed due to the fact we may need to run this on windows or linux
+
+# modified methods:
+
+# - _perform_terraform_init_plan (x2)
+# - start_tagging_terraform_resources
+# - init_logging
+# - OverrideTagsTemplatesCreator
+
+
 import re
 import enum
 import sys
