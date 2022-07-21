@@ -34,7 +34,7 @@ class TfProcExec(object):
 
     def init_terraform(self):
         self._shell_helper.logger.info("Performing Terraform Init...")
-        self._shell_helper.sandbox_messages.write_message("Running Terraform Init...")
+        self._shell_helper.sandbox_messages.write_message("running Terraform Init...")
 
         self._backend_handler.generate_backend_cfg_file()
         backend_config_vars = self._backend_handler.get_backend_secret_vars()
@@ -117,7 +117,8 @@ class TfProcExec(object):
 
             terraform_version = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.TERRAFORM_VERSION)
 
-            start_tagging_terraform_resources(self._tf_working_dir, self._shell_helper.logger, tags_dict, inputs_dict, terraform_version)
+            start_tagging_terraform_resources(self._tf_working_dir, self._shell_helper.logger, tags_dict, inputs_dict,
+                                              terraform_version)
             self._set_service_status("Progress 40", "Tagging Passed")
         except Exception:
             self._set_service_status("Offline", "Tagging Failed")
