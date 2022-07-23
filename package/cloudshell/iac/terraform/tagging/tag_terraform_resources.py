@@ -3,6 +3,7 @@
 # tags changes
 
 # - remove/comment out main (only uses start_tagging_terraform_resources function)
+# - removed Settings class and related methods
 # - add "from cloudshell.iac.terraform.models.exceptions import TerraformAutoTagsError"
 # - verify imports are the same (need to add to dependencies file if different and require specific version)
 # - modify logger to use logger from module
@@ -49,25 +50,6 @@ class Constants:
     def get_exclude_from_tagging_file_path(main_folder: str):
         return os.path.join(main_folder,
                             Constants.EXCLUDE_FROM_TAGGING_FILE_NAME)
-
-# =====================================================================================================================
-
-
-class Settings:
-    def __init__(self,
-                 tf_exe_path: str = "",
-                 tf_version: str = "",
-                 tf_module_dir_path: str = "",
-                 tf_vars_file_path: str = "",
-                 tags_file_path: str = "",
-                 exclude_from_tagging_file_path: str = ""):
-        self.tf_exe_path = tf_exe_path
-        self.tf_version = tf_version
-        self.tf_module_dir_path = tf_module_dir_path
-        self.tf_vars_file_path = tf_vars_file_path
-        self.tags_file_path = tags_file_path
-        self.exclude_from_tagging_file_path = exclude_from_tagging_file_path
-
 
 # =====================================================================================================================
 
@@ -135,8 +117,8 @@ class LoggerHelper:
         LoggerHelper.log_instance.error(f" Line {code_line}]:  {msg}")
 
 
-
 # =====================================================================================================================
+
 
 class FileInfo:
     def __init__(self, file_path: str):
@@ -191,13 +173,6 @@ class OverrideTagsTemplatesCreator:
         if not self.torque_tags_dict:
             LoggerHelper.write_error(f"Didn't get tags dict, exiting the tagging process")
             return
-        # if os.path.exists(self.torque_tags_file_path):
-        #     LoggerHelper.write_info(f"Reading torque tags from \"{self.torque_tags_file_path}\"")
-        #     self._read_and_save_tags_from_file()
-        # else:
-        #     LoggerHelper.write_error(f"\"{self.torque_tags_file_path}\" does not exists")
-        #     LoggerHelper.write_error(f"Could not find torque tags file, exit the tagging process")
-        #     exit(1)
 
         LoggerHelper.write_info(f"Initiate default tags templates")
         self._init_torque_tags_flat_map()
@@ -628,11 +603,7 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
     if not os.path.exists(main_dir_path):
         raise TerraformAutoTagsError(f"Path {main_dir_path} does not exist")
     tfs_folder_path = main_dir_path
-    # log_path = Constants.get_override_log_path(settings.tf_module_dir_path)
-    # torque_tags_file_path = settings.tags_file_path
     exclude_from_tagging_file_path = Constants.get_exclude_from_tagging_file_path(main_dir_path)
-    # tf_exe_path = settings.tf_exe_path
-    # tf_vars_file_path = settings.tf_vars_file_path
 
     # modified
     LoggerHelper.init_logging(logger)
@@ -736,54 +707,3 @@ def _validate_terraform_version_arg(terraform_version_arg: str) -> bool:
         return False
 
     return version_arr[0].isdigit() and version_arr[1].isdigit()
-
-
-# def _try_get_settings() -> Settings:
-#     parser = argparse.ArgumentParser()
-#
-#     # mandatory positional arguments
-#     parser.add_argument('tf_version',
-#                         help="TF version, e.g. 0.10.0, 0.12.0, 0.15.0, ...")
-#     parser.add_argument('tf_module_dir_path',
-#                         help="path to the folder with the tf files")
-#     parser.add_argument('tags_file_path',
-#                         help="path to the json file with the tags to be applied to the module")
-#
-#     # optional named arguments
-#     parser.add_argument('--tf_exe_path', default="",
-#                         help="path to the TF executable, e.g. /usr/bin/terraform. "
-#                              "if not specified, PATH locations will be searched for 'terraform' exe")
-#     parser.add_argument('--tf_vars_file_path', default="",
-#                         help="path to the vars file for the module")
-#     parser.add_argument('--exclude_from_tagging_file_path', default="",
-#                         help="path to the json file with the resources to be excluded from tagging")
-#
-#     settings = Settings()
-#     # if invalid, will print error + usage and exit
-#     parser.parse_args(namespace=settings)
-#
-#     # additional validations
-#     if settings.tf_exe_path and not os.path.isfile(settings.tf_exe_path):
-#         parser.print_usage()
-#         print("error: tf_exe_path value is invalid")
-#         exit(1)
-#
-#     if not _validate_terraform_version_arg(settings.tf_version):
-#         parser.print_usage()
-#         print("error: tf_version value is invalid")
-#         exit(1)
-#
-#     if not os.path.isdir(settings.tf_module_dir_path):
-#         parser.print_usage()
-#         print("error: tf_module_dir_path value is invalid")
-#         exit(1)
-#
-#     return settings
-#
-#
-# modified
-# if __name__ == '__main__':
-#
-#     parsed_settings = _try_get_settings()
-#
-#     start_tagging_terraform_resources(settings=parsed_settings)
