@@ -25,7 +25,7 @@ class GitHubScriptDownloader(object):
 
     @retry((HTTPError, URLError), delay=1, backoff=2, tries=5)
     def download_repo(self, url: str, token: str, branch: str = "") -> str:
-        headers = {'Authorization': f'token {token}'}
+        headers = {'Authorization': f'token {token}'} if token else None
         self._validate_github_url(url)
         url_data = self._extract_data_from_url(url, branch)
         try:

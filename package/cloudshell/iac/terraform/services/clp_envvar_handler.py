@@ -1,6 +1,5 @@
 import os
 from abc import ABCMeta
-
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
 
@@ -13,14 +12,14 @@ class BaseCloudProviderEnvVarHandler(metaclass=ABCMeta):
 
     @staticmethod
     def does_attribute_match(clp_res_model, clp_attribute, attr_name_to_check) -> bool:
-        if f"{clp_res_model}.{clp_attribute.Name}" == attr_name_to_check or clp_attribute.Name == attr_name_to_check:
+        if f"{clp_res_model}.{clp_attribute.Name}" == attr_name_to_check or clp_attribute.Name == attr_name_to_check \
+                or clp_attribute.Name == f"{clp_res_model}.{attr_name_to_check}":
             return True
         return False
 
 
 class AWSCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
-    def __init__(self, clp_res_model: str, clp_resource_attributes: list,
-                 shell_helper: ShellHelperObject):
+    def __init__(self, clp_res_model: str, clp_resource_attributes: list, shell_helper: ShellHelperObject):
         BaseCloudProviderEnvVarHandler.__init__(self)
         self._clp_res_model = clp_res_model
         self._clp_resource_attributes = clp_resource_attributes
@@ -49,7 +48,7 @@ class AWSCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
 
 
 class AzureCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
-    def __init__(self, clp_res_model, clp_resource_attributes, shell_helper):
+    def __init__(self, clp_res_model: str, clp_resource_attributes: list, shell_helper: ShellHelperObject):
         BaseCloudProviderEnvVarHandler.__init__(self)
         self._clp_res_model = clp_res_model
         self._clp_resource_attributes = clp_resource_attributes
@@ -68,7 +67,7 @@ class AzureCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
 
 
 class GCPCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
-    def __init__(self, clp_res_model, clp_resource_attributes, shell_helper):
+    def __init__(self, clp_res_model: str, clp_resource_attributes: list, shell_helper: ShellHelperObject):
         BaseCloudProviderEnvVarHandler.__init__(self)
         self._clp_res_model = clp_res_model
         self._clp_resource_attributes = clp_resource_attributes
