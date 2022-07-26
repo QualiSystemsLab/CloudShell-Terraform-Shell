@@ -3,23 +3,21 @@
 # tags changes
 
 # - remove/comment out main (only uses start_tagging_terraform_resources function)
+# - removed Settings class and related methods
 # - add "from cloudshell.iac.terraform.models.exceptions import TerraformAutoTagsError"
 # - verify imports are the same (need to add to dependencies file if different and require specific version)
-# - modify method definition params
 # - modify logger to use logger from module
 # - _perform_terraform_init_plan is heavily changed due to the fact we may need to run this on windows or linux
 
 # modified methods:
-
-# - _perform_terraform_init_plan (x2)
-# - start_tagging_terraform_resources
 # - init_logging
+# - start_tagging_terraform_resources
+# - _perform_terraform_init_plan
 # - OverrideTagsTemplatesCreator
 
-
+import argparse
 import re
 import enum
-import sys
 import traceback
 from typing import List
 import hcl2
@@ -33,38 +31,25 @@ import json
 ### Added
 from cloudshell.iac.terraform.models.exceptions import TerraformAutoTagsError
 
+
 # =====================================================================================================================
 
-#commented out some contants and methods but isnt required
 class Constants:
     TAGS = "tags"  # used for tag aws and azure resources in terraform
     LABELS = "labels"  # used for tag kubernetes resources in terraform
-    # TORQUE_VARIABLES_FILE_NAME = "variables.torque.tfvars"
-    # TORQUE_TAGS_FILE_NAME = "torque_tags.json"
     OVERRIDE_LOG_FILE_NAME = "override_log"
-    EXCLUDE_FROM_TAGGING_FILE_NAME = "exclude_from_tagging.json"
-    # TERRAFORM_FOLDER_NAME = "terraform"
-
-    # @staticmethod
-    # def get_tfs_folder_path(main_folder: str):
-    #     return os.path.join(main_folder,
-    #                         Constants.TERRAFORM_FOLDER_NAME)
-
-    # @staticmethod
-    # def get_torque_tags_path(main_folder: str):
-    #     return os.path.join(main_folder,
-    #                         Constants.TORQUE_TAGS_FILE_NAME)
+    EXCLUDE_FROM_TAGGING_FILE_NAME = "exclude_from_tagging.json"  # modified
 
     @staticmethod
     def get_override_log_path(main_folder: str):
         return os.path.join(main_folder,
                             Constants.OVERRIDE_LOG_FILE_NAME)
 
+    # modified
     @staticmethod
     def get_exclude_from_tagging_file_path(main_folder: str):
         return os.path.join(main_folder,
                             Constants.EXCLUDE_FROM_TAGGING_FILE_NAME)
-
 
 # =====================================================================================================================
 
@@ -102,7 +87,7 @@ class ExceptionWrapper:
 
 # =====================================================================================================================
 
-#modified
+# modified
 class LoggerHelper:
     log_instance = None
 
@@ -111,38 +96,29 @@ class LoggerHelper:
         LoggerHelper.log_instance = logger
 
     @staticmethod
-    def actual_write(log_type: str, logger: logging.Logger, msg: str, code_line: int = None):
-        try:
-            if code_line is None:
-                caller = getframeinfo(stack()[1][0])
-                code_line = caller.lineno
-            if log_type == "info":
-                logger.info(f" Line {code_line}]:  {msg}")
-            elif log_type == "warning":
-                logger.warning(f" Line {code_line}]:  {msg}")
-            elif log_type == "error":
-                logger.error(f" Line {code_line}]:  {msg}")
-            else:
-                raise ValueError('unknown logtype')
-
-        # logging is nice to have but we don't want an error with the log to interfere with the code flow
-        except Exception as e:
-            print(e)
-
-    @staticmethod
     def write_info(msg: str, code_line: int = None):
-        LoggerHelper.actual_write("info", LoggerHelper.log_instance, msg, code_line)
+        if code_line is None:
+            caller = getframeinfo(stack()[1][0])
+            code_line = caller.lineno
+        LoggerHelper.log_instance.info(f" Line {code_line}]:  {msg}")
 
     @staticmethod
     def write_warning(msg: str, code_line: int = None):
-        LoggerHelper.actual_write("warning", LoggerHelper.log_instance, msg, code_line)
+        if code_line is None:
+            caller = getframeinfo(stack()[1][0])
+            code_line = caller.lineno
+        LoggerHelper.log_instance.warning(f" Line {code_line}]:  {msg}")
 
     @staticmethod
     def write_error(msg: str, code_line: int = None):
-        LoggerHelper.actual_write("error", LoggerHelper.log_instance, msg, code_line)
+        if code_line is None:
+            caller = getframeinfo(stack()[1][0])
+            code_line = caller.lineno
+        LoggerHelper.log_instance.error(f" Line {code_line}]:  {msg}")
 
 
 # =====================================================================================================================
+
 
 class FileInfo:
     def __init__(self, file_path: str):
@@ -183,7 +159,7 @@ class TerraformResource:
 
 # =====================================================================================================================
 
-#modified
+# modified
 @ExceptionWrapper.wrap_class
 class OverrideTagsTemplatesCreator:
     def __init__(self, tags_dict: dict, terraform_version: str):
@@ -194,13 +170,9 @@ class OverrideTagsTemplatesCreator:
         self._terraform_syntax = TerraformSyntaxVersion.get_terraform_syntax(terraform_version)
         self._map_key_value_separator = self._get_map_key_value_separator()
 
-        # if os.path.exists(self.torque_tags_file_path):
-        #     LoggerHelper.write_info(f"Reading torque tags from \"{self.torque_tags_file_path}\"")
-        #     self._read_and_save_tags_from_file()
-        # else:
-        #     LoggerHelper.write_error(f"\"{self.torque_tags_file_path}\" does not exists")
-        #     LoggerHelper.write_error(f"Could not find torque tags file, exit the tagging process")
-        #     exit(1)
+        if not self.torque_tags_dict:
+            LoggerHelper.write_error(f"Didn't get tags dict, exiting the tagging process")
+            return
 
         LoggerHelper.write_info(f"Initiate default tags templates")
         self._init_torque_tags_flat_map()
@@ -383,8 +355,14 @@ class TerraformSyntaxVersion(enum.Enum):
 class Hcl2Parser:
     @staticmethod
     def get_tf_file_as_dict(tf_file_path: str) -> dict:
-        with(open(tf_file_path, 'r')) as client_tf_file:
-            return hcl2.load(client_tf_file)
+        try:
+            with(open(tf_file_path, 'r')) as client_tf_file:
+                return hcl2.load(client_tf_file)
+        except:
+            # logging the file path that encountered the error
+            LoggerHelper.write_error(f"Failed to parse tf file '{tf_file_path}'")
+            # re-raising the exception so it will break the flow and its details are logged by the ExceptionWrapper
+            raise
 
     # full_resource_object contain many information in an unreadable structure
     # so we convert it to more less info with more readable structure
@@ -400,20 +378,14 @@ class Hcl2Parser:
 
         tags = full_resource_object[resource_type][resource_name].get('tags', None)
 
-        # When hcl2 parse a tf file it return all the tags blocks in a resource .
-        # But a valid tf file (according to terraform) allow only one tags block in a resource.
-        # So even if the hcl2 will return many tags blocks we will only be working with the first of them.
-        # But because we run 'terraform init' and 'terraform plan' before we run this py file
-        # we can be sure that if we have a tags block in the resource then we have only one
-        # (because otherwise 'terraform plan' command would have return an error)
+        # before version 3.0.0 of hcl2, "tags" was a list and we took the first element in it
+        # this behavior was changed here: https://github.com/amplify-education/python-hcl2/blob/master/CHANGELOG.md#300---2021-07-14
         if tags:
             # we replace ' with " becuase hc2l has some bug:
             #  for example it parse --> merge(local.common_tags, {"Name"="tomer"})
             # to --> merge(local.common_tags, {'Name'='tomer'})  and this is invalid syntax according to terraform
-            if type(tags[0]) is str:
-                tags = tags[0].replace("'", "\"").replace(",,", ",")  # due to bug in hcl2 library
-            else:
-                tags = tags[0]
+            if type(tags) is str:
+                tags = tags.replace("'", "\"").replace(",,", ",")  # due to bug in hcl2 library
 
         return TerraformResource(resource_type=resource_type,
                                  resource_name=resource_name,
@@ -592,17 +564,16 @@ class ResourcesTagger:
 #                                         M          A       I       N
 # =====================================================================================================================
 
+
 # modified
 def _perform_terraform_init_plan(main_tf_dir_path: str, inputs_dict: dict):
-
     inputs = []
+    for input_key, input_value in inputs_dict.items():
+        inputs.extend(['-var', f'{input_key}={input_value}'])
 
-    for inputkey, inputvalue in inputs_dict.items():
-        inputs.extend(['-var', f'{inputkey}={inputvalue}'])
-
-    executable_cmd = f'{os.path.join(main_tf_dir_path, "terraform.exe")}'
-    init_command = [executable_cmd, 'init', '-no-color']
-    plan_command = [executable_cmd, 'plan', '-no-color', '-input=false']
+    terraform_exe_path = f'{os.path.join(main_tf_dir_path, "terraform.exe")}'
+    init_command = [terraform_exe_path, 'init', '-no-color']
+    plan_command = [terraform_exe_path, 'plan', '-no-color', '-input=false']
     plan_command.extend(inputs)
 
     init = subprocess.Popen(init_command, cwd=main_tf_dir_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -625,13 +596,13 @@ def _get_untaggable_resources_types_from_plan_output(text: str) -> List[str]:
                                                         RegexHelper.UNSUPPORTED_TAGS_OR_LABELS_PATTERN_2])
     return untaggable_resources
 
-#modified
-def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dict, inputs_dict: dict = dict(), terraform_version: str = ""):
+
+# modified
+def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dict, inputs_dict: dict = None,
+                                      terraform_version: str = ""):
     if not os.path.exists(main_dir_path):
         raise TerraformAutoTagsError(f"Path {main_dir_path} does not exist")
     tfs_folder_path = main_dir_path
-    # log_path = Constants.get_override_log_path(main_dir_path)
-    # torque_tags_file_path = Constants.get_torque_tags_path(main_dir_path)
     exclude_from_tagging_file_path = Constants.get_exclude_from_tagging_file_path(main_dir_path)
 
     # modified
@@ -639,7 +610,7 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
 
     LoggerHelper.write_info(f"Trying to preform terraform init & plan in the directory '{tfs_folder_path}'"
                             " in order to check for any validation errors in tf files")
-    stdout, stderr, return_code = _perform_terraform_init_plan(tfs_folder_path, inputs_dict)
+    stdout, stderr, return_code = _perform_terraform_init_plan(tfs_folder_path, inputs_dict)  # modified
     if return_code != 0 or stderr:
         LoggerHelper.write_error("Exit before the override procedure began because the init/plan failed."
                                  f" (Return_code is {return_code})"
@@ -647,11 +618,11 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
         # Error Code 3 mark to the outside tf script (that run me) that there was an error but not because of
         # the override procedure (but because the client tf file has compile errors even before we started the
         # override procedure)
-        raise TerraformAutoTagsError("Validation errors during Terraform Init/Plan when applying automated tags")
+        exit(3)
     LoggerHelper.write_info(f"terraform init & plan passed successfully")
 
-    #modified
-    tags_templates_creator = OverrideTagsTemplatesCreator(tags_dict, terraform_version=terraform_version)
+    # modified
+    tags_templates_creator = OverrideTagsTemplatesCreator(tags_dict, terraform_version)
 
     all_tf_files = FilesHelper.get_all_files(tfs_folder_path, ".tf")
     all_tf_files_without_overrides = [file for file in all_tf_files if not file.file_name.endswith("_override.tf")]
@@ -672,7 +643,6 @@ def start_tagging_terraform_resources(main_dir_path: str, logger, tags_dict: dic
 
     LoggerHelper.write_info(f"Trying to preform terraform init & plan in the directory '{tfs_folder_path}'"
                             " in order to check for any untaggable resources in the override files")
-    
     # modified
     # Check (by analyzing the terraform plan output) to see if any of the override files
     # has a "tags/labels" that was assigned to untaggable resources
@@ -732,7 +702,7 @@ def _validate_terraform_version_arg(terraform_version_arg: str) -> bool:
     if not terraform_version_arg:
         return False
 
-    version_arr = terraform_version.split(".")
+    version_arr = terraform_version_arg.split(".")
     if len(version_arr) != 3:
         return False
 
