@@ -1,14 +1,17 @@
 import json
 import os
+import uuid
 from datetime import datetime
 from distutils.util import strtobool
 from subprocess import check_output, STDOUT, CalledProcessError
 from cloudshell.logging.qs_logger import _create_logger
 
-from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, EXECUTE_STATUS, APPLY_PASSED, \
+from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, \
+    EXECUTE_STATUS, APPLY_PASSED, \
     PLAN_FAILED, INIT_FAILED, \
-    DESTROY_STATUS, DESTROY_FAILED, APPLY_FAILED, DESTROY_PASSED, INIT, DESTROY, PLAN, OUTPUT, APPLY, \
-    ALLOWED_LOGGING_CMDS, ATTRIBUTE_NAMES
+    DESTROY_STATUS, DESTROY_FAILED, APPLY_FAILED, DESTROY_PASSED, INIT, DESTROY, PLAN, \
+    OUTPUT, APPLY, \
+    ALLOWED_LOGGING_CMDS, ATTRIBUTE_NAMES, SHOW
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from cloudshell.iac.terraform.models.exceptions import TerraformExecutionError
 from cloudshell.iac.terraform.services.backend_handler import BackendHandler
@@ -125,11 +128,13 @@ class TfProcExec(object):
             self._shell_helper.sandbox_messages.write_error_message("Failed to apply tags")
             raise
 
-    def plan_terraform(self) -> None:
+    def plan_terraform(self, gen_plan_json=False) -> str or None:
         self._shell_helper.logger.info("Running Terraform Plan")
         self._shell_helper.sandbox_messages.write_message("generating Terraform Plan...")
-
-        cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
+        uid = uuid.uuid4().hex[-4:]
+        plan_file = "planfile"
+        plan_json = os.path.join(self._tf_working_dir, f"plan-json-{uid}")
+        cmd = ["plan", "-out", plan_file, "-input=false", "-no-color"]
 
         tf_vars = self._input_output_service.get_all_terrafrom_variables()
 
@@ -141,7 +146,15 @@ class TfProcExec(object):
         try:
             self._set_service_status("Progress 50", "Executing Terraform Plan...")
             self._run_tf_proc_with_command(cmd, PLAN)
-            self._set_service_status("Progress 60", "Plan Passed")
+            if gen_plan_json:
+                self._set_service_status("Progress 60", "Validating Terraform Plan "
+                                                        "according to OPA Policies...")
+                self._shell_helper.sandbox_messages.write_message(
+                    "validating Terraform Plan...")
+                cmd = ["show", "-json", plan_file, ">", plan_json]
+                self._run_tf_proc_with_command(cmd, SHOW)
+                self._sb_data_handler.execute_opa_validation_cmd(plan_json)
+            self._set_service_status("Progress 70", "Plan Passed")
         except Exception:
             self._set_service_status("Offline", "Plan Failed")
             self._sb_data_handler.set_status(EXECUTE_STATUS, PLAN_FAILED)
@@ -154,7 +167,7 @@ class TfProcExec(object):
         cmd = ["apply", "--auto-approve", "-no-color", "planfile"]
 
         try:
-            self._set_service_status("Progress 70", "Executing Terraform Apply...")
+            self._set_service_status("Progress 80", "Executing Terraform Apply...")
             self._run_tf_proc_with_command(cmd, APPLY)
             self._sb_data_handler.set_status(EXECUTE_STATUS, APPLY_PASSED)
             self._set_service_status("Online", "Apply Passed")
@@ -177,7 +190,8 @@ class TfProcExec(object):
             self._input_output_service.parse_and_save_outputs(unparsed_output_json)
 
         except Exception as e:
-            self._shell_helper.logger.error(f"Error occurred while trying to parse Terraform outputs -> {str(e)}")
+            self._shell_helper.logger.error(f"Error occurred while trying to "
+                                            f"parse Terraform outputs -> {str(e)}")
             raise
 
     def can_execute_run(self) -> bool:
@@ -198,7 +212,11 @@ class TfProcExec(object):
         tform_command.extend(cmd)
 
         try:
-            output = check_output(tform_command, cwd=self._tf_working_dir, stderr=STDOUT).decode('utf-8')
+            output = check_output(tform_command,
+                                  cwd=self._tf_working_dir,
+                                  shell=True,
+                                  stderr=STDOUT
+                                  ).decode('utf-8')
 
             clean_output = StringCleaner.get_clean_string(output)
             if write_to_log:

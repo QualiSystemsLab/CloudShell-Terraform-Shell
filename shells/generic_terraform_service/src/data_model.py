@@ -260,6 +260,20 @@ class GenericTerraformService(object):
         self.attributes['Generic Terraform Service.Terraform Outputs'] = value
 
     @property
+    def opa_resource_name(self):
+        """
+        :rtype: str
+        """
+        return self.attributes.get('Generic Terraform Service.OPA Resource Name')
+
+    @property
+    def perform_opa_validation(self):
+        """
+        :rtype: str
+        """
+        return self.attributes.get('Generic Terraform Service.Perform OPA Validation')
+
+    @property
     def terraform_sensitive_outputs(self):
         """
         :rtype: string
