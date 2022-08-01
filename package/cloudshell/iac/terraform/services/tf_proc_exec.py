@@ -128,7 +128,7 @@ class TfProcExec(object):
             self._shell_helper.sandbox_messages.write_error_message("Failed to apply tags")
             raise
 
-    def plan_terraform(self, gen_plan_json=False) -> str or None:
+    def plan_terraform(self, disable_validation=False) -> str or None:
         self._shell_helper.logger.info("Running Terraform Plan")
         self._shell_helper.sandbox_messages.write_message("generating Terraform Plan...")
         uid = uuid.uuid4().hex[-4:]
@@ -146,14 +146,15 @@ class TfProcExec(object):
         try:
             self._set_service_status("Progress 50", "Executing Terraform Plan...")
             self._run_tf_proc_with_command(cmd, PLAN)
-            if gen_plan_json:
+            if not disable_validation and self._sb_data_handler.check_opa_exists():
                 self._set_service_status("Progress 60", "Validating Terraform Plan "
                                                         "according to OPA Policies...")
                 self._shell_helper.sandbox_messages.write_message(
                     "validating Terraform Plan...")
                 cmd = ["show", "-json", plan_file, ">", plan_json]
                 self._run_tf_proc_with_command(cmd, SHOW)
-                self._sb_data_handler.execute_opa_validation_cmd(plan_json)
+                with open(plan_json) as json_file:
+                    self._sb_data_handler.execute_opa_validation_cmd(json_file.read())
             self._set_service_status("Progress 70", "Plan Passed")
         except Exception:
             self._set_service_status("Offline", "Plan Failed")

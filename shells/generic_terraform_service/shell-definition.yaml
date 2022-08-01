@@ -64,16 +64,12 @@ node_types:
         default: true
         type: boolean
         tags: [ user_input ]
-      OPA Resource Name:
-        description: Resource name of an OPA Cloudshell Resource used for policy validation
-        type: string
-        tags: [ user_input ]
-      Perform OPA Validation:
+      Disable OPA Validation:
         description: "Should Shell validate tf plan against OPA policies? Requires 'OPA
           Resource Name' attribute "
         default: false
         type: boolean
-        tags: [ user_input ]
+        tags: [ ]
       Service Categories:
         type: list
         default: [ Infra As Code ]

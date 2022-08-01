@@ -78,10 +78,10 @@ class ATTRIBUTE_NAMES:
     BRANCH = "Branch"
     CLOUD_PROVIDER = "Cloud Provider"
     UUID = "UUID"
-    PERFORM_OPA_VALIDATION = "Perform OPA Validation"
-    OPA_RESOURCE_NAME = "OPA Resource Name"
+    DISABLE_OPA_VALIDATION = "Disable OPA Validation"
 
 
+OPA_RESOURCE_NAME = "OPA"
 OPA_VALIDATION_COMMAND = "validate"
 GET_BACKEND_DATA_COMMAND = "get_backend_data"
 DELETE_TFSTATE_FILE_COMMAND = "delete_tfstate_file"

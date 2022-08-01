@@ -59,9 +59,11 @@ class TerraformShell:
                 self._provider_handler.initialize_provider(shell_helper)
                 tf_proc_executer.init_terraform()
                 tf_proc_executer.tag_terraform()
-                opa_validation = shell_helper.attr_handler.get_attribute(
-                    ATTRIBUTE_NAMES.PERFORM_OPA_VALIDATION).lower() == "true"
-                tf_proc_executer.plan_terraform(gen_plan_json=opa_validation)
+                disable_opa_validation = shell_helper.attr_handler.get_attribute(
+                    ATTRIBUTE_NAMES.DISABLE_OPA_VALIDATION).lower() == "true"
+
+                tf_proc_executer.plan_terraform(disable_validation=
+                                                disable_opa_validation)
                 tf_proc_executer.apply_terraform()
                 tf_proc_executer.save_terraform_outputs()
             else:

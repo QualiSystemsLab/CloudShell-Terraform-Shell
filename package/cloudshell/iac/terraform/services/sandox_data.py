@@ -5,7 +5,7 @@ from cloudshell.api.cloudshell_api import SandboxDataKeyValue, GetSandboxDataInf
 from cloudshell.api.common_cloudshell_api import CloudShellAPIError
 
 from cloudshell.iac.terraform.constants import EXECUTE_STATUS, DESTROY_STATUS, NONE, \
-    TF_WORKING_DIR, ATTRIBUTE_NAMES, OPA_VALIDATION_COMMAND
+    TF_WORKING_DIR, ATTRIBUTE_NAMES, OPA_VALIDATION_COMMAND, OPA_RESOURCE_NAME
 from cloudshell.iac.terraform.models.exceptions import TerraformOPAPolicyValidationError
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
@@ -85,13 +85,16 @@ class SandboxDataHandler(object):
         uuid_sdkv = self._get_sb_data_val_by_key(current_data, self._uuid)
         return uuid_sdkv
 
+    def check_opa_exists(self):
+        opa_resource_name = OPA_RESOURCE_NAME
+        try:
+            self._driver_helper_obj.api.GetResourceCommands(opa_resource_name)
+            return True
+        except CloudShellAPIError as e:
+            return
+
     def execute_opa_validation_cmd(self, plan_json):
-        resource_opa = self._driver_helper_obj.attr_handler.get_attribute(
-            ATTRIBUTE_NAMES.OPA_RESOURCE_NAME)
-        if not resource_opa:
-            raise TerraformOPAPolicyValidationError("OPA Resource Attribute is empty."
-                                                    "Please put a relevant value in it."
-                                                    "Otherwise disable validation.")
+        resource_opa = OPA_RESOURCE_NAME
         try:
             self._driver_helper_obj.api.ExecuteCommand(
                 self._driver_helper_obj.sandbox_id,
