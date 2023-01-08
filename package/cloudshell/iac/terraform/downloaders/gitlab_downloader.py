@@ -107,5 +107,4 @@ class GitLabScriptDownloader(GitScriptDownloaderBase):
         project_id = url_data.project_id if is_api_url else api_handler.get_project_id_from_name(url_data.project_name)
         working_dir = api_handler.download_archive_to_temp_dir(project_id=project_id, path=url_data.path, sha=branch)
         self.logger.info(f"Temp Working Dir: {working_dir}")
-        api_handler.session.close()
         return working_dir

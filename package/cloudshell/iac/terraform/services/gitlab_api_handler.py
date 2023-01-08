@@ -29,9 +29,10 @@ class GitlabApiHandler:
 
     def get_project_data(self, project_name: str) -> dict:
         url = f"{self.base_url}/projects"
-        response = self.session.get(url=url, params={"search": project_name})
-        self._validate_response(response)
-        projects_list = response.json()
+        with self.session as session:
+            response = session.get(url=url, params={"search": project_name})
+            self._validate_response(response)
+            projects_list = response.json()
         if not projects_list:
             raise ValueError(f"No Project found with name '{project_name}'")
         return projects_list[0]
@@ -46,9 +47,10 @@ class GitlabApiHandler:
         list of dicts. ex: {id, name, type, path, mode}
         """
         url = f"{self.base_url}/projects/{project_id}/repository/tree"
-        response = self.session.get(url=url, params={"path": path, "ref": branch})
-        self._validate_response(response)
-        directory_info = response.json()
+        with self.session as session:
+            response = session.get(url=url, params={"path": path, "ref": branch})
+            self._validate_response(response)
+            directory_info = response.json()
         if not directory_info:
             raise ValueError(f"No data found at repo path '{path}' for branch '{branch}'")
         return directory_info
@@ -59,9 +61,10 @@ class GitlabApiHandler:
         https://docs.gitlab.com/ee/api/repositories.html#get-file-archive
         """
         url = f"{self.base_url}/projects/{project_id}/repository/archive.zip"
-        response = self.session.get(url=url, params={"path": path, "sha": sha})
-        self._validate_response(response)
-        archive_bytes = response.content
+        with self.session as session:
+            response = session.get(url=url, params={"path": path, "sha": sha})
+            self._validate_response(response)
+            archive_bytes = response.content
         if not archive_bytes:
             raise ValueError(f"No data found at repo path '{path}' for sha '{sha}'")
         return archive_bytes
@@ -109,4 +112,3 @@ class GitlabApiHandler:
         for path_dir in path_in_repo.split("/"):
             working_dir_path = os.path.join(working_dir_path, path_dir)
         return working_dir_path
-
