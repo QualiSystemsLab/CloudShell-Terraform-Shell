@@ -1,7 +1,11 @@
+from typing import Type
+
 from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
-from cloudshell.iac.terraform.downloaders.github_downloader import GitHubScriptDownloader
 from cloudshell.iac.terraform.downloaders.tf_exec_downloader import TfExecDownloader
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
+from cloudshell.iac.terraform.downloaders.base_git_downloader import GitScriptDownloaderBase
+from cloudshell.iac.terraform.downloaders.github_downloader import GitHubScriptDownloader
+from cloudshell.iac.terraform.downloaders.gitlab_downloader import GitLabScriptDownloader
 
 
 class Downloader(object):
@@ -14,10 +18,13 @@ class Downloader(object):
         token = self._shell_helper.api.DecryptPassword(token_enc).Value
         branch = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.BRANCH)
 
-        self._shell_helper.sandbox_messages.write_message("downloading Terraform module from repository...")
-        self._shell_helper.logger.info("Downloading Terraform Repo from Github")
+        # get downloader mapped to git provider
+        provider = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GIT_PROVIDER)
+        downloader = self._get_downloader_class(provider)(logger=self._shell_helper.logger)
 
-        downloader = GitHubScriptDownloader(self._shell_helper.logger)
+        # download repo and return working dir
+        self._shell_helper.sandbox_messages.write_message("downloading Terraform module from repository...")
+        self._shell_helper.logger.info(f"Downloading Terraform Repo from '{provider}'")
         return downloader.download_repo(url, token, branch)
 
     def download_terraform_executable(self, tf_workingdir: str) -> None:
@@ -32,3 +39,13 @@ class Downloader(object):
         except Exception as e:
             self._shell_helper.logger.error(f"Failed downloading Terraform Repo from Github {str(e)}")
             raise
+
+    def _get_downloader_class(self, git_provider: str) -> Type[GitScriptDownloaderBase]:
+        """ extend this dictionary with additional git provider downloaders """
+        git_downloader_map = {
+            "github": GitHubScriptDownloader,
+            "gitlab": GitLabScriptDownloader
+        }
+        if git_provider.lower() not in git_downloader_map:
+            raise NotImplementedError(f"Git Provider '{git_provider}' not supported")
+        return git_downloader_map[git_provider.lower()]

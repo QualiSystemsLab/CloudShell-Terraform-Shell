@@ -2,7 +2,6 @@ import collections
 import json
 import os
 import re
-from logging import Logger
 from zipfile import ZipFile
 import tempfile
 import requests
@@ -11,6 +10,7 @@ from urllib.error import HTTPError, URLError
 from retry import retry
 
 from cloudshell.iac.terraform.constants import GITHUB_REPO_PATTERN
+from cloudshell.iac.terraform.downloaders.base_git_downloader import GitScriptDownloaderBase
 
 GitHubFileData = collections.namedtuple(
     'GitHubFileData', 'account_id repo_id branch_id path api_zip_dl_url api_tf_dl_url'
@@ -18,10 +18,7 @@ GitHubFileData = collections.namedtuple(
 REPO_FILE_NAME = "repo.zip"
 
 
-class GitHubScriptDownloader(object):
-
-    def __init__(self, logger: Logger):
-        self.logger = logger
+class GitHubScriptDownloader(GitScriptDownloaderBase):
 
     @retry((HTTPError, URLError), delay=1, backoff=2, tries=5)
     def download_repo(self, url: str, token: str, branch: str = "") -> str:

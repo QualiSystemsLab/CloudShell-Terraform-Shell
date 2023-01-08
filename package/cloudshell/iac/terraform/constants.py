@@ -77,6 +77,7 @@ class ATTRIBUTE_NAMES:
     BRANCH = "Branch"
     CLOUD_PROVIDER = "Cloud Provider"
     UUID = "UUID"
+    GIT_PROVIDER = "Git Provider"
 
 
 GET_BACKEND_DATA_COMMAND = "get_backend_data"
