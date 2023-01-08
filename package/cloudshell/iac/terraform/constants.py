@@ -78,6 +78,7 @@ class ATTRIBUTE_NAMES:
     CLOUD_PROVIDER = "Cloud Provider"
     UUID = "UUID"
     GIT_PROVIDER = "Git Provider"
+    LOCAL_TERRAFORM = "Local Terraform"
 
 
 GET_BACKEND_DATA_COMMAND = "get_backend_data"

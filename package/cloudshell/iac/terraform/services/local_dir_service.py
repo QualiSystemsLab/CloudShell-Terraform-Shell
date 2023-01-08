@@ -6,6 +6,8 @@ from pathlib import Path
 from cloudshell.iac.terraform.downloaders.downloader import Downloader
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
+from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
+
 
 
 def handle_remove_readonly(func, path, exc_info):
@@ -57,7 +59,14 @@ class LocalDir:
             downloader = Downloader(shell_helper)
             tf_working_dir = downloader.download_terraform_module()
 
-            downloader.download_terraform_executable(tf_working_dir)
+            local_tf_exe = shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.LOCAL_TERRAFORM)
+
+            # if offline, can copy local terraform exe (must exist already on ES)
+            if local_tf_exe:
+                shutil.copy(local_tf_exe, tf_working_dir)
+            else:
+                downloader.download_terraform_executable(tf_working_dir)
+
             sandbox_data_handler.set_tf_working_dir(tf_working_dir)
         else:
             logger.info(f"Using existing working dir = {tf_working_dir}")
