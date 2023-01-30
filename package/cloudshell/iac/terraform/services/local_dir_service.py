@@ -30,6 +30,11 @@ def handle_remove_readonly(func, path, exc_info):
         raise
 
 
+def validate_tf_exe(exe_path: str):
+    if not os.path.isfile(exe_path):
+        raise ValueError(f"Local TF exe not found at path: '{exe_path}'")
+
+
 class LocalDir:
     @staticmethod
     def delete_local_temp_dir(sandbox_data_handler: SandboxDataHandler, tf_working_dir: str):
@@ -63,6 +68,8 @@ class LocalDir:
 
             # if offline, can copy local terraform exe (must exist already on ES)
             if local_tf_exe:
+                validate_tf_exe(local_tf_exe)
+                logger.info(f"Copying Local TF exe: '{local_tf_exe}'")
                 shutil.copy(local_tf_exe, tf_working_dir)
             else:
                 downloader.download_terraform_executable(tf_working_dir)

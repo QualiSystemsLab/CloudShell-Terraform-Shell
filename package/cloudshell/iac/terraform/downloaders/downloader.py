@@ -13,8 +13,8 @@ class Downloader(object):
         self._shell_helper = shell_helper
 
     def download_terraform_module(self) -> str:
-        url = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GITHUB_TERRAFORM_MODULE_URL)
-        token_enc = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GITHUB_TOKEN)
+        url = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GIT_TERRAFORM_MODULE_URL)
+        token_enc = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GIT_TOKEN)
         token = self._shell_helper.api.DecryptPassword(token_enc).Value
         branch = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.BRANCH)
 
@@ -25,6 +25,7 @@ class Downloader(object):
         # download repo and return working dir
         self._shell_helper.sandbox_messages.write_message("downloading Terraform module from repository...")
         self._shell_helper.logger.info(f"Downloading Terraform Repo from '{provider}'")
+        self._shell_helper.logger.info(f"Download URL: '{url}'")
         return downloader.download_repo(url, token, branch)
 
     def download_terraform_executable(self, tf_workingdir: str) -> None:

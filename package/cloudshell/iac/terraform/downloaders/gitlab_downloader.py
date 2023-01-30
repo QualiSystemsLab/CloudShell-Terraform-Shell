@@ -28,7 +28,7 @@ class GitLabApiUrlData(CommonGitLabUrlData):
     api_endpoint: str
 
 
-def extract_data_from_natural_url(url):
+def extract_data_from_natural_url(url) -> GitLabNaturalUrlData:
     """
     Take api style url and extract data
     Sample Natural url: "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/rds"
@@ -51,7 +51,7 @@ def extract_data_from_natural_url(url):
                                 full_url=url)
 
 
-def extract_data_from_api_url(url):
+def extract_data_from_api_url(url) -> GitLabApiUrlData:
     """
     Take user style url and extract data
     Sample Api url: "http://192.168.85.26/api/v4/projects/2/repository/archive.zip?path=rds"

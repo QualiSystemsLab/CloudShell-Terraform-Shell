@@ -15,17 +15,38 @@ node_types:
   vendor.resource.Generic Terraform Service:
     derived_from: cloudshell.nodes.CustomService
     properties:
+      # can delete? or leave for data model backwards compatibility?
       Github Terraform Module URL:
         description: "Github url to the Terraform module. Supports the same URL format from a browser. The entire repo will be downloaded. Url to a folder: https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH_TO_FOLDER or url to a TF file: https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH/filename.tf"
+        type: string
+        tags: [ ]
+      Git Terraform Module URL:
+        description: "Git url to the Terraform module. Supports the same URL format from a browser. The entire repo will be downloaded. Url to a folder: https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH_TO_FOLDER or url to a TF file: https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH/filename.tf"
         type: string
         tags: [ user_input ]
       Terraform Version:
         description: The version of terraform needed (empty=latest). E.g. '1.0.0'
         type: string
         tags: [ user_input ]
+      # can delete? or leave for data model backwards compatibility?
       Github Token:
         description: Github Token
         type: cloudshell.datatypes.Password
+        tags: [ ]
+      Git Token:
+        description: Git Token
+        type: cloudshell.datatypes.Password
+        tags: [ user_input ]
+      Git Provider:
+        description: git provider (github / gitlab)
+        type: string
+        constraints:
+          - valid_values: [github, gitlab]
+        default: github
+        tags: [ user_input ]
+      Local Terraform:
+        description: Path on Execution Server to terraform.exe
+        type: string
         tags: [ user_input ]
       Cloud Provider:
         description: Cloud provider name to be used for cloud access
