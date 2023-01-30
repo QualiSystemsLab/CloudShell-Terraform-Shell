@@ -17,4 +17,3 @@ class GitScriptDownloaderBase(ABC):
         4. return full path of working dir as string
         """
         pass
-

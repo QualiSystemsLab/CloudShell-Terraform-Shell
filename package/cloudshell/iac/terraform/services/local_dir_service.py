@@ -9,7 +9,6 @@ from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
 from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
 
 
-
 def handle_remove_readonly(func, path, exc_info):
     """
     Error handler for ``shutil.rmtree``.
@@ -51,8 +50,8 @@ class LocalDir:
         sandbox_data_handler.set_tf_working_dir("")
 
     @staticmethod
-    def does_working_dir_exists(dir: str) -> bool:
-        return dir and os.path.isdir(dir)
+    def does_working_dir_exists(working_dir: str) -> bool:
+        return working_dir and os.path.isdir(working_dir)
 
     @staticmethod
     def prepare_tf_working_dir(logger: logging.Logger, sandbox_data_handler: SandboxDataHandler,

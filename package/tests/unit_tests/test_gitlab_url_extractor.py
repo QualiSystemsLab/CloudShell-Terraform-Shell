@@ -22,5 +22,3 @@ class TestGitlabDownloader(unittest.TestCase):
         url_arg = ""
         self.assertRaises(ValueError, gitlab_downloader.extract_data_from_api_url, url_arg)
         self.assertRaises(ValueError, gitlab_downloader.extract_data_from_natural_url, url_arg)
-
-
