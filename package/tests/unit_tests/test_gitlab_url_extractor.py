@@ -2,7 +2,7 @@ import unittest
 from cloudshell.iac.terraform.downloaders import gitlab_downloader
 
 
-class TestGitlabDownloader(unittest.TestCase):
+class TestGitlabUrlExtractor(unittest.TestCase):
     NATURAL_URL = "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/rds"
     API_URL = "http://192.168.85.26/api/v4/projects/2/repository/archive.zip?path=rds"
 
