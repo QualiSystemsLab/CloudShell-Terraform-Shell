@@ -12,13 +12,13 @@ class CommonGitLabUrlData:
     domain: str
     path: str
     full_url: str
+    sha: str
 
 
 @dataclass
 class GitLabRawUrlData(CommonGitLabUrlData):
     gitlab_user: str
     project_name: str
-    branch: str
 
 
 @dataclass
@@ -26,16 +26,16 @@ class GitLabApiUrlData(CommonGitLabUrlData):
     api_version: str
     project_id: int
     api_endpoint: str
-    sha: str
 
 
 def extract_data_from_raw_url(url) -> GitLabRawUrlData:
     """
     Take api style url and extract data
     Sample Raw Browser url: "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/rds/project1"
+    'sha' can be branch or commit id
     """
     pattern = (r'^(?P<protocol>https?)://(?P<domain>[^/]+)/(?P<user>[^/]+)/(?P<project>[^/]+)/-/tree/'
-               r'(?P<branch>[^/]+)/(?P<path>.*)?$')
+               r'(?P<sha>[^/]+)/(?P<path>.*)?$')
 
     match = re.match(pattern, url)
     if not match:
@@ -46,7 +46,7 @@ def extract_data_from_raw_url(url) -> GitLabRawUrlData:
                             domain=groups['domain'],
                             gitlab_user=groups['user'],
                             project_name=groups['project'],
-                            branch=groups['branch'],
+                            sha=groups['branch'],
                             path=groups['path'],
                             full_url=url)
 
@@ -121,14 +121,21 @@ class GitLabScriptDownloader(GitScriptDownloaderBase):
 
     @retry((HTTPError, URLError), delay=1, backoff=2, tries=5)
     def download_repo(self, url: str, token: str, branch: str = "") -> str:
+
+        # extract data from browser "raw style url" or "gitlab api" style
         is_api_url = is_gitlab_api_url(url)
         if is_api_url:
             url_data = extract_data_from_api_url(url)
         else:
             url_data = extract_data_from_raw_url(url)
+
+        # allow service branch attr to override the url defined sha
+        sha = branch if branch else url_data.sha
         is_https = True if url_data.protocol == "https" else False
         api_handler = GitlabApiHandler(host=url_data.domain, token=token, is_https=is_https)
+
+        # if using raw style url, do lookup for project id from project name
         project_id = url_data.project_id if is_api_url else api_handler.get_project_id_from_name(url_data.project_name)
-        working_dir = api_handler.download_archive_to_temp_dir(project_id=project_id, path=url_data.path, sha=branch)
+        working_dir = api_handler.download_archive_to_temp_dir(project_id=project_id, path=url_data.path, sha=sha)
         self.logger.info(f"Temp Working Dir: {working_dir}")
         return working_dir
