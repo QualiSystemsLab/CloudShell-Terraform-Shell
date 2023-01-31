@@ -123,13 +123,3 @@ class GitlabApiHandler:
         for path_dir in path_in_repo.split("/"):
             working_dir_path = os.path.join(working_dir_path, path_dir)
         return working_dir_path
-
-
-if __name__ == "__main__":
-    api = GitlabApiHandler(host="192.168.85.26",
-                           token="glpat-Kx6s8n2maL34CMc-AZ6s",
-                           is_https=False)
-    res = api.download_archive_to_temp_dir(project_id=2,
-                                         path="parent-dir/hello-world",
-                                         sha="test-branch")
-    pass
