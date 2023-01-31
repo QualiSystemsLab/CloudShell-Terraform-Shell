@@ -20,7 +20,7 @@ class TestGitlabDownloader(unittest.TestCase):
         self.working_dir = working_dir
         assert working_dir
 
-    def test_natural_url_download(self):
+    def test_raw_url_download(self):
         working_dir = self.downloader.download_repo(url=self.gitlab_vars.natural_url,
                                                     token=self.gitlab_vars.token,
                                                     branch=self.gitlab_vars.branch)

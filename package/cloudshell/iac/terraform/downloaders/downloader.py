@@ -14,6 +14,9 @@ class Downloader(object):
 
     def download_terraform_module(self) -> str:
         url = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GIT_TERRAFORM_MODULE_URL)
+        if not url:
+            raise ValueError(f"Must populate attribute '{ATTRIBUTE_NAMES.GIT_TERRAFORM_MODULE_URL}'")
+
         token_enc = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GIT_TOKEN)
         token = self._shell_helper.api.DecryptPassword(token_enc).Value
         branch = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.BRANCH)

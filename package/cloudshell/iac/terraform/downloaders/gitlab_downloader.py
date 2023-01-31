@@ -28,10 +28,10 @@ class GitLabApiUrlData(CommonGitLabUrlData):
     api_endpoint: str
 
 
-def extract_data_from_natural_url(url) -> GitLabNaturalUrlData:
+def extract_data_from_raw_url(url) -> GitLabNaturalUrlData:
     """
     Take api style url and extract data
-    Sample Natural url: "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/rds"
+    Sample Raw Browser url: "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/rds"
     """
 
     pattern = (r'^(?P<protocol>https?)://(?P<domain>[^/]+)/(?P<user>[^/]+)/(?P<project>[^/]+)/'
@@ -39,7 +39,7 @@ def extract_data_from_natural_url(url) -> GitLabNaturalUrlData:
 
     match = re.match(pattern, url)
     if not match:
-        raise ValueError(f"No GitLab Natural URL match found for url '{url}'")
+        raise ValueError(f"No GitLab URL Data found in RAW url '{url}'")
 
     groups = match.groupdict()
     return GitLabNaturalUrlData(protocol=groups['protocol'],
@@ -62,7 +62,7 @@ def extract_data_from_api_url(url) -> GitLabApiUrlData:
 
     match = re.match(pattern, url)
     if not match:
-        raise ValueError(f"No GitLab API URL match found for url '{url}'")
+        raise ValueError(f"No GitLab url data found in API url '{url}'")
 
     groups = match.groupdict()
     return GitLabApiUrlData(protocol=groups['protocol'],
@@ -101,7 +101,7 @@ class GitLabScriptDownloader(GitScriptDownloaderBase):
         if is_api_url:
             url_data = extract_data_from_api_url(url)
         else:
-            url_data = extract_data_from_natural_url(url)
+            url_data = extract_data_from_raw_url(url)
         is_https = True if url_data.protocol == "https" else False
         api_handler = GitlabApiHandler(host=url_data.domain, token=token, is_https=is_https)
         project_id = url_data.project_id if is_api_url else api_handler.get_project_id_from_name(url_data.project_name)
