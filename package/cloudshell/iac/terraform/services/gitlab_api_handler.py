@@ -55,30 +55,41 @@ class GitlabApiHandler:
             raise ValueError(f"No data found at repo path '{path}' for branch '{branch}'")
         return directory_info
 
-    def get_directory_zip_bytes(self, project_id: int, path: str, sha: str = "main") -> bytes:
+    def get_directory_zip_bytes(self, project_id: int, path="", sha="") -> bytes:
         """
-        sha can be a branch or commit id
+        nested path does not have to be url encoded
+        "parent-dir/rds" is fine
+
+        sha can be a branch or commit id - resolve to default branch
         https://docs.gitlab.com/ee/api/repositories.html#get-file-archive
+
+        empty path resolves to entire project directory
         """
         url = f"{self.base_url}/projects/{project_id}/repository/archive.zip"
+        params = {}
+        if path:
+            params["path"] = path
+        if sha:
+            params["sha"] = sha
         with self.session as session:
-            response = session.get(url=url, params={"path": path, "sha": sha})
+            response = session.get(url=url, params=params)
             self._validate_response(response)
             archive_bytes = response.content
         if not archive_bytes:
-            raise ValueError(f"No data found at repo path '{path}' for sha '{sha}'")
+            raise ValueError(f"No archive data found. Project ID: {project_id}. Path: '{path}'. SHA: '{sha}'")
         return archive_bytes
 
-    def download_zip(self, project_id: int, path: str, output_file_path: str, sha: str = "main"):
+    def download_zip(self, project_id: int, path: str, output_file_path: str, sha: str):
         """
         get bytes in response and dump to file
+        nested path slashes do not have to be url encoded. "parent-dir/rds" is okay
         Output file has structure <output_file_path>.zip/<gitlab-generated-name>/git-parent-folder/folder2/file.txt
         """
         binary_data = self.get_directory_zip_bytes(project_id, path, sha)
         with open(output_file_path, "wb+") as file:
             file.write(binary_data)
 
-    def download_archive_to_temp_dir(self, project_id: int, path: str, sha="main", zip_name="repo.zip", repo_dir_name="REPO"):
+    def download_archive_to_temp_dir(self, project_id: int, path: str, sha: str, zip_name="repo.zip", repo_dir_name="REPO"):
         binary_data = self.get_directory_zip_bytes(project_id, path, sha)
         working_dir = self._prepare_working_dir(repo_zip_file_name=zip_name,
                                                 path_in_repo=path,
@@ -112,3 +123,13 @@ class GitlabApiHandler:
         for path_dir in path_in_repo.split("/"):
             working_dir_path = os.path.join(working_dir_path, path_dir)
         return working_dir_path
+
+
+if __name__ == "__main__":
+    api = GitlabApiHandler(host="192.168.85.26",
+                           token="glpat-Kx6s8n2maL34CMc-AZ6s",
+                           is_https=False)
+    res = api.download_archive_to_temp_dir(project_id=2,
+                                         path="parent-dir/hello-world",
+                                         sha="test-branch")
+    pass

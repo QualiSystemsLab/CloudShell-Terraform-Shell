@@ -26,16 +26,16 @@ class GitLabApiUrlData(CommonGitLabUrlData):
     api_version: str
     project_id: int
     api_endpoint: str
+    sha: str
 
 
 def extract_data_from_raw_url(url) -> GitLabRawUrlData:
     """
     Take api style url and extract data
-    Sample Raw Browser url: "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/rds"
+    Sample Raw Browser url: "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/rds/project1"
     """
-
-    pattern = (r'^(?P<protocol>https?)://(?P<domain>[^/]+)/(?P<user>[^/]+)/(?P<project>[^/]+)/'
-               r'(-/tree/(?P<branch>[^/]+))?(?P<path>/.*)?$')
+    pattern = (r'^(?P<protocol>https?)://(?P<domain>[^/]+)/(?P<user>[^/]+)/(?P<project>[^/]+)/-/tree/'
+               r'(?P<branch>[^/]+)/(?P<path>.*)?$')
 
     match = re.match(pattern, url)
     if not match:
@@ -54,23 +54,47 @@ def extract_data_from_raw_url(url) -> GitLabRawUrlData:
 def extract_data_from_api_url(url) -> GitLabApiUrlData:
     """
     Take user style url and extract data
+    supports url-encoded style paths as well
     Sample Api url: "http://192.168.85.26/api/v4/projects/2/repository/archive.zip?path=rds"
     """
-
     pattern = (r'^(?P<protocol>https?)://(?P<domain>[^/]+)(?P<api_version>/api/v\d+)?'
-               r'(?P<api_endpoint>/projects/(?P<project_id>\d+)/repository/archive\.zip)(\?path=(?P<path>[^&]+))?$')
+               r'(?P<api_endpoint>/projects/(?P<project_id>\d+)/repository/archive\.zip)'
+               r'(?P<params>\?([^&]+=[^&]+&)*[^&]+=[^&]+$)')
 
     match = re.match(pattern, url)
     if not match:
         raise ValueError(f"No GitLab url data found in API url '{url}'")
 
     groups = match.groupdict()
+    query_params = groups['params']
+
+    # remove the leading '?'
+    query_params = query_params.split("?")[-1]
+
+    # split into 2D list [[k1,v1],[k2,v2]]
+    params_list = [x.split("=") for x in query_params.split("&")]
+
+    # search for target params
+    path_param_search = [x for x in params_list if x[0] == "path"]
+    sha_param_search = [x for x in params_list if x[0] == "sha"]
+    ref_param_search = [x for x in params_list if x[0] == "ref"]
+    sha = sha_param_search[0][1] if sha_param_search else ""
+    path = path_param_search[0][1] if path_param_search else ""
+    ref = ref_param_search[0][1] if ref_param_search else ""
+
+    # take sha param if passed, otherwise use the ref
+    sha = sha if sha else ref
+
+    # url encoded path not necessary for archive api
+    path = path.replace("%2F", "/").replace("%2D", "-")
+    sha = sha.replace("%2D", "-")
     return GitLabApiUrlData(protocol=groups['protocol'],
                             domain=groups['domain'],
                             api_version=groups['api_version'],
                             project_id=groups['project_id'],
                             api_endpoint=groups['api_endpoint'],
-                            path=groups['path'],
+                            path=path,
+                            sha=sha,
                             full_url=url)
 
 

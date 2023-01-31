@@ -21,7 +21,7 @@ node_types:
         type: string
         tags: [ ]
       Git Terraform Module URL:
-        description: "Git url to the Terraform module. Supports the same URL format from a browser. The entire repo will be downloaded. Url to a folder: https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH_TO_FOLDER or url to a TF file: https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH/filename.tf"
+        description: "Git url to the Terraform module. Supports the same URL format from a browser. For Github, the entire repo will be downloaded. Url to a folder: https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH_TO_FOLDER or url to a TF file: https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH/filename.tf. Gitlab: 'http://<GITLAB_DOMAIN>/<USER>/<PROJECT_NAME>/-/tree/<BRANCH>/<FOLDER_PATH>'"
         type: string
         tags: [ user_input ]
       Terraform Version:
