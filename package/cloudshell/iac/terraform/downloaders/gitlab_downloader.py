@@ -15,7 +15,7 @@ class CommonGitLabUrlData:
 
 
 @dataclass
-class GitLabNaturalUrlData(CommonGitLabUrlData):
+class GitLabRawUrlData(CommonGitLabUrlData):
     gitlab_user: str
     project_name: str
     branch: str
@@ -28,7 +28,7 @@ class GitLabApiUrlData(CommonGitLabUrlData):
     api_endpoint: str
 
 
-def extract_data_from_raw_url(url) -> GitLabNaturalUrlData:
+def extract_data_from_raw_url(url) -> GitLabRawUrlData:
     """
     Take api style url and extract data
     Sample Raw Browser url: "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/rds"
@@ -42,13 +42,13 @@ def extract_data_from_raw_url(url) -> GitLabNaturalUrlData:
         raise ValueError(f"No GitLab URL Data found in RAW url '{url}'")
 
     groups = match.groupdict()
-    return GitLabNaturalUrlData(protocol=groups['protocol'],
-                                domain=groups['domain'],
-                                gitlab_user=groups['user'],
-                                project_name=groups['project'],
-                                branch=groups['branch'],
-                                path=groups['path'],
-                                full_url=url)
+    return GitLabRawUrlData(protocol=groups['protocol'],
+                            domain=groups['domain'],
+                            gitlab_user=groups['user'],
+                            project_name=groups['project'],
+                            branch=groups['branch'],
+                            path=groups['path'],
+                            full_url=url)
 
 
 def extract_data_from_api_url(url) -> GitLabApiUrlData:
