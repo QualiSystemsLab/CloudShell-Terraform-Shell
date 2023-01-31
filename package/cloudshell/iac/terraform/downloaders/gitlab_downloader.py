@@ -46,7 +46,7 @@ def extract_data_from_raw_url(url) -> GitLabRawUrlData:
                             domain=groups['domain'],
                             gitlab_user=groups['user'],
                             project_name=groups['project'],
-                            sha=groups['branch'],
+                            sha=groups['sha'],
                             path=groups['path'],
                             full_url=url)
 
