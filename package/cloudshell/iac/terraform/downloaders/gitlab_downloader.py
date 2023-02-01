@@ -1,9 +1,11 @@
 import re
 from dataclasses import dataclass
+from typing import List
 from urllib.error import HTTPError, URLError
 from retry import retry
 from cloudshell.iac.terraform.downloaders.base_git_downloader import GitScriptDownloaderBase
 from cloudshell.iac.terraform.services.gitlab_api_handler import GitlabApiHandler
+from urllib.parse import unquote
 
 
 @dataclass
@@ -16,7 +18,7 @@ class CommonGitLabUrlData:
 
 
 @dataclass
-class GitLabRawUrlData(CommonGitLabUrlData):
+class GitLabBrowserUrlData(CommonGitLabUrlData):
     gitlab_user: str
     project_name: str
 
@@ -28,7 +30,7 @@ class GitLabApiUrlData(CommonGitLabUrlData):
     api_endpoint: str
 
 
-def extract_data_from_raw_url(url) -> GitLabRawUrlData:
+def extract_data_from_browser_url(url) -> GitLabBrowserUrlData:
     """
     Take api style url and extract data
     Sample Raw Browser url: "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/rds/project1"
@@ -42,13 +44,24 @@ def extract_data_from_raw_url(url) -> GitLabRawUrlData:
         raise ValueError(f"No GitLab URL Data found in RAW url '{url}'")
 
     groups = match.groupdict()
-    return GitLabRawUrlData(protocol=groups['protocol'],
-                            domain=groups['domain'],
-                            gitlab_user=groups['user'],
-                            project_name=groups['project'],
-                            sha=groups['sha'],
-                            path=groups['path'],
-                            full_url=url)
+    return GitLabBrowserUrlData(protocol=groups['protocol'],
+                                domain=groups['domain'],
+                                gitlab_user=groups['user'],
+                                project_name=groups['project'],
+                                sha=groups['sha'],
+                                path=groups['path'],
+                                full_url=url)
+
+
+def get_query_param_val(param_key: str, params_list: List[List[str]]) -> str:
+    """
+    look for target param in 2D list of key pair values
+    [[k1,v1],[k2,v2]]
+    if not found return empty string
+    """
+    target_param_search = [x for x in params_list if x[0] == param_key]
+    param_val = target_param_search[0][1] if target_param_search else ""
+    return param_val
 
 
 def extract_data_from_api_url(url) -> GitLabApiUrlData:
@@ -68,26 +81,23 @@ def extract_data_from_api_url(url) -> GitLabApiUrlData:
     groups = match.groupdict()
     query_params = groups['params']
 
-    # remove the leading '?'
+    # remove the leading '?' of the query  param string
     query_params = query_params.split("?")[-1]
 
     # split into 2D list [[k1,v1],[k2,v2]]
     params_list = [x.split("=") for x in query_params.split("&")]
 
     # search for target params
-    path_param_search = [x for x in params_list if x[0] == "path"]
-    sha_param_search = [x for x in params_list if x[0] == "sha"]
-    ref_param_search = [x for x in params_list if x[0] == "ref"]
-    sha = sha_param_search[0][1] if sha_param_search else ""
-    path = path_param_search[0][1] if path_param_search else ""
-    ref = ref_param_search[0][1] if ref_param_search else ""
+    path = get_query_param_val("path", params_list)
+    sha = get_query_param_val("sha", params_list)
+    ref = get_query_param_val("ref", params_list)
 
     # take sha param if passed, otherwise use the ref
     sha = sha if sha else ref
 
-    # url encoded path not necessary for archive api
-    path = path.replace("%2F", "/").replace("%2D", "-")
-    sha = sha.replace("%2D", "-")
+    # url encoded path not necessary
+    path = unquote(path)
+    sha = unquote(sha)
     return GitLabApiUrlData(protocol=groups['protocol'],
                             domain=groups['domain'],
                             api_version=groups['api_version'],
@@ -127,7 +137,7 @@ class GitLabScriptDownloader(GitScriptDownloaderBase):
         if is_api_url:
             url_data = extract_data_from_api_url(url)
         else:
-            url_data = extract_data_from_raw_url(url)
+            url_data = extract_data_from_browser_url(url)
 
         # allow service branch attr to override the url defined sha
         sha = branch if branch else url_data.sha
