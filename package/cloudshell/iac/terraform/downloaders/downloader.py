@@ -1,3 +1,4 @@
+import logging
 from typing import Type
 
 from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
@@ -23,7 +24,7 @@ class Downloader(object):
 
         # get downloader mapped to git provider
         provider = self._shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.GIT_PROVIDER)
-        downloader = self._get_downloader_class(provider)(logger=self._shell_helper.logger)
+        downloader = self._downloader_factory(provider, logger=self._shell_helper.logger)
 
         # download repo and return working dir
         self._shell_helper.sandbox_messages.write_message("downloading Terraform module from repository...")
@@ -53,3 +54,7 @@ class Downloader(object):
         if git_provider.lower() not in git_downloader_map:
             raise NotImplementedError(f"Git Provider '{git_provider}' not supported")
         return git_downloader_map[git_provider.lower()]
+
+    def _downloader_factory(self, git_provider: str, logger: logging.Logger) -> GitScriptDownloaderBase:
+        downloader_class = self._get_downloader_class(git_provider)
+        return downloader_class(logger)
