@@ -73,7 +73,6 @@ class ATTRIBUTE_NAMES:
     GIT_TERRAFORM_MODULE_URL = "Git Terraform Module URL"
     TERRAFORM_VERSION = "Terraform Version"
     GIT_TOKEN = "Git Token"
-    GIT_URL = "Git Terraform Module URL"  # can delete?
     BRANCH = "Branch"
     CLOUD_PROVIDER = "Cloud Provider"
     UUID = "UUID"
