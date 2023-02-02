@@ -40,12 +40,12 @@ node_types:
           - valid_values: [github, gitlab]
         default: github
         tags: [ user_input ]
-      Terraform Version:
-        description: The version of terraform needed (empty=latest). E.g. '1.0.0'
-        type: string
-        tags: [ user_input ]
       Local Terraform:
         description: Path on Execution Server to terraform.exe. Populate this for offline use.
+        type: string
+        tags: [ user_input ]
+      Terraform Version:
+        description: The version of terraform needed (empty=latest). E.g. '1.0.0'
         type: string
         tags: [ user_input ]
       Cloud Provider:
