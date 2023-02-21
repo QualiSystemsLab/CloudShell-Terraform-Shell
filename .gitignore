@@ -65,3 +65,4 @@ cloudshell_config.yml
 # env files
 *.env
 !*.template.env
+*.zip

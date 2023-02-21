@@ -113,7 +113,7 @@ class TestMockTerraformExecuteDestroy(TestCase):
             integration_data
         )
         self._set_attribute_on_mock_service(
-            f"{SHELL_NAME}.{ATTRIBUTE_NAMES.GITHUB_TOKEN}",
+            f"{SHELL_NAME}.{ATTRIBUTE_NAMES.GIT_TOKEN}",
             os.environ.get("GITHUB_TOKEN_DEC"),
             integration_data
         )
