@@ -1,0 +1,21 @@
+<Driver Description="" MainClass="driver.HashiCorpTerraformCloudProviderShell2GDriver" Name="HashiCorpTerraformCloudProviderShell2GDriver" Version="1.0.0" PythonVersion="3">
+    <Layout>
+        <Category Name="Connectivity">
+            <Command Description="" DisplayName="Refresh IP" EnableCancellation="true" Name="remote_refresh_ip" Tags="remote_connectivity,allow_shared" />
+        </Category>
+
+        <Category Name="Hidden Commands">
+            <Command Description="" DisplayName="Power Cycle" Name="PowerCycle" Tags="power" />
+            <Command Description="" DisplayName="Delete Instance" Name="DeleteInstance" Tags="remote_app_management,allow_shared" />
+            <Command Description="" DisplayName="Deploy" Name="Deploy" Tags="allow_unreserved" />
+            <Command Description="" DisplayName="Get VmDetails" EnableCancellation="true" Name="GetVmDetails" Tags="allow_unreserved" />
+            <Command Description="" DisplayName="Power On Hidden" Name="PowerOnHidden" Tags="remote_hidden_power_on,allow_shared" />
+        </Category>
+
+        <Category Name="Power">
+            <Command Description="" DisplayName="Power On" Name="PowerOn" Tags="power" />
+            <Command Description="" DisplayName="Power Off" Name="PowerOff" Tags="power" />
+        </Category>
+
+    </Layout>
+</Driver>

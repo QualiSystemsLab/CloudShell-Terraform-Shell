@@ -1,0 +1,42 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+metadata:
+  template_name: HashiCorp Terraform
+  template_author: Quali
+  template_version: 1.0.0
+  template_icon: terraform-icon.png
+
+description: >
+  sample deployment path file
+
+imports:
+  - cloudshell_standard: cloudshell_cloud_provider_standard_1_0_1.yaml
+
+node_types:
+  vendor.resource.Azure VM From Marketplace 2nd Gen:
+    derived_from: cloudshell.nodes.CustomDeploymentOption
+    properties:
+#      Cloud Provider:
+#        description: "Cloud provider name to be used for cloud access"
+#        type: string
+#        tags: [ user_input ]
+      Git Token:
+        description: "Git Token to be used in order to download TF module."
+        type: cloudshell.datatypes.Password
+        tags: [ user_input ]
+      Git Terraform URL:
+        description: "Git url to the Terraform module. Supports the same URL format from a browser. For Github, the entire repo will be downloaded. Url to a folder: https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH_TO_FOLDER or url to a TF file: https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH/filename.tf. Gitlab: 'http://<GITLAB_DOMAIN>/<USER>/<PROJECT_NAME>/-/tree/<BRANCH>/<FOLDER_PATH>'"
+        type: string
+        tags: [ user_input ]
+      Branch:
+        description: "Overrides the branch in the the Module URL."
+        type: string
+        tags: [ user_input ]
+      Custom Tags:
+        description: "Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)"
+        type: string
+        tags: [ user_input ]
+    artifacts:
+      icon:
+        file: terraform-icon.png
+        type: tosca.artifacts.File

@@ -1,0 +1,119 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+metadata:
+  template_name: HashiCorp Terraform Cloud Provider Shell 2G
+  template_author: Quali
+  template_version: 1.0.0
+  template_icon: terraform-icon.png
+
+description: >
+  Sample TOSCA based shell
+
+imports:
+  - cloudshell_standard: cloudshell_cloud_provider_standard_1_0_1.yaml
+
+
+node_types:
+  vendor.resource.HashiCorp Terraform Cloud Provider 2G:
+    derived_from: cloudshell.nodes.CustomCloudProvider
+    capabilities:
+
+      concurrent_command_capability:
+        type: cloudshell.capabilities.SupportConcurrentCommands
+
+      auto_discovery_capability:
+        type: cloudshell.capabilities.AutoDiscovery
+        properties:
+          enable_auto_discovery:
+            type: boolean
+            default: true
+          auto_discovery_description:
+            type: string
+            default: Describe the auto discovery
+          inventory_description:
+            type: string
+            description: "Terraform template will create a Terraform resource in CloudShell."
+          hide_address:
+            type: string
+            default: true
+          Git Provider:
+            description: "Git provider (github / gitlab)"
+            type: string
+            constraints:
+              - valid_values: [github, gitlab]
+            default: github
+          Git Token:
+            description: "Git Token to be used in order to download TF module."
+            type: cloudshell.datatypes.Password
+          Git Terraform URL:
+            description: "Git url to the Terraform module. Supports the same URL format from a browser. For Github, the entire repo will be downloaded. Url to a folder: https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH_TO_FOLDER or url to a TF file: https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH/filename.tf. Gitlab: 'http://<GITLAB_DOMAIN>/<USER>/<PROJECT_NAME>/-/tree/<BRANCH>/<FOLDER_PATH>'"
+            type: string
+          Branch:
+            description: "Overrides the branch in the the Module URL."
+            type: string
+          Local Terraform:
+            description: "Path on Execution Server to terraform executable file. Populate this for offline use."
+            type: string
+          Terraform Version:
+            description: "The version of terraform needed E.g. '1.0.0'. Default value: latest"
+            default: latest
+            type: string
+          Remote State Provider:
+            description: "Remote State provider resource name (only used if filled)"
+            type: string
+          Custom Tags:
+            description: "Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)"
+            type: string
+          Apply Tags:
+            description: "Should tags be applied? Yes=true, No=false (Default True)"
+            default: true
+            type: boolean
+    properties:
+      Git Provider:
+        description: "Git provider (github / gitlab)"
+        type: string
+        constraints:
+          - valid_values: [github, gitlab]
+        default: github
+      Git Token:
+        description: "Git Token to be used in order to download TF module."
+        type: cloudshell.datatypes.Password
+      Git Terraform URL:
+        description: "Git url to the Terraform module. Supports the same URL format from a browser. For Github, the entire repo will be downloaded. Url to a folder: https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH_TO_FOLDER or url to a TF file: https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH/filename.tf. Gitlab: 'http://<GITLAB_DOMAIN>/<USER>/<PROJECT_NAME>/-/tree/<BRANCH>/<FOLDER_PATH>'"
+        type: string
+      Branch:
+        description: "Overrides the branch in the the Module URL."
+        type: string
+      Local Terraform:
+        description: "Path on Execution Server to terraform executable file. Populate this for offline use."
+        type: string
+      Terraform Version:
+        description: "The version of terraform needed E.g. '1.0.0'. Default value: latest"
+        default: latest
+        type: string
+      Cloud Provider:
+        description: "Cloud provider name to be used for cloud access"
+        type: string
+      Remote State Provider:
+        description: "Remote State provider resource name (only used if filled)"
+        type: string
+      Custom Tags:
+        description: "Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)"
+        type: string
+      Apply Tags:
+        description: "Should tags be applied? Yes=true, No=false (Default True)"
+        default: true
+        type: boolean
+
+    artifacts:
+      icon:
+        file: terraform-icon.png
+        type: tosca.artifacts.File
+      driver:
+        file: HashiCorpTerraformCloudProviderShell2GDriver.zip
+        type: tosca.artifacts.File
+      deployment:
+        file: Deployments.zip
+        type: tosca.artifacts.File
+
+

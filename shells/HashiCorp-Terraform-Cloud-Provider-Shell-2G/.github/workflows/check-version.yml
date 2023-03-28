@@ -1,0 +1,12 @@
+name: check version
+on:
+  pull_request:
+    paths-ignore:
+      - README.md
+      - docs/readme.md
+      - docs/readme.rst
+    branches:
+      - master
+jobs:
+  check-version:
+    uses: QualiSystems/.github/.github/workflows/shell-check-version.yml@master
