@@ -13,7 +13,8 @@ from cloudshell.iac.terraform.constants import ERROR_LOG_LEVEL, INFO_LOG_LEVEL, 
     OUTPUT, APPLY, \
     ALLOWED_LOGGING_CMDS, ATTRIBUTE_NAMES, SHOW
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
-from cloudshell.iac.terraform.models.exceptions import TerraformExecutionError
+from cloudshell.iac.terraform.models.exceptions import TerraformExecutionError, \
+    TerraformOPAPolicyValidationError
 from cloudshell.iac.terraform.services.backend_handler import BackendHandler
 from cloudshell.iac.terraform.services.input_output_service import InputOutputService
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
@@ -151,10 +152,17 @@ class TfProcExec(object):
                                                         "according to OPA Policies...")
                 self._shell_helper.sandbox_messages.write_message(
                     "validating Terraform Plan...")
-                cmd = ["show", "-json", plan_file, ">", plan_json]
-                self._run_tf_proc_with_command(cmd, SHOW)
-                with open(plan_json) as json_file:
-                    self._sb_data_handler.execute_opa_validation_cmd(json_file.read())
+                cmd = ["show", "-json", plan_file]
+                json_data = self._run_tf_proc_with_command(cmd, SHOW)
+                # with open(plan_json) as json_file:
+                try:
+                    json.loads(json_data)
+                    self._sb_data_handler.execute_opa_validation_cmd(json_data)
+                except json.decoder.JSONDecodeError:
+                    raise TerraformOPAPolicyValidationError("Unable to generate json "
+                                                            "plan. Please check logs "
+                                                            "for details.")
+
             self._set_service_status("Progress 70", "Plan Passed")
         except Exception:
             self._set_service_status("Offline", "Plan Failed")
@@ -215,7 +223,6 @@ class TfProcExec(object):
         try:
             output = check_output(tform_command,
                                   cwd=self._tf_working_dir,
-                                  shell=True,
                                   stderr=STDOUT
                                   ).decode('utf-8')
 

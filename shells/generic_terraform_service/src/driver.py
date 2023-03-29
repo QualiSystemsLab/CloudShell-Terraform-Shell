@@ -31,12 +31,14 @@ class GenericTerraformServiceDriver (ResourceDriverInterface):
 
     def execute_terraform(self, context: ResourceCommandContext):
         with LoggingSessionContext(context) as logger:
-            config = TerraformShellConfig(write_sandbox_messages=True, update_live_status=True)
+            config = TerraformShellConfig(write_sandbox_messages=True,
+                                          update_live_status=True)
             tf_shell = TerraformShell(context, logger, config)
             tf_shell.execute_terraform()
 
     def destroy_terraform(self, context: ResourceCommandContext):
         with LoggingSessionContext(context) as logger:
-            config = TerraformShellConfig(write_sandbox_messages=True, update_live_status=True)
+            config = TerraformShellConfig(write_sandbox_messages=True,
+                                          update_live_status=True)
             tf_shell = TerraformShell(context, logger, config)
             tf_shell.destroy_terraform()
