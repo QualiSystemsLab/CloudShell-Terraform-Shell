@@ -1,0 +1,12 @@
+name: Shell CI
+on:
+  push:
+    paths-ignore:
+      - README.md
+      - docs/readme.md
+      - docs/readme.rst
+    branches-ignore:
+      - master
+jobs:
+  shell-ci:
+    uses: QualiSystems/.github/.github/workflows/shell-py-39.yml@master
