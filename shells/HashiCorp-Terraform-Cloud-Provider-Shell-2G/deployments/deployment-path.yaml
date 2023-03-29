@@ -4,7 +4,7 @@ metadata:
   template_name: HashiCorp Terraform
   template_author: Quali
   template_version: 1.0.0
-  template_icon: terraform-icon.png
+  template_icon: GitTerraform-icon.png
 
 description: >
   sample deployment path file
@@ -13,7 +13,7 @@ imports:
   - cloudshell_standard: cloudshell_cloud_provider_standard_1_0_1.yaml
 
 node_types:
-  vendor.resource.Azure VM From Marketplace 2nd Gen:
+  vendor.resource.Terraform Resource From Git:
     derived_from: cloudshell.nodes.CustomDeploymentOption
     properties:
 #      Cloud Provider:
@@ -38,5 +38,5 @@ node_types:
         tags: [ user_input ]
     artifacts:
       icon:
-        file: terraform-icon.png
+        file: GitTerraform-icon.png
         type: tosca.artifacts.File

@@ -12,9 +12,8 @@ description: >
 imports:
   - cloudshell_standard: cloudshell_cloud_provider_standard_1_0_1.yaml
 
-
 node_types:
-  vendor.resource.HashiCorp Terraform Cloud Provider 2G:
+  vendor.resource.Terraform Cloud Provider 2G:
     derived_from: cloudshell.nodes.CustomCloudProvider
     capabilities:
 
