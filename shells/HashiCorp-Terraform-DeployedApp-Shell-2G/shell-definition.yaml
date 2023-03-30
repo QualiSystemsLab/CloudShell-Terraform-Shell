@@ -15,17 +15,9 @@ imports:
 
 node_types:
 
-  vendor.switch.Hashicorp Terraform DeployedApp 2G:
+  vendor.switch.Terraform DeployedApp 2G:
     derived_from: cloudshell.nodes.DeployedApp
     properties:
-      Cloud Provider:
-        description: Cloud provider name to be used for cloud access
-        type: string
-        tags: [ user_input ]
-      Remote State Provider:
-        description: Remote State provider resource name (only used if filled)
-        type: string
-        tags: [ user_input ]
       Terraform Outputs:
         description: Non-sensitive outputs from Terraform apply. All unmapped outputs will be stored here.
         type: string
@@ -34,10 +26,10 @@ node_types:
         description: Sensitive outputs from Terraform apply. All unmapped outputs will be stored here.
         type: cloudshell.datatypes.Password
         tags: [ user_input ]
-      Terraform Inputs:
-        description: Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)
-        type: string
-        tags: [ user_input ]
+#      Terraform Inputs:
+#        description: Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)
+#        type: string
+#        tags: [ user_input ]
     capabilities:
       auto_discovery_capability:
         type: cloudshell.capabilities.AutoDiscovery

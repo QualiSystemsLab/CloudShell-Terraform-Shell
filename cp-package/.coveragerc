@@ -1,0 +1,6 @@
+[report]
+omit =
+    *__init__*
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:

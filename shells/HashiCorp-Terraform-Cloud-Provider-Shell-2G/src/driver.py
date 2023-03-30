@@ -1,8 +1,16 @@
+from cloudshell.cp.core.cancellation_manager import CancellationContextManager
+from cloudshell.cp.core.reservation_info import ReservationInfo
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
-from cloudshell.shell.core.driver_context import AutoLoadDetails
+from cloudshell.shell.core.driver_context import AutoLoadDetails, \
+    ResourceCommandContext, CancellationContext
+
+from cloudshell.cp.terraform.flows.deploy_vm.base_flow import TFDeployVMFlow
+from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit, \
+    VMFromTerraformGitRequestActions
+from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 
 
 class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
@@ -40,23 +48,36 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
 
         return AutoLoadDetails([], [])
 
-    def Deploy(self, context, request, cancellation_context=None):
+    def Deploy(
+            self,
+            context: ResourceCommandContext,
+            request: str,
+            cancellation_context: CancellationContext,
+    ) -> str:
         """Called when reserving a sandbox during setup.
 
-        Method creates the compute resource in the cloud provider -
-        VM instance or container. If App deployment fails, return a
-        "success false" action result.
-        :param ResourceCommandContext context:
-        :param str request: A JSON string with the list of requested
-        deployment actions
-        :param CancellationContext cancellation_context:
-        :return:
-        :rtype: str
+        Method creates the compute resource in the cloud provider - VM instance or
+        container. If App deployment fails, return a "success false" action result.
+        :param request: A JSON string with the list of requested deployment actions
         """
         with LoggingSessionContext(context) as logger:
-            logger.info("Starting Deploy command...")
+            logger.info("Starting Deploy command")
             logger.debug(f"Request: {request}")
             api = CloudShellSessionContext(context).get_api()
+            resource_config = TerraformResourceConfig.from_context(context, api=api)
+
+            cancellation_manager = CancellationContextManager(cancellation_context)
+            reservation_info = ReservationInfo.from_resource_context(context)
+
+            request_actions = VMFromTerraformGitRequestActions.from_request(request, api)
+            deploy_flow = TFDeployVMFlow(
+                resource_config=resource_config,
+                reservation_info=reservation_info,
+                cs_api=api,
+                cancellation_manager=cancellation_manager,
+                logger=logger,
+            )
+            return deploy_flow.deploy(request_actions=request_actions)
 
     def PowerOnHidden(self, context, ports):
         self.PowerOn(context, ports)
