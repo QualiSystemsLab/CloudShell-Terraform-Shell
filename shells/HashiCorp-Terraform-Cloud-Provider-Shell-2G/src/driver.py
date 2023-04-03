@@ -10,14 +10,16 @@ from cloudshell.shell.core.driver_context import AutoLoadDetails, \
 from cloudshell.cp.terraform.flows.deploy_vm.base_flow import TFDeployVMFlow
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit, \
     VMFromTerraformGitRequestActions
+from cloudshell.cp.terraform.models.deployed_app import TFDeployedVMActions, \
+    BaseTFDeployedApp
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 
 
 class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
 
     def __init__(self):
-        """Init function. """
-        pass
+        VMFromTerraformGitRequestActions.register_deployment_path(VMFromTerraformGit)
+        TFDeployedVMActions.register_deployment_path(BaseTFDeployedApp)
 
     def initialize(self, context):
         """Called every time a new instance of the driver is created.
@@ -69,7 +71,10 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
             cancellation_manager = CancellationContextManager(cancellation_context)
             reservation_info = ReservationInfo.from_resource_context(context)
 
-            request_actions = VMFromTerraformGitRequestActions.from_request(request, api)
+            request_actions = VMFromTerraformGitRequestActions.from_request(
+                request,
+                api
+            )
             deploy_flow = TFDeployVMFlow(
                 resource_config=resource_config,
                 reservation_info=reservation_info,

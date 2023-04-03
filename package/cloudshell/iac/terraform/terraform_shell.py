@@ -52,7 +52,7 @@ class TerraformShell:
                 LocalDir.delete_local_temp_dir(sandbox_data_handler, tf_working_dir)
 
     def destroy_terraform(self):
-        # initialize a logger if logger wasn't passed during init
+        # initialize a _logger if _logger wasn't passed during init
         with nullcontext(self._logger) if self._logger else LoggingSessionContext(self._context) as logger:
 
             shell_helper = ObjectFactory.create_shell_helper(self._tf_service, self._context, self._config, logger)

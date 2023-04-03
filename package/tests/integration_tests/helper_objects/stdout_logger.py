@@ -1,13 +1,13 @@
 import logging
 import sys
 
-LOGGER_NAME = "test-logger"
+LOGGER_NAME = "test-_logger"
 LOG_FORMAT = "%(levelname)s - %(asctime)s: %(message)s"
 LOG_DATE_FORMAT = "%m/%d/%Y%I:%M:%S %p"
 
 
 def get_test_logger(log_level: str = logging.DEBUG):
-    """get logger, set new one of it doesn't exist"""
+    """get _logger, set new one of it doesn't exist"""
     if LOGGER_NAME in logging.Logger.manager.loggerDict:
         logger = logging.getLogger(LOGGER_NAME)
     else:

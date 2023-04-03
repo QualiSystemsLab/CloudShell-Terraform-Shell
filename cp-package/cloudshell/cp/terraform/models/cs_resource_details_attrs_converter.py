@@ -52,8 +52,8 @@ class RemoteResourceAttrsConverter(AbsResourceAttrsConverter):
 
     config_cls: type[BaseConfig]
     _decrypt_password: Callable[[str], str]
-    shell_name: str  # = field(init=True)
-    family_name: str  # = field(init=True)
+    shell_name: str
+    family_name: str
     _attrs: dict[str, Any] = field(init=False)
 
     def __attrs_post_init__(self) -> None:
@@ -76,7 +76,7 @@ class RemoteResourceAttrsConverter(AbsResourceAttrsConverter):
         meta = self._get_meta(f)
         key = self._get_key(meta)
         try:
-            val = self.context.resource.attributes[key]
+            val = self._attrs[key]
         except KeyError:
             val = self._get_default(f, meta, str_type, attr_present=False)
         else:

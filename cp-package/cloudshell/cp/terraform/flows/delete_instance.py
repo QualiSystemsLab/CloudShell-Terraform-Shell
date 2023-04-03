@@ -15,7 +15,7 @@ from cloudshell.cp.core.reservation_info import ReservationInfo
 # from cloudshell.cp.terraform.handlers.vm_handler import VmNotFound
 # from cloudshell.cp.terraform.handlers.vsphere_sdk_handler import VSphereSDKHandler
 # from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
-# from cloudshell.cp.terraform.resource_config import ShutdownMethod, TFResourceConfig
+# from cloudshell.cp.terraform._resource_config import ShutdownMethod, TFResourceConfig
 from cloudshell.cp.terraform.utils.vm_helpers import get_vm_folder_path
 
 folder_delete_lock = Lock()

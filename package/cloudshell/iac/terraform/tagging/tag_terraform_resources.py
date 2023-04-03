@@ -6,7 +6,7 @@
 # - removed Settings class and related methods
 # - add "from cloudshell.iac.terraform.models.exceptions import TerraformAutoTagsError"
 # - verify imports are the same (need to add to dependencies file if different and require specific version)
-# - modify logger to use logger from module
+# - modify _logger to use _logger from module
 # - _perform_terraform_init_plan is heavily changed due to the fact we may need to run this on windows or linux
 
 # modified methods:

@@ -6,7 +6,7 @@ from collections.abc import Iterator
 # from cloudshell.cp.terraform.handlers.TF_path import TFPath
 # from cloudshell.cp.terraform.models.deploy_app import BaseTFDeployApp
 # from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
-# from cloudshell.cp.terraform.resource_config import TFResourceConfig
+# from cloudshell.cp.terraform._resource_config import TFResourceConfig
 
 
 def is_vnic(device) -> bool:

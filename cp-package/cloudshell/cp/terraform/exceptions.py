@@ -18,6 +18,9 @@ class InvalidCommandParam(BaseTFException):
         )
 
 
+class InvalidAppParamValue(InvalidCommandParam):
+    """Deploy App variables conversion Exception."""
+
 class LoginException(BaseTFException):
     """Login Exception."""
 

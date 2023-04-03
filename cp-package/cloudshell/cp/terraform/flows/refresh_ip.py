@@ -16,13 +16,13 @@ from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 #     deployed_app: BaseTFDeployedApp ,
 #     resource_conf: TerraformResourceConfig,
 #     cancellation_manager: CancellationContextManager,
-#     logger: Logger,
+#     _logger: Logger,
 # ) -> str:
     # vm = dc.get_vm_by_uuid(deployed_app.vmdetails.uid)
     # if vm.power_state is not vm.power_state.ON:
     #     # raise VmIsNotPowered(vm)
     #     pass
-    # actions = VMNetworkActions(resource_conf, logger, cancellation_manager)
+    # actions = VMNetworkActions(resource_conf, _logger, cancellation_manager)
     # if isinstance(deployed_app, BaseTFDeployedApp):
     # #     ip = actions.get_vm_ip(vm)
     # # else:

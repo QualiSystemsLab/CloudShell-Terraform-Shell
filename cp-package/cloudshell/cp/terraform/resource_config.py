@@ -3,7 +3,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Union
 
-from attrs import define
+# from attr import field
+from attrs import define, field
 from cloudshell.shell.core.driver_context import (
     AutoLoadCommandContext,
     ResourceCommandContext,
@@ -68,6 +69,20 @@ class TerraformResourceConfig(BaseConfig):
     remote_state_provider: str = attr(ATTR_NAMES.remote_state_provider)
     custom_tags: str = attr(ATTR_NAMES.custom_tags)
     apply_tags: bool = attr(ATTR_NAMES.apply_tags)
+    cp_custom_tags: dict = field(init=False)
+
+    def __attrs_post_init__(self):
+        self.cp_custom_tags = self._parse_custom_tags(self.custom_tags)
+
+    def _parse_custom_tags(self, tags: str) -> dict[str: str]:
+        if not tags:
+            return {}
+        return {tag.split("=")[0]: tag.split("=")[1] for tag in tags.split(";")}
+
+    # write_sandbox_messages = False
+    # update_live_status = False
+    # inputs_map = {}
+    # outputs_map = {}
 
     # @classmethod
     # def from_cs_resource_details(

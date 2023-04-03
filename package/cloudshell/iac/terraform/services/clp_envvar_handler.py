@@ -1,5 +1,9 @@
 import os
 from abc import ABCMeta
+from logging import Logger
+
+from cloudshell.api.cloudshell_api import CloudShellAPISession
+
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
 
@@ -19,11 +23,12 @@ class BaseCloudProviderEnvVarHandler(metaclass=ABCMeta):
 
 
 class AWSCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
-    def __init__(self, clp_res_model: str, clp_resource_attributes: list, shell_helper: ShellHelperObject):
+    def __init__(self, clp_res_model: str, clp_resource_attributes: list,
+                 api: CloudShellAPISession):
         BaseCloudProviderEnvVarHandler.__init__(self)
         self._clp_res_model = clp_res_model
         self._clp_resource_attributes = clp_resource_attributes
-        self._shell_helper = shell_helper
+        self._api = api
 
     def set_env_vars_based_on_clp(self):
         dec_access_key = ""
@@ -31,10 +36,12 @@ class AWSCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
         region_flag = False
 
         for attr in self._clp_resource_attributes:
-            if self.does_attribute_match(self._clp_res_model, attr, "AWS Access Key ID"):
-                dec_access_key = self._shell_helper.api.DecryptPassword(attr.Value).Value
-            if self.does_attribute_match(self._clp_res_model, attr, "AWS Secret Access Key"):
-                dec_secret_key = self._shell_helper.api.DecryptPassword(attr.Value).Value
+            if self.does_attribute_match(self._clp_res_model, attr,
+                                         "AWS Access Key ID"):
+                dec_access_key = self._api.DecryptPassword(attr.Value).Value
+            if self.does_attribute_match(self._clp_res_model, attr,
+                                         "AWS Secret Access Key"):
+                dec_secret_key = self._api.DecryptPassword(attr.Value).Value
             if self.does_attribute_match(self._clp_res_model, attr, "Region"):
                 os.environ["AWS_DEFAULT_REGION"] = attr.Value
                 region_flag = True
@@ -48,40 +55,48 @@ class AWSCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
 
 
 class AzureCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
-    def __init__(self, clp_res_model: str, clp_resource_attributes: list, shell_helper: ShellHelperObject):
+    def __init__(self, clp_res_model: str, clp_resource_attributes: list,
+                 api: CloudShellAPISession):
         BaseCloudProviderEnvVarHandler.__init__(self)
         self._clp_res_model = clp_res_model
         self._clp_resource_attributes = clp_resource_attributes
-        self._shell_helper = shell_helper
+        self._api = api
 
     def set_env_vars_based_on_clp(self):
         for attr in self._clp_resource_attributes:
-            if self.does_attribute_match(self._clp_res_model, attr, "Azure Subscription ID"):
+            if self.does_attribute_match(self._clp_res_model, attr,
+                                         "Azure Subscription ID"):
                 os.environ["ARM_SUBSCRIPTION_ID"] = attr.Value
             if self.does_attribute_match(self._clp_res_model, attr, "Azure Tenant ID"):
                 os.environ["ARM_TENANT_ID"] = attr.Value
-            if self.does_attribute_match(self._clp_res_model, attr, "Azure Application ID"):
+            if self.does_attribute_match(self._clp_res_model, attr,
+                                         "Azure Application ID"):
                 os.environ["ARM_CLIENT_ID"] = attr.Value
-            if self.does_attribute_match(self._clp_res_model, attr, "Azure Application Key"):
-                os.environ["ARM_CLIENT_SECRET"] = self._shell_helper.api.DecryptPassword(attr.Value).Value
+            if self.does_attribute_match(self._clp_res_model, attr,
+                                         "Azure Application Key"):
+                os.environ["ARM_CLIENT_SECRET"] = self._api.DecryptPassword(
+                    attr.Value).Value
 
 
 class GCPCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
-    def __init__(self, clp_res_model: str, clp_resource_attributes: list, shell_helper: ShellHelperObject):
+    def __init__(self, clp_res_model: str, clp_resource_attributes: list,
+                 logger: Logger):
         BaseCloudProviderEnvVarHandler.__init__(self)
         self._clp_res_model = clp_res_model
         self._clp_resource_attributes = clp_resource_attributes
-        self._shell_helper = shell_helper
+        self._logger = logger
 
     def set_env_vars_based_on_clp(self):
         project_flag = False
         cred_flag = False
         for attr in self._clp_resource_attributes:
-            if self.does_attribute_match(self._clp_res_model, attr, "Google Cloud Provider.Credentials Json Path"):
+            if self.does_attribute_match(self._clp_res_model, attr,
+                                         "Google Cloud Provider.Credentials Json Path"):
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = attr.Value
                 cred_flag = True
-            if self.does_attribute_match(self._clp_res_model, attr, "Google Cloud Provider.project"):
+            if self.does_attribute_match(self._clp_res_model, attr,
+                                         "Google Cloud Provider.project"):
                 os.environ["GOOGLE_PROJECT"] = attr.Value
                 project_flag = True
         if not cred_flag and not project_flag:
-            self._shell_helper.sandbox_messages.write_message("Project ID was not found on GCP Cloud Provider")
+            self._logger.warning("Project ID was not found on GCP Cloud Provider")
