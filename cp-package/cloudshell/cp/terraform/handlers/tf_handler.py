@@ -297,7 +297,7 @@ class CPTfProcExec:
                                   stderr=STDOUT).decode('utf-8')
 
             clean_output = StringCleaner.get_clean_string(output)
-            self._logger.info(command, clean_output)
+            self._logger.info(f"{command} - {clean_output}")
             return output
 
         except CalledProcessError as e:
@@ -306,7 +306,7 @@ class CPTfProcExec:
                 f"Error occurred while trying to execute Terraform | Output = {clean_output}"
             )
             if command in ALLOWED_LOGGING_CMDS:
-                self._logger.error(command, clean_output)
+                self._logger.error(f"{command} - {clean_output}")
             raise TerraformExecutionError(f"Error during Terraform {command}. "
                                           f"For more information please look at the logs.",
                                           clean_output)
