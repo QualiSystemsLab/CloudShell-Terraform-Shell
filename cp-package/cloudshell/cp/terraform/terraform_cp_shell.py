@@ -37,6 +37,7 @@ class TerraformCPShell:
             self._backend_handler,
             self._tag_manager
         )
+
         try:
             self._provider_handler.initialize_provider(deploy_app)
             tf_proc_executer.init_terraform(deploy_app, vm_name)

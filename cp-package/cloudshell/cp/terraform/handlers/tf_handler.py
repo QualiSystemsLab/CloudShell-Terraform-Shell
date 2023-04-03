@@ -55,19 +55,22 @@ class CPTfProcExec:
         self._tf_working_dir = None
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
 
-    def _get_tf_working_dir(self, deploy_app: VMFromTerraformGit) -> str:
-        downloader = CPDownloader(self._resource_config, self._logger)
-        self._tf_working_dir = downloader.download_terraform_module(deploy_app)
 
-        local_tf_exe = self._resource_config.local_terraform
+    def _get_tf_working_dir(self, deploy_app) -> str:
+        if not self._tf_working_dir:
+            downloader = CPDownloader(self._resource_config, self._logger)
+            tf_working_dir = downloader.download_terraform_module(deploy_app)
 
-        # if offline, can copy local terraform exe (must exist already on ES)
-        if local_tf_exe:
-            validate_tf_exe(local_tf_exe)
-            self._logger.info(f"Copying Local TF exe: '{local_tf_exe}'")
-            shutil.copy(local_tf_exe, self._tf_working_dir)
-        else:
-            downloader.download_terraform_executable(self._tf_working_dir)
+            local_tf_exe = self._resource_config.local_terraform
+
+            # if offline, can copy local terraform exe (must exist already on ES)
+            if local_tf_exe:
+                validate_tf_exe(local_tf_exe)
+                self._logger.info(f"Copying Local TF exe: '{local_tf_exe}'")
+                shutil.copy(local_tf_exe, tf_working_dir)
+            else:
+                downloader.download_terraform_executable(tf_working_dir)
+            self._tf_working_dir = tf_working_dir
 
         return self._tf_working_dir
 
@@ -85,11 +88,11 @@ class CPTfProcExec:
 
     def init_terraform(self, deploy_app: VMFromTerraformGit, app_name: str):
         self._logger.info("Performing Terraform Init...")
-
+        tf_working_dir = self._get_tf_working_dir(deploy_app)
         self._backend_handler.generate_backend_cfg_file(
             app_name=app_name,
             sandbox_id=self._sandbox_id,
-            tf_working_dir=self._get_tf_working_dir(deploy_app)
+            working_dir=tf_working_dir
         )
         backend_config_vars = self._backend_handler.get_backend_secret_vars()
 
@@ -116,14 +119,15 @@ class CPTfProcExec:
 
         try:
             self._run_tf_proc_with_command(cmd, DESTROY)
-            self._backend_handler.delete_backend_tf_state_file()
+            self._backend_handler.delete_backend_tf_state_file(deployed_app.name,
+                                                               self._sandbox_id)
         except Exception as e:
             raise
 
     def tag_terraform(self, deploy_app: VMFromTerraformGit) -> None:
         try:
             apply = self._resource_config.apply_tags
-            if apply:
+            if not apply:
                 self._logger.info("Skipping Adding Tags to Terraform Resources")
                 return
 
@@ -137,7 +141,7 @@ class CPTfProcExec:
 
             # default_tags_dict: dict = self._shell_helper.default_tags.get_default_tags()
 
-            tags_dict = self._resource_config.cp_custom_tags | \
+            tags_dict = self._resource_config.custom_tags | \
                         deploy_app.custom_tags | self._tag_manager.get_default_tags()
 
             # if check_tag_input:
@@ -156,7 +160,8 @@ class CPTfProcExec:
 
             terraform_version = self._resource_config.terraform_version
 
-            start_tagging_terraform_resources(self._tf_working_dir, self._logger,
+            start_tagging_terraform_resources(self._get_tf_working_dir(deploy_app),
+                                              self._logger,
                                               tags_dict, inputs_dict,
                                               terraform_version)
         except Exception:

@@ -32,7 +32,7 @@ class CPDownloader(object):
         branch = deploy_app.branch or self._resource_config.branch
 
         # get downloader mapped to git provider
-        provider = self._resource_config.git_provider.value()
+        provider = self._resource_config.git_provider.value
         downloader = self._downloader_factory(provider, logger=self._logger)
 
         # download repo and return working dir

@@ -18,8 +18,13 @@ class InvalidCommandParam(BaseTFException):
         )
 
 
-class InvalidAppParamValue(InvalidCommandParam):
+class InvalidAppParamValue(BaseTFException):
     """Deploy App variables conversion Exception."""
+
+
+class InvalidResourceAttributeValue(BaseTFException):
+    """Deploy App variables conversion Exception."""
+
 
 class LoginException(BaseTFException):
     """Login Exception."""

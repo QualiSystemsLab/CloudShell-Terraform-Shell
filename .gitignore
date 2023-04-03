@@ -66,3 +66,5 @@ cloudshell_config.yml
 *.env
 !*.template.env
 *.zip
+/shells/generic_terraform_service/src/run_TF.py
+/shells/HashiCorp-Terraform-Cloud-Provider-Shell-2G/src/run_TF_CP.py

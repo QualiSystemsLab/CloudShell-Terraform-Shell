@@ -6,9 +6,8 @@ from cloudshell.cp.core.request_actions.models import DeployApp
 from cloudshell.cp.terraform import constants
 from cloudshell.cp.terraform.models.base_deployment_app import (
     TerraformDeploymentAppAttributeNames, ResourcePasswordAttrRODeploymentPath,
-    ResourceAttrRODeploymentPath,
-    ResourceBoolAttrRODeploymentPath,
-    ResourceDictAttrRODeploymentPath, ResourceDictPasswordAttrRODeploymentPath,
+    ResourceAttrRODeploymentPath, ResourceDictAttrRODeploymentPath,
+    ResourceDictPasswordAttrRODeploymentPath, ResourceBoolAttrRODeploymentPath
 )
 
 
