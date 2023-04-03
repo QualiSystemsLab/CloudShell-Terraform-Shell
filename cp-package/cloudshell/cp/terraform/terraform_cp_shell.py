@@ -42,7 +42,7 @@ class TerraformCPShell:
             self._provider_handler.initialize_provider(deploy_app)
             tf_proc_executer.init_terraform(deploy_app, vm_name)
             tf_proc_executer.tag_terraform(deploy_app)
-            tf_proc_executer.plan_terraform(deploy_app)
+            tf_proc_executer.plan_terraform(deploy_app, vm_name)
             tf_proc_executer.apply_terraform()
             tf_proc_executer.save_terraform_outputs()
             # self._handle_error_output(shell_helper, "This Terraform Module has been successfully deployed but "

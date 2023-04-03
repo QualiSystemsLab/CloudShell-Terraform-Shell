@@ -168,10 +168,13 @@ class CPTfProcExec:
                 "Failed to apply tags")
             raise
 
-    def plan_terraform(self, deploy_app) -> None:
+    def plan_terraform(self, deploy_app, vm_name=None) -> None:
         self._logger.info("Running Terraform Plan")
 
         cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
+        if vm_name:
+            cmd.append("-var")
+            cmd.append(f"virtual_machine_name={vm_name}")
 
         tf_vars = deploy_app.terraform_inputs | \
                   deploy_app.terraform_sensitive_inputs
