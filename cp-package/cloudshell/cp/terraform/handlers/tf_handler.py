@@ -14,8 +14,8 @@ from cloudshell.cp.terraform.handlers.provider_handler import CPProviderHandler
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
-from cloudshell.iac.terraform.constants import ALLOWED_LOGGING_CMDS, ERROR_LOG_LEVEL, \
-    INFO_LOG_LEVEL, OUTPUT, APPLY, PLAN, INIT, DESTROY, ATTRIBUTE_NAMES
+from cloudshell.iac.terraform.constants import ALLOWED_LOGGING_CMDS, \
+    OUTPUT, APPLY, PLAN, INIT, DESTROY, ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.exceptions import TerraformExecutionError
 from cloudshell.iac.terraform.services.local_dir_service import \
     validate_tf_exe, handle_remove_readonly
@@ -54,7 +54,6 @@ class CPTfProcExec:
         self._tag_manager = tag_manager
         self._tf_working_dir = None
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
-
 
     def _get_tf_working_dir(self, deploy_app) -> str:
         if not self._tf_working_dir:
@@ -298,7 +297,7 @@ class CPTfProcExec:
                                   stderr=STDOUT).decode('utf-8')
 
             clean_output = StringCleaner.get_clean_string(output)
-            self._logger.info(command, clean_output, INFO_LOG_LEVEL)
+            self._logger.info(command, clean_output)
             return output
 
         except CalledProcessError as e:
@@ -307,7 +306,7 @@ class CPTfProcExec:
                 f"Error occurred while trying to execute Terraform | Output = {clean_output}"
             )
             if command in ALLOWED_LOGGING_CMDS:
-                self._write_to_exec_log(command, clean_output, ERROR_LOG_LEVEL)
+                self._logger.error(command, clean_output)
             raise TerraformExecutionError(f"Error during Terraform {command}. "
                                           f"For more information please look at the logs.",
                                           clean_output)
