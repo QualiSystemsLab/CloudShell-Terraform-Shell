@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
@@ -25,7 +27,6 @@ class TerraformCPShell:
         self._tag_manager = tag_manager
         self._logger = logger
         self._sandbox_id = sandbox_id
-        # self._config = TerraformShellConfig(False, False)
         self._backend_handler = CPBackendHandler(self._resource_config, self._logger)
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
 
@@ -44,7 +45,7 @@ class TerraformCPShell:
             tf_proc_executer.tag_terraform(deploy_app)
             tf_proc_executer.plan_terraform(deploy_app, vm_name)
             tf_proc_executer.apply_terraform()
-            tf_proc_executer.save_terraform_outputs()
+            return tf_proc_executer.save_terraform_outputs()
             # self._handle_error_output(shell_helper, "This Terraform Module has been successfully deployed but "
             #                                             "destroy failed. Please destroy successfully before running "
             #                                             "execute again.")
@@ -68,15 +69,18 @@ class TerraformCPShell:
             self._resource_config,
             self._sandbox_id,
             self._logger,
-            self._provider_handler,
+            self._backend_handler,
             self._tag_manager
         )
         # if not tf_working_dir:
-        #     self._handle_error_output(shell_helper, "Destroy failed due to missing local directory")
+        #     self._handle_error_output(
+        #     shell_helper,
+        #     "Destroy failed due to missing local directory"
+        #     )
 
         try:
             self._provider_handler.initialize_provider(deployed_app)
-            tf_proc_executer.init_terraform()
+            tf_proc_executer.init_terraform(deploy_app, vm_name)
             tf_proc_executer.destroy_terraform(deployed_app)
         finally:
             if self._using_remote_state(shell_helper) or self._destroy_passed(sandbox_data_handler):

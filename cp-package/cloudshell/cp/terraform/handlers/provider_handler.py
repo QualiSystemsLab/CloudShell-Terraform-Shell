@@ -1,8 +1,10 @@
 from logging import Logger
+from typing import Union
 
 from cloudshell.api.cloudshell_api import ResourceInfo
 
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
+from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.iac.terraform.constants import (
     AZURE2G_MODEL,
@@ -22,7 +24,10 @@ class CPProviderHandler(object):
         self._logger = logger
         self._resource_config = resource_config
 
-    def initialize_provider(self, deploy_app: VMFromTerraformGit):
+    def initialize_provider(
+            self,
+            deploy_app: Union[BaseTFDeployedApp, VMFromTerraformGit]
+    ):
         clp_resource_name = deploy_app.cloud_provider or self._resource_config.cloud_provider
         if not clp_resource_name:
             return
@@ -50,8 +55,9 @@ class CPProviderHandler(object):
             clp_details: ResourceInfo,
             clp_res_model: str,
     ):
-        self._logger.info("Initializing Environment variables with CloudProvider "
-                         "details")
+        self._logger.info(
+            "Initializing Environment variables with CloudProvider details"
+        )
         clp_resource_attributes = clp_details.ResourceAttributes
         clp_handler = None
 
@@ -64,7 +70,10 @@ class CPProviderHandler(object):
                                                           self._resource_config.api)
 
         elif clp_res_model in [GCP2G_MODEL]:
-            clp_handler = GCPCloudProviderEnvVarHandler(clp_res_model, clp_resource_attributes)
+            clp_handler = GCPCloudProviderEnvVarHandler(
+                clp_res_model,
+                clp_resource_attributes
+            )
 
         if clp_handler:
             clp_handler.set_env_vars_based_on_clp()

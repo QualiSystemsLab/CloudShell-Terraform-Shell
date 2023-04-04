@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 
 from cloudshell.cp.core.flows.deploy import AbstractDeployFlow
@@ -64,7 +65,6 @@ class TFDeployVMFlow(AbstractDeployFlow):
 
         pass
 
-
     def _prepare_vm_details_data(
         self, deployed_vm, deploy_app: VMFromTerraformGit
     ) -> VmDetailsData:
@@ -98,7 +98,7 @@ class TFDeployVMFlow(AbstractDeployFlow):
 
     def _prepare_deploy_app_result(
         self,
-        tf_handler: TerraformCPShell,
+        execution_outputs: tuple[dict, ...],
         deploy_app: VMFromTerraformGit,
         vm_name: str,
     ) -> DeployAppResult:
@@ -114,18 +114,19 @@ class TFDeployVMFlow(AbstractDeployFlow):
             vmUuid=tf_handler.uuid,
             vmName=vm_name,
             vmDetailsData=vm_details_data,
-            deployedAppAdditionalData={
-                "ip_regex": deploy_app.ip_regex,
-                "refresh_ip_timeout": deploy_app.refresh_ip_timeout,
-                "auto_power_off": deploy_app.auto_power_off,
-                "auto_delete": deploy_app.auto_delete,
-            },
-            deployedAppAttributes=self._prepare_app_attrs(deploy_app, tf_handler),
+            deployedAppAdditionalData={},
+            deployedAppAttributes=[
+                Attribute(
+                    attributeName="Terraform DeployedApp 2G.Terraform Outputs",
+                    attributeValue=json.dumps(execution_outputs[0])),
+                Attribute(
+                    attributeName="Terraform DeployedApp 2G.Terraform Sensitive Outputs",
+                    attributeValue=json.dumps(execution_outputs[1]))
+                ],
         )
 
     def _deploy(self, request_actions: DeployVMRequestActions) -> DeployAppResult:
         """Deploy TF VM."""
-        conf = self._resource_config
         # noinspection PyTypeChecker
         deploy_app: VMFromTerraformGit = request_actions.deploy_app
 
@@ -140,11 +141,11 @@ class TFDeployVMFlow(AbstractDeployFlow):
         self._logger.info(f"Generated name for the VM: {vm_name}")
 
         with self._rollback_manager:
-            deployed_vm = self.tf_executor.execute_terraform(deploy_app, vm_name)
+            outputs = self.tf_executor.execute_terraform(deploy_app, vm_name)
 
-        self._logger.info(f"Preparing Deploy App result for the {deployed_vm}")
+        self._logger.info(f"Preparing Deploy App result for the {vm_name}")
         return self._prepare_deploy_app_result(
-            tf_handler=deployed_vm,
+            execution_outputs=outputs,
             deploy_app=deploy_app,
             vm_name=vm_name,
         )
