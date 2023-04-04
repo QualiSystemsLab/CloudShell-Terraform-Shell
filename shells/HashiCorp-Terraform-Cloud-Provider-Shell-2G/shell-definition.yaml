@@ -38,8 +38,9 @@ node_types:
         description: "The version of terraform needed E.g. '1.0.0'. Default value: latest"
         default: latest
         type: string
-      Cloud Provider:
-        description: "Cloud provider name to be used for cloud access"
+      Cloud Provider Resource:
+        description: "CloudShell cloud provider resource name to be used for 
+        retrieving cloud provider credentials"
         type: string
       Remote State Provider:
         description: "Remote State provider resource name (only used if filled)"

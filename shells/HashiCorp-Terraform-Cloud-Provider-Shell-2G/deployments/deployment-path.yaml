@@ -16,25 +16,33 @@ node_types:
   vendor.resource.Terraform Resource From Git:
     derived_from: cloudshell.nodes.CustomDeploymentOption
     properties:
-      Cloud Provider:
-        description: "Cloud provider name to be used for cloud access"
+      Cloud Provider Resource:
+        description: "CloudShell cloud provider resource name to be used for 
+        retrieving cloud provider credentials"
         type: string
         tags: [ user_input ]
-      Git Token:
-        description: "Git Token to be used in order to download TF module."
-        type: cloudshell.datatypes.Password
-        tags: [ user_input ]
-      Git Terraform URL:
+      Git Terraform Module Path:
         description: "Git url to the Terraform module. Supports the same URL format from a browser. For Github, the entire repo will be downloaded. Url to a folder: https://github.com/ACCOUNT/REPO/tree/BRANCH/PATH_TO_FOLDER or url to a TF file: https://github.com/ACCOUNT/REPO/blob/BRANCH/PATH/filename.tf. Gitlab: 'http://<GITLAB_DOMAIN>/<USER>/<PROJECT_NAME>/-/tree/<BRANCH>/<FOLDER_PATH>'"
         type: string
         tags: [ user_input ]
       Terraform Inputs:
+        # ToDo add json support
+        # ToDo add tfvars support
         description: Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)
         type: string
         tags: [ user_input ]
       Terraform Sensitive Inputs:
+        # ToDo add json support
         description: Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)
         type: cloudshell.datatypes.Password
+        tags: [ user_input ]
+      Terraform App Inputs Map:
+        description: Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)
+        type: string
+        tags: [ user_input ]
+      Terraform App Outputs Map:
+        description: Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)
+        type: string
         tags: [ user_input ]
       Branch:
         description: "Overrides the branch in the the Module URL."

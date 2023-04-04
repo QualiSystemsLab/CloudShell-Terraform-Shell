@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 
 from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
@@ -53,18 +51,9 @@ class TerraformCPShell:
             if self._resource_config.remote_state_provider:
                 tf_proc_executer.delete_local_temp_dir(deploy_app)
 
-    def destroy_terraform(self):
+    def destroy_terraform(self, deployed_app: BaseTFDeployedApp):
         # initialize a _logger if _logger wasn't passed during init
-        with nullcontext(self._logger) if self._logger else LoggingSessionContext(self._context) as logger:
 
-            shell_helper = ObjectFactory.create_shell_helper(self._tf_service, self._context, self._config, logger)
-            sandbox_data_handler = SandboxDataHandler(shell_helper)
-            self._validate_remote_backend_or_existing_working_dir(sandbox_data_handler, shell_helper)
-
-            tf_working_dir = LocalDir.prepare_tf_working_dir(logger, sandbox_data_handler, shell_helper)
-            self._destroy_procedure(sandbox_data_handler, shell_helper, tf_working_dir)
-
-    def _destroy_procedure(self, deployed_app: BaseTFDeployedApp):
         tf_proc_executer = CPTfProcExec(
             self._resource_config,
             self._sandbox_id,
@@ -73,23 +62,20 @@ class TerraformCPShell:
             self._tag_manager
         )
         # if not tf_working_dir:
-        #     self._handle_error_output(
-        #     shell_helper,
-        #     "Destroy failed due to missing local directory"
-        #     )
+        #     self._handle_error_output(shell_helper, "Destroy failed due to missing local directory")
 
         try:
             self._provider_handler.initialize_provider(deployed_app)
-            tf_proc_executer.init_terraform(deploy_app, vm_name)
+            tf_proc_executer.init_terraform(deployed_app)
             tf_proc_executer.destroy_terraform(deployed_app)
         finally:
-            if self._using_remote_state(shell_helper) or self._destroy_passed(sandbox_data_handler):
-                LocalDir.delete_local_temp_dir(sandbox_data_handler, tf_working_dir)
+            if self._resource_config.remote_state_provider:
+                tf_proc_executer.delete_local_temp_dir(deployed_app)
 
-    def _validate_remote_backend_or_existing_working_dir(self, sandbox_data_handler, shell_helper):
-        if not self._resource_config.remote_state_provider and \
-                not LocalDir.does_working_dir_exists(sandbox_data_handler.get_tf_working_dir()):
-            self._handle_error_output(shell_helper, f"Missing local folder {sandbox_data_handler.get_tf_working_dir()}")
+    # def _validate_remote_backend_or_existing_working_dir(self, sandbox_data_handler, shell_helper):
+    #     if not self._resource_config.remote_state_provider and \
+    #             not LocalDir.does_working_dir_exists(sandbox_data_handler.get_tf_working_dir()):
+    #         self._handle_error_output(shell_helper, f"Missing local folder {sandbox_data_handler.get_tf_working_dir()}")
 
     # @staticmethod
     # def _destroy_passed(sandbox_data_handler):

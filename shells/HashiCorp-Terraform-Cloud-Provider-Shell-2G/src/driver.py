@@ -7,6 +7,7 @@ from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 from cloudshell.shell.core.driver_context import AutoLoadDetails, \
     ResourceCommandContext, CancellationContext
 
+from cloudshell.cp.terraform.flows import delete_instance
 from cloudshell.cp.terraform.flows.deploy_vm.base_flow import TFDeployVMFlow
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit, \
     VMFromTerraformGitRequestActions
@@ -168,6 +169,17 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
         with LoggingSessionContext(context) as logger:
             logger.info("Starting Delete Instance command...")
             api = CloudShellSessionContext(context).get_api()
+            resource_config = TerraformResourceConfig.from_context(context, api=api)
+            resource = context.remote_endpoints[0]
+            actions = TFDeployedVMActions.from_remote_resource(resource, api)
+            reservation_info = ReservationInfo.from_remote_resource_context(context)
+            delete_instance(
+                deployed_app=actions.deployed_app,
+                resource_conf=resource_config,
+                logger=logger,
+                reservation_info=reservation_info,
+            )
+
 
     def cleanup(self):
         """Destroy the driver session.
