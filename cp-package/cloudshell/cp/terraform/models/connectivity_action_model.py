@@ -1,13 +1,12 @@
 import warnings
 from typing import Optional
 
-from pydantic import Field
-
 from cloudshell.shell.flows.connectivity.models.connectivity_model import (
     ConnectionParamsModel,
     ConnectivityActionModel,
     VlanServiceModel,
 )
+from pydantic import Field
 
 
 class TFVlanServiceModel(VlanServiceModel):
@@ -24,12 +23,8 @@ class TFVlanServiceModel(VlanServiceModel):
 
 
 class TFConnectionParamsModel(ConnectionParamsModel):
-    vlan_service_attrs: TFVlanServiceModel = Field(
-        ..., alias="vlanServiceAttributes"
-    )
+    vlan_service_attrs: TFVlanServiceModel = Field(..., alias="vlanServiceAttributes")
 
 
 class TFConnectivityActionModel(ConnectivityActionModel):
-    connection_params: TFConnectionParamsModel = Field(
-        ..., alias="connectionParams"
-    )
+    connection_params: TFConnectionParamsModel = Field(..., alias="connectionParams")

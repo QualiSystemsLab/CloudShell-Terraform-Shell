@@ -1,7 +1,6 @@
 from logging import Logger
 
 import attr
-
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 

@@ -1,16 +1,19 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from importlib import import_module
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Collection
+from typing import TYPE_CHECKING, Any
 
 from attrs import Attribute, define, field, fields
 from cloudshell.api.cloudshell_api import ResourceInfo
-
 from cloudshell.shell.standards.core.namespace_type import NameSpaceType
-from cloudshell.shell.standards.core.resource_conf.attrs_converter import \
-    AbsResourceAttrsConverter, WithoutMeta, InitializeClassError, ResourceAttrsConverter
+from cloudshell.shell.standards.core.resource_conf.attrs_converter import (
+    AbsResourceAttrsConverter,
+    InitializeClassError,
+    ResourceAttrsConverter,
+    WithoutMeta,
+)
 from cloudshell.shell.standards.core.resource_conf.attrs_converters import (
     AbsCollectionConverter,
     AbsConverter,
@@ -57,8 +60,9 @@ class RemoteResourceAttrsConverter(AbsResourceAttrsConverter):
     _attrs: dict[str, Any] = field(init=False)
 
     def __attrs_post_init__(self) -> None:
-        self._attrs = {attr.Name: attr.Value for attr in
-                       self.resource_info.ResourceAttributes}
+        self._attrs = {
+            attr.Name: attr.Value for attr in self.resource_info.ResourceAttributes
+        }
 
     def get_attrs(self) -> dict[str, Any]:
         cls_attrs = {}

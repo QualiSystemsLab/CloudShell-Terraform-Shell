@@ -4,10 +4,11 @@ import re
 from enum import Enum
 from functools import lru_cache
 
-from cloudshell.shell.standards.core.resource_config_entities import ResourceAttrRO, \
-    ResourceBoolAttrRO
-
 from cloudshell.cp.terraform.exceptions import InvalidResourceAttributeValue
+from cloudshell.shell.standards.core.resource_config_entities import (
+    ResourceAttrRO,
+    ResourceBoolAttrRO,
+)
 
 COLLECTION_SEPARATOR_PATTERN = re.compile(r"[,;]")
 KEY_VALUE_SEPARATOR_PATTERN = re.compile(r"[=]")
@@ -44,7 +45,7 @@ class GitProvider(Enum):
 
 
 class PasswordAttrRO(ResourceAttrRO):
-    @lru_cache()
+    @lru_cache
     def _decrypt_password(self, api, attr_value):
         """Decrypt password.
 
@@ -55,7 +56,8 @@ class PasswordAttrRO(ResourceAttrRO):
         if api:
             return api.DecryptPassword(attr_value).Value
         raise InvalidResourceAttributeValue(
-            "Cannot decrypt password, API is not defined")
+            "Cannot decrypt password, API is not defined"
+        )
 
     def __get__(self, instance, owner):
         """Getter.
@@ -87,11 +89,16 @@ class CustomTagsAttrRO(ResourceAttrRO):
         attr = instance.attributes.get(self.get_key(instance), self.default)
         if attr:
             try:
-                return {key.strip(): val.strip() for key, val in
-                        [KEY_VALUE_SEPARATOR_PATTERN.split(data) for data in
-                         filter(bool, map(str.strip,
-                                          COLLECTION_SEPARATOR_PATTERN.split(
-                                              attr)))]}
+                return {
+                    key.strip(): val.strip()
+                    for key, val in [
+                        KEY_VALUE_SEPARATOR_PATTERN.split(data)
+                        for data in filter(
+                            bool,
+                            map(str.strip, COLLECTION_SEPARATOR_PATTERN.split(attr)),
+                        )
+                    ]
+                }
             except ValueError:
                 raise InvalidResourceAttributeValue(
                     "'Custom Tags' attribute format is incorrect"
@@ -123,11 +130,16 @@ class ResourceDictPasswordAttrRODeploymentPath(PasswordAttrRO):
         attr = super().__get__(instance, owner)
         if attr:
             try:
-                return {key.strip(): val.strip() for key, val in
-                        [KEY_VALUE_SEPARATOR_PATTERN.split(data) for data in
-                         filter(bool, map(str.strip,
-                                          COLLECTION_SEPARATOR_PATTERN.split(
-                                              attr)))]}
+                return {
+                    key.strip(): val.strip()
+                    for key, val in [
+                        KEY_VALUE_SEPARATOR_PATTERN.split(data)
+                        for data in filter(
+                            bool,
+                            map(str.strip, COLLECTION_SEPARATOR_PATTERN.split(attr)),
+                        )
+                    ]
+                }
             except ValueError:
                 raise InvalidResourceAttributeValue(
                     "'Terraform Sensitive Inputs' attribute format is incorrect"

@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from cloudshell.cp.terraform import constants
 from cloudshell.cp.terraform.flows.get_attribute_hints import attribute_hints
+
 # from cloudshell.cp.terraform.handlers.dc_handler import DcHandler
 from cloudshell.cp.terraform.models.DeployDataHolder import DeployDataHolder
 
@@ -21,7 +22,10 @@ class AbstractHintsHandler(ABC):
     def ATTRIBUTES() -> tuple[type[attribute_hints.AbstractAttributeHint]]:
         pass
 
-    def __init__(self, request: DeployDataHolder,):
+    def __init__(
+        self,
+        request: DeployDataHolder,
+    ):
         self._request = request
 
     def prepare_hints(self) -> list[dict]:
@@ -49,9 +53,7 @@ class VMfromTFGITHintsHandler(AbstractHintsHandler):
 
 
 def get_handler(request: DeployDataHolder) -> AbstractHintsHandler:
-    handlers = (
-        VMfromTFGITHintsHandler
-    )
+    handlers = VMfromTFGITHintsHandler
 
     for handler in handlers:
         if request.DeploymentPath == handler.DEPLOYMENT_PATH:

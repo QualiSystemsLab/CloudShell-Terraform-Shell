@@ -3,13 +3,16 @@ import os
 from logging import Logger
 
 from cloudshell.api.cloudshell_api import InputNameValue
-
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
-from cloudshell.iac.terraform.constants import GET_BACKEND_DATA_COMMAND, DELETE_TFSTATE_FILE_COMMAND, ATTRIBUTE_NAMES
+from cloudshell.iac.terraform.constants import (
+    ATTRIBUTE_NAMES,
+    DELETE_TFSTATE_FILE_COMMAND,
+    GET_BACKEND_DATA_COMMAND,
+)
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
 
-class CPBackendHandler(object):
+class CPBackendHandler:
     def __init__(
         self,
         resource_config: TerraformResourceConfig,
@@ -33,11 +36,15 @@ class CPBackendHandler(object):
             self._logger.exception(msg)
             raise ValueError(msg)
 
-    def generate_backend_cfg_file(self, app_name: str, sandbox_id: str, working_dir: str):
+    def generate_backend_cfg_file(
+        self, app_name: str, sandbox_id: str, working_dir: str
+    ):
         if self.backend_exists:
-            params = [InputNameValue("tf_state_unique_name", f""
-                                                             f"{sandbox_id}"
-                                                             f"_{app_name}.tf.state")]
+            params = [
+                InputNameValue(
+                    "tf_state_unique_name", f"" f"{sandbox_id}" f"_{app_name}.tf.state"
+                )
+            ]
             try:
                 backend_data = self._resource_config.api.ExecuteCommand(
                     sandbox_id,
@@ -45,7 +52,7 @@ class CPBackendHandler(object):
                     "Resource",
                     GET_BACKEND_DATA_COMMAND,
                     params,
-                    False
+                    False,
                 )
             except Exception as e:
                 msg = f"Was not able to generate remote tf state file : {str(e)}"
@@ -55,12 +62,18 @@ class CPBackendHandler(object):
             backend_data_json = json.loads(backend_data.Output)
 
             with open(os.path.join(working_dir, "backend.tf"), "w") as backend_file:
-                backend_file.write(backend_data_json['backend_data']['tf_state_file_string'])
+                backend_file.write(
+                    backend_data_json["backend_data"]["tf_state_file_string"]
+                )
             self._backend_secret_vars = backend_data_json["backend_secret_vars"]
 
     def delete_backend_tf_state_file(self, app_name: str, sandbox_id: str):
         if self.backend_exists:
-            params = [InputNameValue("tf_state_unique_name", f"{sandbox_id}_{app_name}.tf.state")]
+            params = [
+                InputNameValue(
+                    "tf_state_unique_name", f"{sandbox_id}_{app_name}.tf.state"
+                )
+            ]
 
             self._resource_config.api.ExecuteCommand(
                 sandbox_id,
@@ -68,7 +81,7 @@ class CPBackendHandler(object):
                 "Resource",
                 DELETE_TFSTATE_FILE_COMMAND,
                 params,
-                False
+                False,
             )
 
     def get_backend_secret_vars(self) -> dict:

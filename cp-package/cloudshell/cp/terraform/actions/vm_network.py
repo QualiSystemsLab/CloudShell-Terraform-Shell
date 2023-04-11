@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from logging import Logger
 
     from cloudshell.cp.core.cancellation_manager import CancellationContextManager
-
     from cloudshell.cp.terraform.resource_config import TFResourceConfig
 
 

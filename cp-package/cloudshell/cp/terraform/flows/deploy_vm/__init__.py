@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from cloudshell.cp.terraform.models import deploy_app
+
 # from .base_flow import AbstractTFDeployVMFlow
 # from .from_image import TFDeployVMFromImageFlow
 # from .from_linked_clone import TFDeployVMFromLinkedCloneFlow
 # from .from_template import TFDeployVMFromTemplateFlow
 # from .from_vm import TFDeployVMFromVMFlow
 
-from cloudshell.cp.terraform.models import deploy_app
 
 # DEPLOY_APP_TO_FLOW = (
 #     (deploy_app.VMFromLinkedCloneDeployApp, TFDeployVMFromLinkedCloneFlow),

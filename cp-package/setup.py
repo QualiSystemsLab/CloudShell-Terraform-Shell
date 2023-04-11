@@ -12,7 +12,7 @@ with open("test_requirements.txt") as f_tests:
     required_for_tests = f_tests.read().splitlines()
 
 setup(
-    name="cloudshell-cp-TF",
+    name="cloudshell-cp-terraform",
     url="http://www.qualisystems.com/",
     author="QualiSystems",
     author_email="info@qualisystems.com",

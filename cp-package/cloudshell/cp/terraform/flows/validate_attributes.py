@@ -1,19 +1,16 @@
 from logging import Logger
 
 import jsonpickle
-
 from cloudshell.cp.core.request_actions.models import (
     ValidateAttributes,
     ValidateAttributesResponse,
 )
-
 from cloudshell.cp.terraform.actions.validation import ValidationActions
-from cloudshell.cp.terraform.constants import (
-    VM_FROM_TF_GIT
-)
+from cloudshell.cp.terraform.constants import VM_FROM_TF_GIT
+
 # from cloudshell.cp.terraform.handlers.si_handler import SiHandler
 from cloudshell.cp.terraform.models.base_deployment_app import (
-    TerraformDeploymentAppAttributeNames
+    TerraformDeploymentAppAttributeNames,
 )
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 
@@ -22,7 +19,6 @@ def validate_attributes(
     resource_conf: TerraformResourceConfig, request: str, logger: Logger
 ) -> str:
     deployment_path_to_fn = {
-
         VM_FROM_TF_GIT: _validate_app_from_vm,
     }
     action = ValidateAttributes.from_request(request)

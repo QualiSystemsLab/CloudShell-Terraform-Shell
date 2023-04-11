@@ -1,11 +1,9 @@
 from logging import Logger
 
 import jsonpickle
-
 from cloudshell.cp.terraform.flows.get_attribute_hints.deployment_type_handlers import (
     get_handler,
 )
-
 from cloudshell.cp.terraform.models.DeployDataHolder import DeployDataHolder
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 

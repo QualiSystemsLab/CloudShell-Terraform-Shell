@@ -10,9 +10,8 @@ from logging import Logger
 from typing import TYPE_CHECKING, TypeVar
 
 import jsonschema
-from netaddr import IPNetwork
-
 from cloudshell.cp.terraform.exceptions import BaseTFException
+from netaddr import IPNetwork
 
 if TYPE_CHECKING:
     from cloudshell.cp.terraform.handlers.vm_handler import VmHandler

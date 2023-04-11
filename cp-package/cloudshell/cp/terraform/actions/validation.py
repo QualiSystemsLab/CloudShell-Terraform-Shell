@@ -6,12 +6,10 @@ from typing import TYPE_CHECKING
 from urllib.request import urlopen
 
 import attr
-
 from cloudshell.cp.terraform.exceptions import (
     BaseTFException,
     InvalidAttributeException,
 )
-
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -38,6 +36,8 @@ BEHAVIOURS_DURING_SAVE = ("Remain Powered On", "Power Off")
 @attr.s(auto_attribs=True)
 class ValidationActions:
     pass
+
+
 #     _si: SiHandler
 #     _resource_conf: TFResourceConfig
 #     _logger: Logger
@@ -112,68 +112,68 @@ class ValidationActions:
 #         _one_is_not_empty([vm_storage, conf.vm_storage], conf.ATTR_NAMES.vm_storage)
 #         _one_is_not_empty([vm_location, conf.vm_location], conf.ATTR_NAMES.vm_location)
 
-    # def validate_deploy_app_from_vm(self, deploy_app: VMFromVMDeployApp):
-    #     self._logger.info("Validating deploy app from VM")
-    #     self.validate_app_from_vm(deploy_app.TF_vm)
-    #
-    # def validate_app_from_vm(self, vm_path: str):
-    #     _is_not_empty(vm_path, VMFromVMDeployApp.ATTR_NAMES.TF_vm)
-    #     dc = self._get_dc()
-    #     dc.get_vm_by_path(vm_path)
-    #
-    # def validate_deploy_app_from_template(self, deploy_app: VMFromTemplateDeployApp):
-    #     self._logger.info("Validating deploy app from Template")
-    #     self.validate_app_from_template(deploy_app.TF_template)
-    #
-    # def validate_app_from_template(self, vm_path: str):
-    #     _is_not_empty(vm_path, VMFromTemplateDeployApp.ATTR_NAMES.TF_template)
-    #     dc = self._get_dc()
-    #     dc.get_vm_by_path(vm_path)
-    #
-    # def validate_deploy_app_from_clone(self, deploy_app: VMFromLinkedCloneDeployApp):
-    #     self._logger.info("Validating deploy app from Linked Clone")
-    #     self.validate_app_from_clone(
-    #         deploy_app.TF_vm, deploy_app.TF_vm_snapshot
-    #     )
-    #
-    # def validate_app_from_clone(self, vm_path: str, snapshot_path: str):
-    #     _is_not_empty(vm_path, VMFromLinkedCloneDeployApp.ATTR_NAMES.TF_vm)
-    #     _is_not_empty(
-    #         snapshot_path, VMFromLinkedCloneDeployApp.ATTR_NAMES.TF_vm_snapshot
-    #     )
-    #     dc = self._get_dc()
-    #     vm = dc.get_vm_by_path(vm_path)
-    #     vm.get_snapshot_by_path(snapshot_path)
-    #
-    # def validate_deploy_app_from_image(self, deploy_app: VMFromImageDeployApp):
-    #     self._logger.info("Validating deploy app from Image")
-    #     self.validate_app_from_image(deploy_app.TF_image)
-    #
-    # def validate_app_from_image(self, image_url: str):
-    #     _is_not_empty(image_url, VMFromImageDeployApp.ATTR_NAMES.TF_image)
-    #     _is_valid_url(image_url, VMFromImageDeployApp.ATTR_NAMES.TF_image)
-    #
-    # def validate_ovf_tool(self, ovf_tool_path):
-    #     self._logger.info("Validating OVF Tool")
-    #     _is_not_empty(ovf_tool_path, self._resource_conf.ATTR_NAMES.ovf_tool_path)
-    #     _is_valid_url(ovf_tool_path, self._resource_conf.ATTR_NAMES.ovf_tool_path)
-    #
-    # @staticmethod
-    # def validate_cluster(cluster: ClusterHandler) -> None:
-    #     if not cluster.hosts:
-    #         raise HostNotPresentInCluster(cluster)
-    #
-    # def _validate_switch(
-    #     self, dc: DcHandler, compute_entity: BasicComputeEntityHandler
-    # ) -> None:
-    #     switch_name = self._resource_conf.default_dv_switch
-    #     try:
-    #         dc.get_dv_switch(switch_name)
-    #     except DvSwitchNotFound:
-    #         try:
-    #             compute_entity.get_v_switch(switch_name)
-    #         except VSwitchNotFound:
-    #             raise SwitchNotFound(switch_name)
+# def validate_deploy_app_from_vm(self, deploy_app: VMFromVMDeployApp):
+#     self._logger.info("Validating deploy app from VM")
+#     self.validate_app_from_vm(deploy_app.TF_vm)
+#
+# def validate_app_from_vm(self, vm_path: str):
+#     _is_not_empty(vm_path, VMFromVMDeployApp.ATTR_NAMES.TF_vm)
+#     dc = self._get_dc()
+#     dc.get_vm_by_path(vm_path)
+#
+# def validate_deploy_app_from_template(self, deploy_app: VMFromTemplateDeployApp):
+#     self._logger.info("Validating deploy app from Template")
+#     self.validate_app_from_template(deploy_app.TF_template)
+#
+# def validate_app_from_template(self, vm_path: str):
+#     _is_not_empty(vm_path, VMFromTemplateDeployApp.ATTR_NAMES.TF_template)
+#     dc = self._get_dc()
+#     dc.get_vm_by_path(vm_path)
+#
+# def validate_deploy_app_from_clone(self, deploy_app: VMFromLinkedCloneDeployApp):
+#     self._logger.info("Validating deploy app from Linked Clone")
+#     self.validate_app_from_clone(
+#         deploy_app.TF_vm, deploy_app.TF_vm_snapshot
+#     )
+#
+# def validate_app_from_clone(self, vm_path: str, snapshot_path: str):
+#     _is_not_empty(vm_path, VMFromLinkedCloneDeployApp.ATTR_NAMES.TF_vm)
+#     _is_not_empty(
+#         snapshot_path, VMFromLinkedCloneDeployApp.ATTR_NAMES.TF_vm_snapshot
+#     )
+#     dc = self._get_dc()
+#     vm = dc.get_vm_by_path(vm_path)
+#     vm.get_snapshot_by_path(snapshot_path)
+#
+# def validate_deploy_app_from_image(self, deploy_app: VMFromImageDeployApp):
+#     self._logger.info("Validating deploy app from Image")
+#     self.validate_app_from_image(deploy_app.TF_image)
+#
+# def validate_app_from_image(self, image_url: str):
+#     _is_not_empty(image_url, VMFromImageDeployApp.ATTR_NAMES.TF_image)
+#     _is_valid_url(image_url, VMFromImageDeployApp.ATTR_NAMES.TF_image)
+#
+# def validate_ovf_tool(self, ovf_tool_path):
+#     self._logger.info("Validating OVF Tool")
+#     _is_not_empty(ovf_tool_path, self._resource_conf.ATTR_NAMES.ovf_tool_path)
+#     _is_valid_url(ovf_tool_path, self._resource_conf.ATTR_NAMES.ovf_tool_path)
+#
+# @staticmethod
+# def validate_cluster(cluster: ClusterHandler) -> None:
+#     if not cluster.hosts:
+#         raise HostNotPresentInCluster(cluster)
+#
+# def _validate_switch(
+#     self, dc: DcHandler, compute_entity: BasicComputeEntityHandler
+# ) -> None:
+#     switch_name = self._resource_conf.default_dv_switch
+#     try:
+#         dc.get_dv_switch(switch_name)
+#     except DvSwitchNotFound:
+#         try:
+#             compute_entity.get_v_switch(switch_name)
+#         except VSwitchNotFound:
+#             raise SwitchNotFound(switch_name)
 
 
 def _is_valid_url(url: str, attr_name: str):

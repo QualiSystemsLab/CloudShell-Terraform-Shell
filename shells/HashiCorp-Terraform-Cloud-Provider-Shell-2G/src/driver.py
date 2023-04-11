@@ -1,23 +1,27 @@
 from cloudshell.cp.core.cancellation_manager import CancellationContextManager
 from cloudshell.cp.core.reservation_info import ReservationInfo
+from cloudshell.cp.terraform.flows import delete_instance
+from cloudshell.cp.terraform.flows.deploy_vm.base_flow import TFDeployVMFlow
+from cloudshell.cp.terraform.models.deploy_app import (
+    VMFromTerraformGit,
+    VMFromTerraformGitRequestActions,
+)
+from cloudshell.cp.terraform.models.deployed_app import (
+    BaseTFDeployedApp,
+    TFDeployedVMActions,
+)
+from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
+from cloudshell.shell.core.driver_context import (
+    AutoLoadDetails,
+    CancellationContext,
+    ResourceCommandContext,
+)
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
-from cloudshell.shell.core.driver_context import AutoLoadDetails, \
-    ResourceCommandContext, CancellationContext
-
-from cloudshell.cp.terraform.flows import delete_instance
-from cloudshell.cp.terraform.flows.deploy_vm.base_flow import TFDeployVMFlow
-from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit, \
-    VMFromTerraformGitRequestActions
-from cloudshell.cp.terraform.models.deployed_app import TFDeployedVMActions, \
-    BaseTFDeployedApp
-from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
-
 
 class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
-
     def __init__(self):
         VMFromTerraformGitRequestActions.register_deployment_path(VMFromTerraformGit)
         TFDeployedVMActions.register_deployment_path(BaseTFDeployedApp)
@@ -52,10 +56,10 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
         return AutoLoadDetails([], [])
 
     def Deploy(
-            self,
-            context: ResourceCommandContext,
-            request: str,
-            cancellation_context: CancellationContext,
+        self,
+        context: ResourceCommandContext,
+        request: str,
+        cancellation_context: CancellationContext,
     ) -> str:
         """Called when reserving a sandbox during setup.
 
@@ -73,8 +77,7 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
             reservation_info = ReservationInfo.from_resource_context(context)
 
             request_actions = VMFromTerraformGitRequestActions.from_request(
-                request,
-                api
+                request, api
             )
             deploy_flow = TFDeployVMFlow(
                 resource_config=resource_config,
@@ -179,7 +182,6 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
                 logger=logger,
                 reservation_info=reservation_info,
             )
-
 
     def cleanup(self):
         """Destroy the driver session.

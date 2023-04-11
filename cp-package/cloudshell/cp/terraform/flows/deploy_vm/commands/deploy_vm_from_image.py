@@ -4,7 +4,6 @@ from logging import Logger
 
 from cloudshell.cp.core.cancellation_manager import CancellationContextManager
 from cloudshell.cp.core.rollback import RollbackCommand, RollbackCommandsManager
-
 from cloudshell.cp.terraform.handlers.datastore_handler import DatastoreHandler
 from cloudshell.cp.terraform.handlers.dc_handler import DcHandler
 from cloudshell.cp.terraform.handlers.resource_pool import ResourcePoolHandler

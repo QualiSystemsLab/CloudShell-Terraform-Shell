@@ -7,7 +7,6 @@ from logging import Logger
 from typing import Any
 
 from attrs import define, field, setters
-
 from cloudshell.cp.terraform.exceptions import BaseTFException
 
 ON_TASK_PROGRESS_TYPE = Callable[["Task", Any], None]

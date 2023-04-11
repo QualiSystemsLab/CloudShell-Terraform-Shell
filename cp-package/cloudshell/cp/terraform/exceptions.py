@@ -36,4 +36,3 @@ class InvalidAttributeException(BaseTFException):
 
 class VMIPNotFoundException(BaseTFException):
     """Object not found."""
-

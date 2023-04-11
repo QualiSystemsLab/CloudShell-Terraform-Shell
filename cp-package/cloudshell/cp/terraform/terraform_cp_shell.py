@@ -15,11 +15,11 @@ from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 class TerraformCPShell:
     def __init__(
-            self,
-            resource_config: TerraformResourceConfig,
-            logger: logging.Logger,
-            tag_manager: TagsManager,
-            sandbox_id: str,
+        self,
+        resource_config: TerraformResourceConfig,
+        logger: logging.Logger,
+        tag_manager: TagsManager,
+        sandbox_id: str,
     ):
 
         self._resource_config = resource_config
@@ -29,14 +29,15 @@ class TerraformCPShell:
         self._backend_handler = CPBackendHandler(self._resource_config, self._logger)
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
 
-    def execute_terraform(self, deploy_app: VMFromTerraformGit, vm_name) -> \
-            TFDeployResult:
+    def execute_terraform(
+        self, deploy_app: VMFromTerraformGit, vm_name
+    ) -> TFDeployResult:
         tf_proc_executer = CPTfProcExec(
             self._resource_config,
             self._sandbox_id,
             self._logger,
             self._backend_handler,
-            self._tag_manager
+            self._tag_manager,
         )
 
         try:
@@ -63,7 +64,7 @@ class TerraformCPShell:
             self._sandbox_id,
             self._logger,
             self._backend_handler,
-            self._tag_manager
+            self._tag_manager,
         )
         # if not tf_working_dir:
         #     self._handle_error_output(shell_helper, "Destroy failed due to missing local directory")

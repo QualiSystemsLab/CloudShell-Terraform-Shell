@@ -2,40 +2,40 @@ from logging import Logger
 from typing import Union
 
 from cloudshell.api.cloudshell_api import ResourceInfo
-
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.iac.terraform.constants import (
-    AZURE2G_MODEL,
     AWS2G_MODEL,
+    AZURE2G_MODEL,
     CLP_PROVIDER_MODELS,
-    GCP2G_MODEL
+    GCP2G_MODEL,
 )
 from cloudshell.iac.terraform.services.clp_envvar_handler import (
     AWSCloudProviderEnvVarHandler,
     AzureCloudProviderEnvVarHandler,
-    GCPCloudProviderEnvVarHandler
+    GCPCloudProviderEnvVarHandler,
 )
 
 
-class CPProviderHandler(object):
+class CPProviderHandler:
     def __init__(self, resource_config: TerraformResourceConfig, logger: Logger):
         self._logger = logger
         self._resource_config = resource_config
 
     def initialize_provider(
-            self,
-            deploy_app: Union[BaseTFDeployedApp, VMFromTerraformGit]
+        self, deploy_app: Union[BaseTFDeployedApp, VMFromTerraformGit]
     ):
-        clp_resource_name = deploy_app.cloud_provider or self._resource_config.cloud_provider
+        clp_resource_name = (
+            deploy_app.cloud_provider or self._resource_config.cloud_provider
+        )
         if not clp_resource_name:
             return
         clp_details = self._resource_config.api.GetResourceDetails(clp_resource_name)
         clp_res_model = clp_details.ResourceModelName
 
         clpr_res_fam = clp_details.ResourceFamilyName
-        if clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider':
+        if clpr_res_fam != "Cloud Provider" and clpr_res_fam != "CS_CloudProvider":
             self._logger.error(f"{clpr_res_fam} currently not supported")
             raise ValueError(f"{clpr_res_fam} currently not supported")
 
@@ -51,9 +51,9 @@ class CPProviderHandler(object):
             raise
 
     def _set_cloud_env_vars(
-            self,
-            clp_details: ResourceInfo,
-            clp_res_model: str,
+        self,
+        clp_details: ResourceInfo,
+        clp_res_model: str,
     ):
         self._logger.info(
             "Initializing Environment variables with CloudProvider details"
@@ -61,22 +61,31 @@ class CPProviderHandler(object):
         clp_resource_attributes = clp_details.ResourceAttributes
         clp_handler = None
 
-        if clp_res_model in [AWS2G_MODEL, ]:
-            clp_handler = AWSCloudProviderEnvVarHandler(clp_res_model, clp_resource_attributes, self._resource_config.api)
+        if clp_res_model in [
+            AWS2G_MODEL,
+        ]:
+            clp_handler = AWSCloudProviderEnvVarHandler(
+                clp_res_model, clp_resource_attributes, self._resource_config.api
+            )
 
-        elif clp_res_model in [AZURE2G_MODEL, ]:
-            clp_handler = AzureCloudProviderEnvVarHandler(clp_res_model,
-                                                          clp_resource_attributes,
-                                                          self._resource_config.api)
+        elif clp_res_model in [
+            AZURE2G_MODEL,
+        ]:
+            clp_handler = AzureCloudProviderEnvVarHandler(
+                clp_res_model, clp_resource_attributes, self._resource_config.api
+            )
 
         elif clp_res_model in [GCP2G_MODEL]:
             clp_handler = GCPCloudProviderEnvVarHandler(
-                clp_res_model,
-                clp_resource_attributes
+                clp_res_model, clp_resource_attributes
             )
 
         if clp_handler:
             clp_handler.set_env_vars_based_on_clp()
         else:
-            self._logger.error(f"Was not able to initialize provider as {clp_res_model} is not a supported model")
-            raise ValueError(f"Was not able to initialize provider as {clp_res_model} is not a supported model")
+            self._logger.error(
+                f"Was not able to initialize provider as {clp_res_model} is not a supported model"
+            )
+            raise ValueError(
+                f"Was not able to initialize provider as {clp_res_model} is not a supported model"
+            )

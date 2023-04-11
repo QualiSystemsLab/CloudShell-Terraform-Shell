@@ -1,6 +1,8 @@
 from functools import lru_cache
 
 from cloudshell.cp.core.request_actions.models import Attribute, VmDetailsData
+from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
+from cloudshell.cp.terraform.utils.vm_details import create_vm_details
 
 
 class TFDeployResult:
@@ -18,25 +20,33 @@ class TFDeployResult:
         return self._path
 
     @property
-    @lru_cache()
+    @lru_cache
     def app_name(self) -> str:
         self._get_deploy_app_attrs()
         return self._app_name
 
     @property
-    @lru_cache()
+    @lru_cache
     def address(self) -> str:
         self._get_deploy_app_attrs()
         return self._address
 
     @property
-    @lru_cache()
+    @lru_cache
     def deploy_app_attrs(self) -> list[Attribute]:
         self._get_deploy_app_attrs()
         return self._attributes
 
-    def get_vm_details_data(self) -> VmDetailsData:
-        return VmDetailsData()
+    def get_vm_details_data(
+        self, resource_config: TerraformResourceConfig
+    ) -> VmDetailsData:
+        return create_vm_details(
+            resource_config,
+            self.app_name,
+            self._unparsed_output_json,
+            self.path,
+            self._logger,
+        )
 
     def _get_deploy_app_attrs(self):
         """Get the list of attributes to be added to the deployed app.
@@ -57,8 +67,12 @@ class TFDeployResult:
                     self._address = output_params.get("value")
                 else:
                     full_attr_name = self.deploy_app.full_name_attrs_map.get(attr_name)
-                    app_attributes.append(Attribute(attributeName=full_attr_name,
-                                                    attributeValue=output_params.get("value")))
+                    app_attributes.append(
+                        Attribute(
+                            attributeName=full_attr_name,
+                            attributeValue=output_params.get("value"),
+                        )
+                    )
             else:
                 line = f"{output_name}: {output_params.get('value')}"
                 if output_params.get("sensitive", True):
@@ -74,7 +88,7 @@ class TFDeployResult:
                 app_attributes.append(
                     Attribute(
                         attributeName=full_outputs_name,
-                        attributeValue=",".join(outputs)
+                        attributeValue=",".join(outputs),
                     )
                 )
         if secret_outputs:
@@ -82,11 +96,12 @@ class TFDeployResult:
                 "Terraform Sensitive Outputs"
             )
             full_sec_outputs_name = self.deploy_app.full_name_attrs_map.get(
-                secret_outputs_name)
+                secret_outputs_name
+            )
             app_attributes.append(
                 Attribute(
                     attributeName=full_sec_outputs_name,
-                    attributeValue=",".join(secret_outputs)
+                    attributeValue=",".join(secret_outputs),
                 )
             )
         return app_attributes

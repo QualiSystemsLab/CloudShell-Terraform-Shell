@@ -6,20 +6,11 @@ from logging import Logger
 from threading import Lock
 from typing import TYPE_CHECKING
 
-from cloudshell.shell.flows.connectivity.basic_flow import AbstractConnectivityFlow
-from cloudshell.shell.flows.connectivity.models.connectivity_model import (
-    ConnectivityActionModel,
-)
-from cloudshell.shell.flows.connectivity.models.driver_response import (
-    ConnectivityActionResult,
-)
-from cloudshell.shell.flows.connectivity.parse_request_service import (
-    AbstractParseConnectivityService,
-)
-
 from cloudshell.cp.terraform.exceptions import BaseTFException
 from cloudshell.cp.terraform.handlers.dc_handler import DcHandler
-from cloudshell.cp.terraform.handlers.managed_entity_handler import ManagedEntityNotFound
+from cloudshell.cp.terraform.handlers.managed_entity_handler import (
+    ManagedEntityNotFound,
+)
 from cloudshell.cp.terraform.handlers.network_handler import (
     AbstractNetwork,
     DVPortGroupHandler,
@@ -50,6 +41,16 @@ from cloudshell.cp.terraform.utils.connectivity_helpers import (
     get_mac_changes,
     get_promiscuous_mode,
     should_remove_port_group,
+)
+from cloudshell.shell.flows.connectivity.basic_flow import AbstractConnectivityFlow
+from cloudshell.shell.flows.connectivity.models.connectivity_model import (
+    ConnectivityActionModel,
+)
+from cloudshell.shell.flows.connectivity.models.driver_response import (
+    ConnectivityActionResult,
+)
+from cloudshell.shell.flows.connectivity.parse_request_service import (
+    AbstractParseConnectivityService,
 )
 
 if TYPE_CHECKING:
@@ -94,9 +95,7 @@ class TFConnectivityFlow(AbstractConnectivityFlow):
         if not self._resource_conf.default_dv_switch and not all_actions_with_switch:
             raise DvSwitchNameEmpty
 
-    def _set_vlan(
-        self, action: TFConnectivityActionModel
-    ) -> ConnectivityActionResult:
+    def _set_vlan(self, action: TFConnectivityActionModel) -> ConnectivityActionResult:
         vlan_id = action.connection_params.vlan_id
         vc_conf = self._resource_conf
         dc = DcHandler.get_dc(vc_conf.default_datacenter, self._si)
@@ -187,9 +186,7 @@ class TFConnectivityFlow(AbstractConnectivityFlow):
         if pg.forged_transmits != forged_transmits:
             raise BaseTFException(f"{pg} has incorrect forged transmits setting")
         if pg.mac_changes != mac_changes:
-            raise BaseTFException(
-                f"{pg} has incorrect MAC address changes setting"
-            )
+            raise BaseTFException(f"{pg} has incorrect MAC address changes setting")
 
     def _create_network_based_on_vlan_id(
         self,

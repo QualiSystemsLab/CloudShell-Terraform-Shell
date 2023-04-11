@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from cloudshell.cp.core.request_actions import DeployVMRequestActions
 from cloudshell.cp.core.request_actions.models import DeployApp
-
 from cloudshell.cp.terraform import constants
 from cloudshell.cp.terraform.models.base_deployment_app import (
-    TerraformDeploymentAppAttributeNames, ResourcePasswordAttrRODeploymentPath,
-    ResourceAttrRODeploymentPath, ResourceDictAttrRODeploymentPath,
-    ResourceDictPasswordAttrRODeploymentPath, ResourceBoolAttrRODeploymentPath
+    ResourceAttrRODeploymentPath,
+    ResourceBoolAttrRODeploymentPath,
+    ResourceDictAttrRODeploymentPath,
+    ResourceDictPasswordAttrRODeploymentPath,
+    ResourcePasswordAttrRODeploymentPath,
+    TerraformDeploymentAppAttributeNames,
 )
 
 
@@ -21,21 +23,22 @@ class VMFromTerraformGit(DeployApp):
     )
     branch: str = ResourceAttrRODeploymentPath(ATTR_NAMES.branch)
     cloud_provider: str = ResourceAttrRODeploymentPath(ATTR_NAMES.cloud_provider)
-    custom_tags: dict[str: str] = ResourceDictAttrRODeploymentPath(
+    custom_tags: dict[str:str] = ResourceDictAttrRODeploymentPath(
         ATTR_NAMES.custom_tags
     )
     git_terraform_url: str = ResourceAttrRODeploymentPath(ATTR_NAMES.git_terraform_url)
-    terraform_inputs: dict[str: str] = ResourceDictAttrRODeploymentPath(
+    terraform_inputs: dict[str:str] = ResourceDictAttrRODeploymentPath(
         ATTR_NAMES.terraform_inputs
     )
-    terraform_app_inputs_map: dict[str: str] = ResourceDictAttrRODeploymentPath(
+    terraform_app_inputs_map: dict[str:str] = ResourceDictAttrRODeploymentPath(
         ATTR_NAMES.terraform_app_inputs_map
     )
-    terraform_app_outputs_map: dict[str: str] = ResourceDictAttrRODeploymentPath(
+    terraform_app_outputs_map: dict[str:str] = ResourceDictAttrRODeploymentPath(
         ATTR_NAMES.terraform_app_outputs_map
     )
-    terraform_sensitive_inputs: dict[str: str] = \
-        ResourceDictPasswordAttrRODeploymentPath(ATTR_NAMES.terraform_sensitive_inputs)
+    terraform_sensitive_inputs: dict[
+        str:str
+    ] = ResourceDictPasswordAttrRODeploymentPath(ATTR_NAMES.terraform_sensitive_inputs)
 
     def __post_init__(self):
         """Post init."""
@@ -66,7 +69,7 @@ class VMFromTerraformGit(DeployApp):
         """
         return self.app_attrs_map
 
-    def get_app_inputs(self) -> dict[str: str]:
+    def get_app_inputs(self) -> dict[str:str]:
         """Get the app inputs.
 
         :return: dict of app inputs

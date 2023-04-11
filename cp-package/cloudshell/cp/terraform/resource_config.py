@@ -2,19 +2,25 @@ from __future__ import annotations
 
 from typing import Union
 
-from cloudshell.api.cloudshell_api import ResourceInfo, CloudShellAPISession
+from cloudshell.api.cloudshell_api import CloudShellAPISession, ResourceInfo
+from cloudshell.cp.terraform.constants import SHELL_NAME
+from cloudshell.cp.terraform.models.base_deployment_app import (
+    GitProviderAttrRO,
+    ResourceAttrROShellName,
+    ResourceBoolAttrROShellName,
+    TerraformResourceAttributeNames,
+)
 from cloudshell.shell.core.driver_context import (
     AutoLoadCommandContext,
     ResourceCommandContext,
-    ResourceRemoteCommandContext, UnreservedResourceCommandContext,
+    ResourceRemoteCommandContext,
+    UnreservedResourceCommandContext,
 )
-from cloudshell.shell.standards.core.resource_config_entities import PasswordAttrRO, \
-    GenericResourceConfig, ResourceListAttrRO
-
-from cloudshell.cp.terraform.constants import SHELL_NAME
-from cloudshell.cp.terraform.models.base_deployment_app import \
-    TerraformResourceAttributeNames, GitProviderAttrRO, ResourceAttrROShellName, \
-    ResourceBoolAttrROShellName
+from cloudshell.shell.standards.core.resource_config_entities import (
+    GenericResourceConfig,
+    PasswordAttrRO,
+    ResourceListAttrRO,
+)
 
 CONTEXT_TYPES = Union[
     ResourceCommandContext,
@@ -28,16 +34,18 @@ class TerraformResourceConfig(GenericResourceConfig):
     ATTR_NAMES = TerraformResourceAttributeNames
 
     git_provider = GitProviderAttrRO()
-    git_token = PasswordAttrRO(ATTR_NAMES.git_token,
-                               PasswordAttrRO.NAMESPACE.SHELL_NAME)
+    git_token = PasswordAttrRO(
+        ATTR_NAMES.git_token, PasswordAttrRO.NAMESPACE.SHELL_NAME
+    )
     git_terraform_url = ResourceAttrROShellName(ATTR_NAMES.git_terraform_url)
     branch = ResourceAttrROShellName(ATTR_NAMES.branch)
     local_terraform = ResourceAttrROShellName(ATTR_NAMES.local_terraform)
     terraform_version = ResourceAttrROShellName(ATTR_NAMES.terraform_version)
     cloud_provider = ResourceAttrROShellName(ATTR_NAMES.cloud_provider)
     remote_state_provider = ResourceAttrROShellName(ATTR_NAMES.remote_state_provider)
-    custom_tags = ResourceListAttrRO(ATTR_NAMES.custom_tags,
-                                     ResourceListAttrRO.NAMESPACE.SHELL_NAME)
+    custom_tags = ResourceListAttrRO(
+        ATTR_NAMES.custom_tags, ResourceListAttrRO.NAMESPACE.SHELL_NAME
+    )
     apply_tags = ResourceBoolAttrROShellName(ATTR_NAMES.apply_tags)
 
     @classmethod
@@ -74,4 +82,3 @@ class TerraformResourceConfig(GenericResourceConfig):
             api=api,
             cs_resource_id=details.UniqeIdentifier,
         )
-

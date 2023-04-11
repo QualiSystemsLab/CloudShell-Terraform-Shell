@@ -4,9 +4,9 @@ import json
 import logging
 import os
 import shutil
-from subprocess import check_output, STDOUT, CalledProcessError
-from typing import Dict
 from pathlib import Path
+from subprocess import STDOUT, CalledProcessError, check_output
+from typing import Dict
 
 from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
 from cloudshell.cp.terraform.handlers.cp_downloader import CPDownloader
@@ -16,25 +16,34 @@ from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
 from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
-from cloudshell.iac.terraform.constants import ALLOWED_LOGGING_CMDS, \
-    OUTPUT, APPLY, PLAN, INIT, DESTROY
+from cloudshell.iac.terraform.constants import (
+    ALLOWED_LOGGING_CMDS,
+    APPLY,
+    DESTROY,
+    INIT,
+    OUTPUT,
+    PLAN,
+)
 from cloudshell.iac.terraform.models.exceptions import TerraformExecutionError
-from cloudshell.iac.terraform.services.local_dir_service import \
-    validate_tf_exe, handle_remove_readonly
+from cloudshell.iac.terraform.services.local_dir_service import (
+    handle_remove_readonly,
+    validate_tf_exe,
+)
 from cloudshell.iac.terraform.services.string_cleaner import StringCleaner
-from cloudshell.iac.terraform.tagging.tag_terraform_resources import \
-    start_tagging_terraform_resources
+from cloudshell.iac.terraform.tagging.tag_terraform_resources import (
+    start_tagging_terraform_resources,
+)
 from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 
 class CPTfProcExec:
     def __init__(
-            self,
-            resource_config: TerraformResourceConfig,
-            sandbox_id: str,
-            logger: logging.Logger,
-            backend_handler: CPBackendHandler,
-            tag_manager: TagsManager,
+        self,
+        resource_config: TerraformResourceConfig,
+        sandbox_id: str,
+        logger: logging.Logger,
+        backend_handler: CPBackendHandler,
+        tag_manager: TagsManager,
     ):
         self._logger = logger
         self._resource_config = resource_config
@@ -45,12 +54,13 @@ class CPTfProcExec:
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
 
     def _get_inputs(
-            self,
-            deploy_app: VMFromTerraformGit | BaseTFDeployedApp
-    ) -> Dict[str, str]:
-        inputs = deploy_app.terraform_inputs | \
-                 deploy_app.terraform_sensitive_inputs | \
-                 deploy_app.get_app_inputs()
+        self, deploy_app: VMFromTerraformGit | BaseTFDeployedApp
+    ) -> dict[str, str]:
+        inputs = (
+            deploy_app.terraform_inputs
+            | deploy_app.terraform_sensitive_inputs
+            | deploy_app.get_app_inputs()
+        )
 
         return inputs
 
@@ -78,7 +88,7 @@ class CPTfProcExec:
         while not tmp_folder_found:
             objects_in_folder = os.listdir(tf_path.parent.absolute())
             if len(objects_in_folder) == 2:
-                if 'REPO' in objects_in_folder and 'repo.zip' in objects_in_folder:
+                if "REPO" in objects_in_folder and "repo.zip" in objects_in_folder:
                     tmp_folder_found = True
             tf_path = Path(tf_path.parent.absolute())
         tf_path_str = str(tf_path)
@@ -88,16 +98,14 @@ class CPTfProcExec:
         self._logger.info("Performing Terraform Init...")
         tf_working_dir = self._get_tf_working_dir(deploy_app)
         self._backend_handler.generate_backend_cfg_file(
-            app_name=app_name,
-            sandbox_id=self._sandbox_id,
-            working_dir=tf_working_dir
+            app_name=app_name, sandbox_id=self._sandbox_id, working_dir=tf_working_dir
         )
         backend_config_vars = self._backend_handler.get_backend_secret_vars()
 
         variables = ["init", "-no-color"]
         if backend_config_vars:
             for key in backend_config_vars.keys():
-                variables.append(f'-backend-config={key}={backend_config_vars[key]}')
+                variables.append(f"-backend-config={key}={backend_config_vars[key]}")
         try:
             self._run_tf_proc_with_command(variables, INIT)
         except Exception as e:
@@ -116,8 +124,9 @@ class CPTfProcExec:
 
         try:
             self._run_tf_proc_with_command(cmd, DESTROY)
-            self._backend_handler.delete_backend_tf_state_file(deployed_app.name,
-                                                               self._sandbox_id)
+            self._backend_handler.delete_backend_tf_state_file(
+                deployed_app.name, self._sandbox_id
+            )
         except Exception as e:
             raise
 
@@ -128,19 +137,27 @@ class CPTfProcExec:
 
                 inputs_dict = self._get_inputs(deploy_app)
 
-                tags_dict = self._resource_config.custom_tags | deploy_app.custom_tags | self._tag_manager.get_default_tags()
+                tags_dict = (
+                    self._resource_config.custom_tags
+                    | deploy_app.custom_tags
+                    | self._tag_manager.get_default_tags()
+                )
 
                 if len(tags_dict) > 50:
                     raise ValueError(
                         f"AWS and Azure have a limit of 50 tags per resource, "
-                        f"you have {len(tags_dict)}")
+                        f"you have {len(tags_dict)}"
+                    )
 
                 terraform_version = self._resource_config.terraform_version
 
-                start_tagging_terraform_resources(self._get_tf_working_dir(deploy_app),
-                                                  self._logger,
-                                                  tags_dict, inputs_dict,
-                                                  terraform_version)
+                start_tagging_terraform_resources(
+                    self._get_tf_working_dir(deploy_app),
+                    self._logger,
+                    tags_dict,
+                    inputs_dict,
+                    terraform_version,
+                )
             except Exception:
                 self._logger.error("Failed to apply tags")
                 raise
@@ -179,8 +196,9 @@ class CPTfProcExec:
             self._logger.info("Terraform Apply Failed")
             raise
 
-    def save_terraform_outputs(self, deploy_app: VMFromTerraformGit, app_name: str) -> \
-            TFDeployResult | None:
+    def save_terraform_outputs(
+        self, deploy_app: VMFromTerraformGit, app_name: str
+    ) -> TFDeployResult | None:
         try:
             self._logger.info("Running 'terraform output -json'")
 
@@ -194,12 +212,13 @@ class CPTfProcExec:
                 deploy_app=deploy_app,
                 app_name=app_name,
                 path=self._tf_working_dir,
-                logger=self._logger
+                logger=self._logger,
             )
 
         except Exception as e:
             self._logger.error(
-                f"Error occurred while trying to parse Terraform outputs -> {str(e)}")
+                f"Error occurred while trying to parse Terraform outputs -> {str(e)}"
+            )
             raise
 
     def _run_tf_proc_with_command(self, cmd: list, command: str) -> str:
@@ -208,9 +227,7 @@ class CPTfProcExec:
 
         try:
             output = check_output(
-                tform_command,
-                cwd=self._tf_working_dir,
-                stderr=STDOUT
+                tform_command, cwd=self._tf_working_dir, stderr=STDOUT
             ).decode("utf-8")
 
             clean_output = StringCleaner.get_clean_string(output)
@@ -225,9 +242,11 @@ class CPTfProcExec:
             )
             if command in ALLOWED_LOGGING_CMDS:
                 self._logger.error(f"{command} - {clean_output}")
-            raise TerraformExecutionError(f"Error during Terraform {command}. "
-                                          f"For details, please, look at the logs.",
-                                          clean_output)
+            raise TerraformExecutionError(
+                f"Error during Terraform {command}. "
+                f"For details, please, look at the logs.",
+                clean_output,
+            )
         except Exception as e:
             clean_output = StringCleaner.get_clean_string(str(e))
             self._logger.error(f"Error Running Terraform {command} {clean_output}")
