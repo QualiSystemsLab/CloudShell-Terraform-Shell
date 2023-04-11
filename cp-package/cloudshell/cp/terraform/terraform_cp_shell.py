@@ -18,18 +18,17 @@ class TerraformCPShell:
         self,
         resource_config: TerraformResourceConfig,
         logger: logging.Logger,
-        tag_manager: TagsManager,
         sandbox_id: str,
     ):
 
         self._resource_config = resource_config
-        self._tag_manager = tag_manager
+        self._tag_manager = TagsManager(sandbox_id)
         self._logger = logger
         self._sandbox_id = sandbox_id
         self._backend_handler = CPBackendHandler(self._resource_config, self._logger)
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
 
-    def execute_terraform(
+    def deploy_terraform(
         self, deploy_app: VMFromTerraformGit, vm_name
     ) -> TFDeployResult:
         tf_proc_executer = CPTfProcExec(
@@ -55,6 +54,62 @@ class TerraformCPShell:
         finally:
             if self._resource_config.remote_state_provider:
                 tf_proc_executer.delete_local_temp_dir(deploy_app)
+
+    def learn_terraform(
+        self, deployed_app: BaseTFDeployedApp, vm_name
+    ) -> TFDeployResult:
+        tf_proc_executer = CPTfProcExec(
+            self._resource_config,
+            self._sandbox_id,
+            self._logger,
+            self._backend_handler,
+            self._tag_manager,
+        )
+
+        try:
+            self._provider_handler.initialize_provider(deployed_app)
+            tf_proc_executer.init_terraform(deployed_app, vm_name)
+            tf_proc_executer.plan_terraform(deployed_app, vm_name)
+            tf_proc_executer.apply_terraform()
+            return tf_proc_executer.save_terraform_outputs(deployed_app, vm_name)
+            # Todo UUID - path to tfstate, if tfstate not found raise Error
+            #  mentioning case with multiple ES servers
+            # self._handle_error_output(shell_helper, "This Terraform Module has been successfully deployed but "
+            #                                             "destroy failed. Please destroy successfully before running "
+            #                                             "execute again.")
+        except:
+            self._logger.error("Failed to modify Terraform")
+            raise
+
+    def refresh_terraform(
+        self, deployed_app: BaseTFDeployedApp
+    ) -> TFDeployResult:
+        tf_proc_executer = CPTfProcExec(
+            self._resource_config,
+            self._sandbox_id,
+            self._logger,
+            self._backend_handler,
+            self._tag_manager,
+        )
+
+        try:
+            vm_name = deployed_app.name
+            path = deployed_app.vmdetails.uid
+            self._provider_handler.initialize_provider(deployed_app)
+            tf_proc_executer.set_tf_working_dir(path)
+            tf_proc_executer.init_terraform(deployed_app, vm_name)
+            tf_proc_executer.refresh_terraform()
+            return tf_proc_executer.save_terraform_outputs(deployed_app, vm_name)
+            # Todo UUID - path to tfstate, if tfstate not found raise Error
+            #  mentioning case with multiple ES servers
+            # self._handle_error_output(shell_helper, "This Terraform Module has been successfully deployed but "
+            #                                             "destroy failed. Please destroy successfully before running "
+            #                                             "execute again.")
+        except:
+            self._logger.error("Failed to modify Terraform")
+            raise
+        #     if self._resource_config.remote_state_provider:
+        #         tf_proc_executer.delete_local_temp_dir(deployed_app)
 
     def destroy_terraform(self, deployed_app: BaseTFDeployedApp):
         # initialize a _logger if _logger wasn't passed during init

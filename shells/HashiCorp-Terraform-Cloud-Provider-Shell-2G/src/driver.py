@@ -2,6 +2,7 @@ from cloudshell.cp.core.cancellation_manager import CancellationContextManager
 from cloudshell.cp.core.reservation_info import ReservationInfo
 from cloudshell.cp.terraform.flows import delete_instance
 from cloudshell.cp.terraform.flows.deploy_vm.base_flow import TFDeployVMFlow
+from cloudshell.cp.terraform.flows.vm_details import TFGetVMDetailsFlow
 from cloudshell.cp.terraform.models.deploy_app import (
     VMFromTerraformGit,
     VMFromTerraformGitRequestActions,
@@ -160,6 +161,9 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
             logger.info("Starting Get VM Details command...")
             logger.debug(f"Requests: {requests}")
             api = CloudShellSessionContext(context).get_api()
+            resource_config = TerraformResourceConfig.from_context(context, api=api)
+            flow = TFGetVMDetailsFlow(resource_conf=resource_config, logger=logger)
+            flow.get_vm_details(requests=requests)
 
     def DeleteInstance(self, context, ports):
         """Called when removing a deployed App from the sandbox.

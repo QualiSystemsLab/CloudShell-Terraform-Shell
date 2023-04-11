@@ -1,8 +1,10 @@
 import logging
+import re
 from typing import Type
+import urllib.parse
 
 from cloudshell.cp.terraform.models.base_deployment_app import (
-    TerraformDeploymentAppAttributeNames,
+    TerraformDeploymentAppAttributeNames, TerraformResourceAttributeNames,
 )
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
@@ -26,7 +28,15 @@ class CPDownloader:
         self._logger = logger
 
     def download_terraform_module(self, deploy_app: VMFromTerraformGit) -> str:
-        url = deploy_app.git_terraform_url or self._resource_config.git_terraform_url
+        # url = deploy_app.git_terraform_url or self._resource_config.git_terraform_url
+        url = deploy_app.git_terraform_url
+        if not re.search(r"^(git@|http(s)?://)", url):
+            if not self._resource_config.git_terraform_url:
+                raise ValueError(
+                    f"Must populate attribute '"
+                    f"{TerraformResourceAttributeNames.git_terraform_url}'"
+                )
+            url = urllib.parse.urljoin(self._resource_config.git_terraform_url, url)
         if not url:
             raise ValueError(
                 f"Must populate attribute '"

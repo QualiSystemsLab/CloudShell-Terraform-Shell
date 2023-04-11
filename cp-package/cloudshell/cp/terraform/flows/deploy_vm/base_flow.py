@@ -43,11 +43,9 @@ class TFDeployVMFlow(AbstractDeployFlow):
         )
 
         self.generate_name = NameGenerator(max_length=80)
-        tags = TagsManager(self._reservation_info.reservation_id)
         self.tf_executor = TerraformCPShell(
             resource_config=self._resource_config,
             logger=self._logger,
-            tag_manager=tags,
             sandbox_id=self._reservation_info.reservation_id,
         )
 
@@ -74,7 +72,7 @@ class TFDeployVMFlow(AbstractDeployFlow):
         self._logger.info(f"Generated name for the VM: {vm_name}")
 
         with self._rollback_manager:
-            outputs = self.tf_executor.execute_terraform(deploy_app, vm_name)
+            outputs = self.tf_executor.deploy_terraform(deploy_app, vm_name)
 
         self._logger.info(f"Preparing Deploy App result for the {vm_name}")
         return self._prepare_deploy_app_result(

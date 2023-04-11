@@ -27,13 +27,11 @@ def delete_instance(
     :param Logger logger: The logger
     """
     logger.info("Starting delete instance command...")
-    tags = TagsManager(reservation_info.reservation_id)
     with suppress(Exception):
         tf_exec = TerraformCPShell(
             resource_config=resource_conf,
             logger=logger,
             sandbox_id=reservation_info.reservation_id,
-            tag_manager=tags,
         )
         tf_exec.destroy_terraform(deployed_app)
 

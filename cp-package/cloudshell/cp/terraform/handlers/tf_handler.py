@@ -8,10 +8,10 @@ from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, check_output
 from typing import Dict
 
+from cloudshell.cp.terraform.constants import REFRESH
 from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
 from cloudshell.cp.terraform.handlers.cp_downloader import CPDownloader
 from cloudshell.cp.terraform.handlers.provider_handler import CPProviderHandler
-from cloudshell.cp.terraform.models import deployed_app
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
 from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
@@ -64,6 +64,9 @@ class CPTfProcExec:
 
         return inputs
 
+    def set_tf_working_dir(self, tf_working_dir: str):
+        self._tf_working_dir = tf_working_dir
+
     def _get_tf_working_dir(self, deploy_app) -> str:
         if not self._tf_working_dir:
             downloader = CPDownloader(self._resource_config, self._logger)
@@ -94,7 +97,9 @@ class CPTfProcExec:
         tf_path_str = str(tf_path)
         shutil.rmtree(tf_path_str, onerror=handle_remove_readonly)
 
-    def init_terraform(self, deploy_app: VMFromTerraformGit, app_name: str):
+    def init_terraform(self,
+                       deploy_app: VMFromTerraformGit | BaseTFDeployedApp,
+                       app_name: str):
         self._logger.info("Performing Terraform Init...")
         tf_working_dir = self._get_tf_working_dir(deploy_app)
         self._backend_handler.generate_backend_cfg_file(
@@ -196,8 +201,23 @@ class CPTfProcExec:
             self._logger.info("Terraform Apply Failed")
             raise
 
+    def refresh_terraform(self) -> None:
+        self._logger.info("Running Terraform Refresh")
+
+        cmd = ["refresh", "-no-color"]
+
+        try:
+            self._logger.info("Executing Terraform Refresh...")
+            self._run_tf_proc_with_command(cmd, REFRESH)
+            self._logger.info("Terraform Refresh completed")
+        except Exception as e:
+            self._logger.info("Terraform Refresh Failed")
+            raise
+
     def save_terraform_outputs(
-        self, deploy_app: VMFromTerraformGit, app_name: str
+        self,
+            deploy_app: VMFromTerraformGit | BaseTFDeployedApp,
+            app_name: str
     ) -> TFDeployResult | None:
         try:
             self._logger.info("Running 'terraform output -json'")
