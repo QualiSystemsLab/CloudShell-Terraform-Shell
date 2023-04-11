@@ -28,7 +28,7 @@ class CPDownloader(object):
                 ValueError(f"Must populate attribute '"
                            f"{TerraformDeploymentAppAttributeNames.git_terraform_url}'")
 
-        token = deploy_app.git_token or self._resource_config.git_token
+        token = self._resource_config.git_token
         branch = deploy_app.branch or self._resource_config.branch
 
         # get downloader mapped to git provider

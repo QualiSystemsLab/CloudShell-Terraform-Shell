@@ -14,9 +14,10 @@ KEY_VALUE_SEPARATOR_PATTERN = re.compile(r"[=]")
 
 
 class TerraformDeploymentAppAttributeNames:
-    git_token = "Git Token"
-    git_terraform_url = "Git Terraform URL"
+    git_terraform_url = "Git Terraform Module Path"
     branch = "Branch"
+    terraform_app_inputs_map = "Terraform App Inputs Map"
+    terraform_app_outputs_map = "Terraform App Outputs Map"
     terraform_inputs = "Terraform Inputs"
     terraform_sensitive_inputs = "Terraform Sensitive Inputs"
     cloud_provider = "Cloud Provider"
@@ -27,7 +28,7 @@ class TerraformDeploymentAppAttributeNames:
 class TerraformResourceAttributeNames:
     git_provider = "Git Provider"
     git_token = "Git Token"
-    git_terraform_url = "Git Terraform URL"
+    git_terraform_url = "Git Terraform Module Path"
     branch = "Branch"
     local_terraform = "Local Terraform"
     terraform_version = "Terraform Version"

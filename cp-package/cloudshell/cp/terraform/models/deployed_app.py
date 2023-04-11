@@ -25,7 +25,12 @@ class BaseTFDeployedApp(DeployedApp):
         ATTR_NAMES.custom_tags
     )
     git_terraform_url: str = ResourceAttrRODeploymentPath(ATTR_NAMES.git_terraform_url)
-    git_token: str = ResourcePasswordAttrRODeploymentPath(ATTR_NAMES.git_token)
+    terraform_app_inputs_map: dict[str: str] = ResourceDictAttrRODeploymentPath(
+        ATTR_NAMES.terraform_app_inputs_map
+    )
+    terraform_app_outputs_map: dict[str: str] = ResourceDictAttrRODeploymentPath(
+        ATTR_NAMES.terraform_app_outputs_map
+    )
     terraform_inputs: dict = ResourceDictAttrRODeploymentPath(
         ATTR_NAMES.terraform_inputs
     )

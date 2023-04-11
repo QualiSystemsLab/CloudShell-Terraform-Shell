@@ -11,8 +11,10 @@ from pathlib import Path
 from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
 from cloudshell.cp.terraform.handlers.cp_downloader import CPDownloader
 from cloudshell.cp.terraform.handlers.provider_handler import CPProviderHandler
+from cloudshell.cp.terraform.models import deployed_app
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
+from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.iac.terraform.constants import ALLOWED_LOGGING_CMDS, \
     OUTPUT, APPLY, PLAN, INIT, DESTROY
@@ -41,6 +43,16 @@ class CPTfProcExec:
         self._tag_manager = tag_manager
         self._tf_working_dir = None
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
+
+    def _get_inputs(
+            self,
+            deploy_app: VMFromTerraformGit | BaseTFDeployedApp
+    ) -> Dict[str, str]:
+        inputs = deploy_app.terraform_inputs | \
+                 deploy_app.terraform_sensitive_inputs | \
+                 deploy_app.get_app_inputs()
+
+        return inputs
 
     def _get_tf_working_dir(self, deploy_app) -> str:
         if not self._tf_working_dir:
@@ -95,8 +107,7 @@ class CPTfProcExec:
         self._logger.info("Performing Terraform Destroy")
         cmd = ["destroy", "-auto-approve", "-no-color"]
 
-        tf_vars = deployed_app.terraform_inputs | \
-                  deployed_app.terraform_sensitive_inputs
+        tf_vars = self._get_inputs(deployed_app)
 
         # add all TF variables to command
         for tf_var_name, tf_var_value in tf_vars.items():
@@ -115,7 +126,7 @@ class CPTfProcExec:
             try:
                 self._logger.info("Adding Tags to Terraform Resources")
 
-                inputs_dict = deploy_app.terraform_inputs | deploy_app.terraform_sensitive_inputs
+                inputs_dict = self._get_inputs(deploy_app)
 
                 tags_dict = self._resource_config.custom_tags | deploy_app.custom_tags | self._tag_manager.get_default_tags()
 
@@ -143,8 +154,7 @@ class CPTfProcExec:
         if vm_name:
             cmd.extend(["-var", f"virtual_machine_name={vm_name}"])
 
-        tf_vars = deploy_app.terraform_inputs | \
-                  deploy_app.terraform_sensitive_inputs
+        tf_vars = self._get_inputs(deploy_app)
 
         # add all TF variables to command
         for tf_var_name, tf_var_value in tf_vars.items():
@@ -169,7 +179,8 @@ class CPTfProcExec:
             self._logger.info("Terraform Apply Failed")
             raise
 
-    def save_terraform_outputs(self):
+    def save_terraform_outputs(self, deploy_app: VMFromTerraformGit, app_name: str) -> \
+            TFDeployResult | None:
         try:
             self._logger.info("Running 'terraform output -json'")
 
@@ -178,27 +189,18 @@ class CPTfProcExec:
             tf_exec_output = self._run_tf_proc_with_command(cmd, OUTPUT)
             unparsed_output_json = json.loads(tf_exec_output)
 
-            return self._parse_and_save_outputs(unparsed_output_json)
+            return TFDeployResult(
+                unparsed_output_json=unparsed_output_json,
+                deploy_app=deploy_app,
+                app_name=app_name,
+                path=self._tf_working_dir,
+                logger=self._logger
+            )
 
         except Exception as e:
             self._logger.error(
                 f"Error occurred while trying to parse Terraform outputs -> {str(e)}")
             raise
-
-    def _parse_and_save_outputs(self, unparsed_output_json: Dict) -> tuple[dict, ...]:
-        """Parse the raw json from "terraform output -json."""
-        unmapped_outputs = {}
-        unmapped_sensitive_outputs = {}
-
-        for output_name, output_params in unparsed_output_json.items():
-            self._logger.debug(f"Output Name: {output_name}"
-                               f"Output Params: {output_params}")
-            if output_params.get("sensitive", False):
-                unmapped_sensitive_outputs[output_name] = output_params.get("value")
-            else:
-                unmapped_outputs[output_name] = output_params.get("value")
-
-        return unmapped_outputs, unmapped_sensitive_outputs
 
     def _run_tf_proc_with_command(self, cmd: list, command: str) -> str:
         tform_command = [f"{os.path.join(self._tf_working_dir, 'terraform.exe')}"]

@@ -5,6 +5,7 @@ from cloudshell.cp.terraform.handlers.provider_handler import CPProviderHandler
 from cloudshell.cp.terraform.handlers.tf_handler import CPTfProcExec
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
+from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.iac.terraform.services.local_dir_service import LocalDir
 from cloudshell.iac.terraform.services.object_factory import ObjectFactory
@@ -28,7 +29,8 @@ class TerraformCPShell:
         self._backend_handler = CPBackendHandler(self._resource_config, self._logger)
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
 
-    def execute_terraform(self, deploy_app: VMFromTerraformGit, vm_name):
+    def execute_terraform(self, deploy_app: VMFromTerraformGit, vm_name) -> \
+            TFDeployResult:
         tf_proc_executer = CPTfProcExec(
             self._resource_config,
             self._sandbox_id,
@@ -43,7 +45,9 @@ class TerraformCPShell:
             tf_proc_executer.tag_terraform(deploy_app)
             tf_proc_executer.plan_terraform(deploy_app, vm_name)
             tf_proc_executer.apply_terraform()
-            return tf_proc_executer.save_terraform_outputs()
+            return tf_proc_executer.save_terraform_outputs(deploy_app, vm_name)
+            # Todo UUID - path to tfstate, if tfstate not found raise Error
+            #  mentioning case with multiple ES servers
             # self._handle_error_output(shell_helper, "This Terraform Module has been successfully deployed but "
             #                                             "destroy failed. Please destroy successfully before running "
             #                                             "execute again.")
@@ -66,7 +70,7 @@ class TerraformCPShell:
 
         try:
             self._provider_handler.initialize_provider(deployed_app)
-            tf_proc_executer.init_terraform(deployed_app)
+            tf_proc_executer.init_terraform(deployed_app, deployed_app.name)
             tf_proc_executer.destroy_terraform(deployed_app)
         finally:
             if self._resource_config.remote_state_provider:

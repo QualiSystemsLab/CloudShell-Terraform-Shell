@@ -12,6 +12,8 @@ from cloudshell.cp.core.request_actions.models import (
 from cloudshell.cp.core.rollback import RollbackCommandsManager
 from cloudshell.cp.core.utils.name_generator import NameGenerator
 
+from cloudshell.cp.terraform.models.tf_deploy_app_result import TFDeployAppResult
+from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
 from cloudshell.cp.terraform.terraform_cp_shell import TerraformCPShell
 from cloudshell.cp.terraform.utils.cs_helpers import on_task_progress_check_if_cancelled
 # from cloudshell.cp.terraform.utils.vm_console_link_attr import (
@@ -83,47 +85,34 @@ class TFDeployVMFlow(AbstractDeployFlow):
         """Create VM on the TF."""
         pass
 
-    # def _prepare_app_attrs(
-    #     self, deploy_app: VMFromTerraformGit, vm: VmHandler
-    # ) -> list[Attribute]:
-    #     attrs = []
-    #
-    #     link_attr = get_deploy_app_vm_console_link_attr(
-    #         deploy_app, self._resource_config, vm, vm.si
-    #     )
-    #     if link_attr:
-    #         attrs.append(link_attr)
-    #
-    #     return attrs
+    def _prepare_app_attrs(
+        self, deploy_app: VMFromTerraformGit, vm: TFDeployResult
+    ) -> list[Attribute]:
+        attrs = []
+
+        link_attr = None
+        if link_attr:
+            attrs.append(link_attr)
+
+        return attrs
 
     def _prepare_deploy_app_result(
         self,
-        execution_outputs: tuple[dict, ...],
+        execution_outputs: TFDeployResult,
         deploy_app: VMFromTerraformGit,
         vm_name: str,
     ) -> DeployAppResult:
         vm_details_data = self._prepare_vm_details_data(
-            deployed_vm=tf_handler,
+            deployed_vm=execution_outputs,
             deploy_app=deploy_app,
         )
 
         self._logger.info(f"Prepared VM details: {vm_details_data}")
 
-        return DeployAppResult(
-            actionId=deploy_app.actionId,
-            vmUuid=tf_handler.uuid,
-            vmName=vm_name,
-            vmDetailsData=vm_details_data,
-            deployedAppAdditionalData={},
-            deployedAppAttributes=[
-                Attribute(
-                    attributeName="Terraform DeployedApp 2G.Terraform Outputs",
-                    attributeValue=json.dumps(execution_outputs[0])),
-                Attribute(
-                    attributeName="Terraform DeployedApp 2G.Terraform Sensitive Outputs",
-                    attributeValue=json.dumps(execution_outputs[1]))
-                ],
-        )
+        # deployed_attrs = self._prepare_app_attrs(deploy_app=deploy_app,
+        #                                          vm=execution_outputs)
+
+        return TFDeployAppResult.from_tf_deploy_result(execution_outputs)
 
     def _deploy(self, request_actions: DeployVMRequestActions) -> DeployAppResult:
         """Deploy TF VM."""
