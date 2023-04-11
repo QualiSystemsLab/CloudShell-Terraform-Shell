@@ -14,7 +14,6 @@ from cloudshell.shell.core.driver_context import (
     AutoLoadCommandContext,
     ResourceCommandContext,
     ResourceRemoteCommandContext,
-    UnreservedResourceCommandContext,
 )
 from cloudshell.shell.standards.core.resource_config_entities import (
     GenericResourceConfig,
@@ -26,7 +25,6 @@ CONTEXT_TYPES = Union[
     ResourceCommandContext,
     AutoLoadCommandContext,
     ResourceRemoteCommandContext,
-    UnreservedResourceCommandContext,
 ]
 
 
