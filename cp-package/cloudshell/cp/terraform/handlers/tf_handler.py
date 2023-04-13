@@ -6,7 +6,6 @@ import os
 import shutil
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, check_output
-from typing import Dict
 
 from cloudshell.cp.terraform.constants import REFRESH
 from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
@@ -33,7 +32,6 @@ from cloudshell.iac.terraform.services.string_cleaner import StringCleaner
 from cloudshell.iac.terraform.tagging.tag_terraform_resources import (
     start_tagging_terraform_resources,
 )
-from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 
 class CPTfProcExec:
@@ -43,13 +41,11 @@ class CPTfProcExec:
         sandbox_id: str,
         logger: logging.Logger,
         backend_handler: CPBackendHandler,
-        tag_manager: TagsManager,
     ):
         self._logger = logger
         self._resource_config = resource_config
         self._sandbox_id = sandbox_id
         self._backend_handler = backend_handler
-        self._tag_manager = tag_manager
         self._tf_working_dir = None
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
 
@@ -143,9 +139,8 @@ class CPTfProcExec:
                 inputs_dict = self._get_inputs(deploy_app)
 
                 tags_dict = (
-                    self._resource_config.custom_tags
+                    self._resource_config.tags
                     | deploy_app.custom_tags
-                    | self._tag_manager.get_default_tags()
                 )
 
                 if len(tags_dict) > 50:
@@ -201,10 +196,15 @@ class CPTfProcExec:
             self._logger.info("Terraform Apply Failed")
             raise
 
-    def refresh_terraform(self) -> None:
+    def refresh_terraform(self, deployed_app: BaseTFDeployedApp) -> None:
         self._logger.info("Running Terraform Refresh")
 
         cmd = ["refresh", "-no-color"]
+        tf_vars = self._get_inputs(deployed_app)
+
+        # add all TF variables to command
+        for tf_var_name, tf_var_value in tf_vars.items():
+            cmd.extend(["-var", f"{tf_var_name}={tf_var_value}"])
 
         try:
             self._logger.info("Executing Terraform Refresh...")

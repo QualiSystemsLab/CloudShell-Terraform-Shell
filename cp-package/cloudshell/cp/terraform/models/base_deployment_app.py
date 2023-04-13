@@ -29,7 +29,7 @@ class TerraformDeploymentAppAttributeNames:
 class TerraformResourceAttributeNames:
     git_provider = "Git Provider"
     git_token = "Git Token"
-    git_terraform_url = "Git Terraform Module Path"
+    git_terraform_url = "Git Terraform URL"
     branch = "Branch"
     local_terraform = "Local Terraform"
     terraform_version = "Terraform Version"
@@ -101,7 +101,8 @@ class CustomTagsAttrRO(ResourceAttrRO):
                 }
             except ValueError:
                 raise InvalidResourceAttributeValue(
-                    "'Custom Tags' attribute format is incorrect"
+                    f"'Custom Tags' attribute format is incorrect. "
+                    f"Broken Value is {attr}"
                 )
 
         return {}
@@ -127,7 +128,10 @@ class ResourceDictPasswordAttrRODeploymentPath(PasswordAttrRO):
         super().__init__(name, namespace, *args, **kwargs)
 
     def __get__(self, instance, owner):
-        attr = super().__get__(instance, owner)
+        encrypted_attr = instance.attributes.get(self.get_key(instance), self.default)
+
+        attr = self._decrypt_password(instance.cs_api, encrypted_attr)
+
         if attr:
             try:
                 return {

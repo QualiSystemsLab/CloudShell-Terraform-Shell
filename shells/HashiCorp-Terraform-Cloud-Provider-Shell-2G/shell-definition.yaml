@@ -52,6 +52,7 @@ node_types:
         description: "Should tags be applied? Yes=true, No=false (Default True)"
         default: true
         type: boolean
+
     capabilities:
       concurrent_command_capability:
         type: cloudshell.capabilities.SupportConcurrentCommands

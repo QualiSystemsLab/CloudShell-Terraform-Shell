@@ -38,7 +38,7 @@ class VMFromTerraformGit(DeployApp):
     )
     terraform_sensitive_inputs: dict[
         str:str
-    ] = ResourceDictPasswordAttrRODeploymentPath(ATTR_NAMES.terraform_sensitive_inputs)
+    ] = ResourceDictAttrRODeploymentPath(ATTR_NAMES.terraform_sensitive_inputs)
 
     def __post_init__(self):
         """Post init."""
@@ -50,6 +50,10 @@ class VMFromTerraformGit(DeployApp):
                 continue
             self.app_attrs_map[attr_name.split(".")[-1]] = attr
             self.full_name_attrs_map[attr_name.split(".")[-1]] = attr_name
+
+    @property
+    def cs_api(self):
+        return self._cs_api
 
     def get_app_resource_attribute(self, attr_name):
         """Get App Resource attribute by its name.

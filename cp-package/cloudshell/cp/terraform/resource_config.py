@@ -8,7 +8,7 @@ from cloudshell.cp.terraform.models.base_deployment_app import (
     GitProviderAttrRO,
     ResourceAttrROShellName,
     ResourceBoolAttrROShellName,
-    TerraformResourceAttributeNames,
+    TerraformResourceAttributeNames, CustomTagsAttrRO,
 )
 from cloudshell.shell.core.driver_context import (
     AutoLoadCommandContext,
@@ -21,6 +21,8 @@ from cloudshell.shell.standards.core.resource_config_entities import (
     ResourceListAttrRO,
 )
 
+from cloudshell.iac.terraform.tagging.tags import TagsManager
+
 CONTEXT_TYPES = Union[
     ResourceCommandContext,
     AutoLoadCommandContext,
@@ -31,6 +33,7 @@ CONTEXT_TYPES = Union[
 class TerraformResourceConfig(GenericResourceConfig):
     ATTR_NAMES = TerraformResourceAttributeNames
 
+    tags: dict[str, str] = {}
     git_provider = GitProviderAttrRO()
     git_token = PasswordAttrRO(
         ATTR_NAMES.git_token, PasswordAttrRO.NAMESPACE.SHELL_NAME
@@ -41,10 +44,11 @@ class TerraformResourceConfig(GenericResourceConfig):
     terraform_version = ResourceAttrROShellName(ATTR_NAMES.terraform_version)
     cloud_provider = ResourceAttrROShellName(ATTR_NAMES.cloud_provider)
     remote_state_provider = ResourceAttrROShellName(ATTR_NAMES.remote_state_provider)
-    custom_tags = ResourceListAttrRO(
+    custom_tags = CustomTagsAttrRO(
         ATTR_NAMES.custom_tags, ResourceListAttrRO.NAMESPACE.SHELL_NAME
     )
-    apply_tags = ResourceBoolAttrROShellName(ATTR_NAMES.apply_tags)
+    apply_tags = False
+    # apply_tags = ResourceBoolAttrROShellName(ATTR_NAMES.apply_tags)
 
     @classmethod
     def from_context(
@@ -56,9 +60,16 @@ class TerraformResourceConfig(GenericResourceConfig):
     ) -> TerraformResourceConfig:
         # noinspection PyTypeChecker
         # return type is VCenterResourceConfig not GenericResourceConfig
-        return super().from_context(
+        # if isinstance(context, ResourceRemoteCommandContext):
+        #     reservation = context.remote_reservation
+        # else:
+        #     reservation = context.reservation
+        # tags_manager = TagsManager(reservation)
+        result = super().from_context(
             context=context, shell_name=shell_name, api=api, supported_os=supported_os
         )
+        # result.tags = tags_manager.get_default_tags() | result.custom_tags
+        return result
 
     @classmethod
     def from_cs_resource_details(

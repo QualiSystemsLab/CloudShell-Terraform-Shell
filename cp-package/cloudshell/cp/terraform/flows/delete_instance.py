@@ -27,12 +27,12 @@ def delete_instance(
     :param Logger logger: The logger
     """
     logger.info("Starting delete instance command...")
-    with suppress(Exception):
-        tf_exec = TerraformCPShell(
-            resource_config=resource_conf,
-            logger=logger,
-            sandbox_id=reservation_info.reservation_id,
-        )
-        tf_exec.destroy_terraform(deployed_app)
+    # with suppress(Exception):
+    tf_exec = TerraformCPShell(
+        resource_config=resource_conf,
+        logger=logger,
+        sandbox_id=reservation_info.reservation_id,
+    )
+    tf_exec.destroy_terraform(deployed_app)
 
     logger.info("Finished delete instance command")

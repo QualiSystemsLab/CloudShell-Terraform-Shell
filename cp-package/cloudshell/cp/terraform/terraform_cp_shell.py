@@ -15,30 +15,30 @@ from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 class TerraformCPShell:
     def __init__(
-        self,
-        resource_config: TerraformResourceConfig,
-        logger: logging.Logger,
-        sandbox_id: str,
+            self,
+            resource_config: TerraformResourceConfig,
+            logger: logging.Logger,
+            sandbox_id: str,
     ):
 
         self._resource_config = resource_config
-        self._tag_manager = TagsManager(sandbox_id)
+        # self._tag_manager = TagsManager(sandbox_id)
         self._logger = logger
         self._sandbox_id = sandbox_id
         self._backend_handler = CPBackendHandler(self._resource_config, self._logger)
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
 
     def deploy_terraform(
-        self, deploy_app: VMFromTerraformGit, vm_name
+            self,
+            deploy_app: VMFromTerraformGit,
+            vm_name: str,
     ) -> TFDeployResult:
         tf_proc_executer = CPTfProcExec(
             self._resource_config,
             self._sandbox_id,
             self._logger,
             self._backend_handler,
-            self._tag_manager,
         )
-
         try:
             self._provider_handler.initialize_provider(deploy_app)
             tf_proc_executer.init_terraform(deploy_app, vm_name)
@@ -56,14 +56,13 @@ class TerraformCPShell:
                 tf_proc_executer.delete_local_temp_dir(deploy_app)
 
     def learn_terraform(
-        self, deployed_app: BaseTFDeployedApp, vm_name
+            self, deployed_app: BaseTFDeployedApp, vm_name
     ) -> TFDeployResult:
         tf_proc_executer = CPTfProcExec(
             self._resource_config,
             self._sandbox_id,
             self._logger,
             self._backend_handler,
-            self._tag_manager,
         )
 
         try:
@@ -82,14 +81,13 @@ class TerraformCPShell:
             raise
 
     def refresh_terraform(
-        self, deployed_app: BaseTFDeployedApp
+            self, deployed_app: BaseTFDeployedApp
     ) -> TFDeployResult:
         tf_proc_executer = CPTfProcExec(
             self._resource_config,
             self._sandbox_id,
             self._logger,
             self._backend_handler,
-            self._tag_manager,
         )
 
         try:
@@ -98,7 +96,7 @@ class TerraformCPShell:
             self._provider_handler.initialize_provider(deployed_app)
             tf_proc_executer.set_tf_working_dir(path)
             tf_proc_executer.init_terraform(deployed_app, vm_name)
-            tf_proc_executer.refresh_terraform()
+            tf_proc_executer.refresh_terraform(deployed_app)
             return tf_proc_executer.save_terraform_outputs(deployed_app, vm_name)
             # Todo UUID - path to tfstate, if tfstate not found raise Error
             #  mentioning case with multiple ES servers
@@ -119,8 +117,9 @@ class TerraformCPShell:
             self._sandbox_id,
             self._logger,
             self._backend_handler,
-            self._tag_manager,
         )
+        path = deployed_app.vmdetails.uid
+        tf_proc_executer.set_tf_working_dir(path)
         # if not tf_working_dir:
         #     self._handle_error_output(shell_helper, "Destroy failed due to missing local directory")
 

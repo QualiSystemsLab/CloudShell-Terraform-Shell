@@ -37,8 +37,12 @@ class CPDownloader:
                     f"{TerraformResourceAttributeNames.git_terraform_url}'"
                 )
             if not re.search(r"(/)?(tree|blob)/", url):
-                url = f"/tree/{url}"
-            url = urllib.parse.urljoin(self._resource_config.git_terraform_url, url)
+                if url.startswith("/"):
+                    url = url[1:]
+                url = "/".join(["tree", url])
+            if url.startswith("/"):
+                url = url[1:]
+            url = "/".join([self._resource_config.git_terraform_url, url])
         if not url:
             raise ValueError(
                 f"Must populate attribute '"
