@@ -1,8 +1,0 @@
-<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.HashicorpTerraformDeployedAppShell2GDriver" Name="HashicorpTerraformDeployedAppShell2GDriver" Version="1.0.0" PythonVersion="3">
-    <Layout>
-         <Category Name="Hidden Commands">
-            <Command Description="" DisplayName="Orchestration Save" Name="orchestration_save" />
-            <Command Description="" DisplayName="Orchestration Restore" Name="orchestration_restore" />
-        </Category>
-    </Layout>
-</Driver>

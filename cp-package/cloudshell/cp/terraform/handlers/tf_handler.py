@@ -7,6 +7,8 @@ import shutil
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, check_output
 
+from cloudshell.cp.core.request_actions.models import VMDetails
+
 from cloudshell.cp.terraform.constants import REFRESH
 from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
 from cloudshell.cp.terraform.handlers.cp_downloader import CPDownloader
@@ -169,7 +171,14 @@ class CPTfProcExec:
 
         cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
         if vm_name:
-            cmd.extend(["-var", f"virtual_machine_name={vm_name}"])
+            name = next(
+                (
+                    k for k, v in deploy_app.terraform_app_inputs_map.items()
+                    if v == "app_name"
+                ), None
+            )
+            if name:
+                cmd.extend(["-var", f"{name}={vm_name}"])
 
         tf_vars = self._get_inputs(deploy_app)
 
@@ -201,7 +210,6 @@ class CPTfProcExec:
 
         cmd = ["refresh", "-no-color"]
         tf_vars = self._get_inputs(deployed_app)
-
         # add all TF variables to command
         for tf_var_name, tf_var_value in tf_vars.items():
             cmd.extend(["-var", f"{tf_var_name}={tf_var_value}"])

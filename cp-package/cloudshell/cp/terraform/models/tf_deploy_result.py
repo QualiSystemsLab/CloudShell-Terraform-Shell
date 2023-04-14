@@ -38,11 +38,11 @@ class TFDeployResult:
         return self._attributes
 
     def get_vm_details_data(
-        self, resource_config: TerraformResourceConfig
+        self, resource_config: TerraformResourceConfig, app_name: str = None
     ) -> VmDetailsData:
         return create_vm_details(
             resource_config,
-            self.app_name,
+            app_name or self.app_name,
             self._unparsed_output_json,
             self.path,
             self._logger,

@@ -10,7 +10,6 @@ from cloudshell.cp.terraform.models.tf_deploy_app_result import TFDeployAppResul
 from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
 from cloudshell.cp.terraform.terraform_cp_shell import TerraformCPShell
 from cloudshell.cp.terraform.utils.cs_helpers import on_task_progress_check_if_cancelled
-from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 if TYPE_CHECKING:
     from logging import Logger

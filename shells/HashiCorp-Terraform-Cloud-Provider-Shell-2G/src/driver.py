@@ -3,6 +3,7 @@ from cloudshell.cp.core.request_actions import GetVMDetailsRequestActions
 from cloudshell.cp.core.reservation_info import ReservationInfo
 from cloudshell.cp.terraform.flows import delete_instance
 from cloudshell.cp.terraform.flows.deploy_vm.base_flow import TFDeployVMFlow
+from cloudshell.cp.terraform.flows.refresh_ip import refresh_ip
 from cloudshell.cp.terraform.flows.vm_details import TFGetVMDetailsFlow
 from cloudshell.cp.terraform.models.deploy_app import (
     VMFromTerraformGit,
@@ -141,8 +142,18 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
         :return:
         """
         with LoggingSessionContext(context) as logger:
-            logger.info("Starting Remote Refresh IP command...")
+            logger.info("Starting Delete Instance command...")
             api = CloudShellSessionContext(context).get_api()
+            resource_config = TerraformResourceConfig.from_context(context, api=api)
+            resource = context.remote_endpoints[0]
+            actions = TFDeployedVMActions.from_remote_resource(resource, api)
+            reservation_info = ReservationInfo.from_remote_resource_context(context)
+            refresh_ip(
+                deployed_app=actions.deployed_app,
+                resource_conf=resource_config,
+                logger=logger,
+                reservation_id=reservation_info.reservation_id,
+            )
 
     def GetVmDetails(self, context, requests, cancellation_context):
         """Called when reserving a sandbox during setup.
@@ -185,9 +196,6 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
             api = CloudShellSessionContext(context).get_api()
             resource_config = TerraformResourceConfig.from_context(context, api=api)
             resource = context.remote_endpoints[0]
-            logger.info("*" * 10)
-            logger.info(resource.app_context.app_request_json)
-            logger.info("*" * 10)
             actions = TFDeployedVMActions.from_remote_resource(resource, api)
             reservation_info = ReservationInfo.from_remote_resource_context(context)
             delete_instance(
