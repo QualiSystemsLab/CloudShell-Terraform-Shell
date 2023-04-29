@@ -59,7 +59,7 @@ class TFDeployResult:
         secret_outputs = []
 
         for output_name, output_params in self._unparsed_output_json.items():
-            attr_name = self.deploy_app.terraform_app_outputs_map.pop(output_name)
+            attr_name = self.deploy_app.terraform_app_outputs_map.get(output_name)
             if attr_name:
                 if attr_name.lower() == "app_name":
                     self._app_name = output_params.get("value")

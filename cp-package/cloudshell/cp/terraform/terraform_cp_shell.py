@@ -125,7 +125,7 @@ class TerraformCPShell:
 
         try:
             self._provider_handler.initialize_provider(deployed_app)
-            tf_proc_executer.init_terraform(deployed_app, deployed_app.name)
+            tf_proc_executer.init_terraform(deployed_app, deployed_app.name, True)
             tf_proc_executer.destroy_terraform(deployed_app)
         finally:
             if self._resource_config.remote_state_provider:

@@ -77,7 +77,7 @@ class CPProviderHandler:
 
         elif clp_res_model in [GCP2G_MODEL]:
             clp_handler = GCPCloudProviderEnvVarHandler(
-                clp_res_model, clp_resource_attributes
+                clp_res_model, clp_resource_attributes, self._logger
             )
 
         if clp_handler:

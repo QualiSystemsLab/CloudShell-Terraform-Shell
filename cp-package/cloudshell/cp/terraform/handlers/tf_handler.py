@@ -97,7 +97,8 @@ class CPTfProcExec:
 
     def init_terraform(self,
                        deploy_app: VMFromTerraformGit | BaseTFDeployedApp,
-                       app_name: str):
+                       app_name: str,
+                       force_init: bool = False):
         self._logger.info("Performing Terraform Init...")
         tf_working_dir = self._get_tf_working_dir(deploy_app)
         self._backend_handler.generate_backend_cfg_file(
@@ -106,6 +107,8 @@ class CPTfProcExec:
         backend_config_vars = self._backend_handler.get_backend_secret_vars()
 
         variables = ["init", "-no-color"]
+        if force_init:
+            variables.append("-reconfigure")
         if backend_config_vars:
             for key in backend_config_vars.keys():
                 variables.append(f"-backend-config={key}={backend_config_vars[key]}")
@@ -113,6 +116,7 @@ class CPTfProcExec:
             self._run_tf_proc_with_command(variables, INIT)
         except Exception as e:
             raise
+
 
     def destroy_terraform(self, deployed_app: BaseTFDeployedApp):
         self._logger.info("Performing Terraform Destroy")
@@ -168,6 +172,7 @@ class CPTfProcExec:
 
     def plan_terraform(self, deploy_app, vm_name=None) -> None:
         self._logger.info("Running Terraform Plan")
+        self._logger.info(str(os.environ))
 
         cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
         if vm_name:
