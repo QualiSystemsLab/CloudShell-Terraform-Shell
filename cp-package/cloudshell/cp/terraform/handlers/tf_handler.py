@@ -117,10 +117,18 @@ class CPTfProcExec:
         except Exception as e:
             raise
 
-
     def destroy_terraform(self, deployed_app: BaseTFDeployedApp):
         self._logger.info("Performing Terraform Destroy")
         cmd = ["destroy", "-auto-approve", "-no-color"]
+        if deployed_app.name:
+            name = next(
+                (
+                    k for k, v in deployed_app.terraform_app_inputs_map.items()
+                    if v == "app_name"
+                ), None
+            )
+            if name:
+                cmd.extend(["-var", f"{name}={deployed_app.name}"])
 
         tf_vars = self._get_inputs(deployed_app)
 
@@ -130,6 +138,7 @@ class CPTfProcExec:
             cmd.append(f"{tf_var_name}={tf_var_value}")
 
         try:
+            self._logger.info(cmd)
             self._run_tf_proc_with_command(cmd, DESTROY)
             self._backend_handler.delete_backend_tf_state_file(
                 deployed_app.name, self._sandbox_id
@@ -172,7 +181,6 @@ class CPTfProcExec:
 
     def plan_terraform(self, deploy_app, vm_name=None) -> None:
         self._logger.info("Running Terraform Plan")
-        self._logger.info(str(os.environ))
 
         cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
         if vm_name:
@@ -210,14 +218,14 @@ class CPTfProcExec:
             self._logger.info("Terraform Apply Failed")
             raise
 
-    def refresh_terraform(self, deployed_app: BaseTFDeployedApp) -> None:
+    def show_terraform(self) -> None:
         self._logger.info("Running Terraform Refresh")
 
-        cmd = ["refresh", "-no-color"]
-        tf_vars = self._get_inputs(deployed_app)
+        cmd = ["show", "-no-color"]
+        # tf_vars = self._get_inputs(deployed_app)
         # add all TF variables to command
-        for tf_var_name, tf_var_value in tf_vars.items():
-            cmd.extend(["-var", f"{tf_var_name}={tf_var_value}"])
+        # for tf_var_name, tf_var_value in tf_vars.items():
+        #     cmd.extend(["-var", f"{tf_var_name}={tf_var_value}"])
 
         try:
             self._logger.info("Executing Terraform Refresh...")

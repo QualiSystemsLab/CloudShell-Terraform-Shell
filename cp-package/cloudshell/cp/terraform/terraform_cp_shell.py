@@ -95,8 +95,8 @@ class TerraformCPShell:
             path = deployed_app.vmdetails.uid
             self._provider_handler.initialize_provider(deployed_app)
             tf_proc_executer.set_tf_working_dir(path)
-            tf_proc_executer.init_terraform(deployed_app, vm_name)
-            tf_proc_executer.refresh_terraform(deployed_app)
+            tf_proc_executer.init_terraform(deployed_app, vm_name, force_init=True)
+            tf_proc_executer.show_terraform()
             return tf_proc_executer.save_terraform_outputs(deployed_app, vm_name)
             # Todo UUID - path to tfstate, if tfstate not found raise Error
             #  mentioning case with multiple ES servers

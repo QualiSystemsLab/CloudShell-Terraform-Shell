@@ -1,7 +1,10 @@
+import os
 from logging import Logger
 from typing import Union
 
 from cloudshell.api.cloudshell_api import ResourceInfo
+
+from cloudshell.cp.terraform.exceptions import InvalidAppParamValue
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
@@ -13,9 +16,30 @@ from cloudshell.iac.terraform.constants import (
 )
 from cloudshell.iac.terraform.services.clp_envvar_handler import (
     AWSCloudProviderEnvVarHandler,
-    AzureCloudProviderEnvVarHandler,
-    GCPCloudProviderEnvVarHandler,
+    AzureCloudProviderEnvVarHandler, BaseCloudProviderEnvVarHandler,
 )
+
+
+class GCPCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
+    def __init__(self, clp_res_model: str, clp_resource_attributes: list,
+                 logger: Logger):
+        BaseCloudProviderEnvVarHandler.__init__(self)
+        self._clp_res_model = clp_res_model
+        self._clp_resource_attributes = clp_resource_attributes
+        self._logger = logger
+
+    def set_env_vars_based_on_clp(self):
+        project_flag = False
+        cred_flag = False
+        for attr in self._clp_resource_attributes:
+            if self.does_attribute_match(self._clp_res_model, attr, "Google Cloud Provider.Credentials Json Path"):
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = attr.Value
+                cred_flag = True
+            if self.does_attribute_match(self._clp_res_model, attr, "Google Cloud Provider.project"):
+                os.environ["GOOGLE_PROJECT"] = attr.Value
+                project_flag = True
+        if not cred_flag and not project_flag:
+            raise InvalidAppParamValue("Project ID was not found on GCP Cloud Provider")
 
 
 class CPProviderHandler:
@@ -65,14 +89,14 @@ class CPProviderHandler:
             AWS2G_MODEL,
         ]:
             clp_handler = AWSCloudProviderEnvVarHandler(
-                clp_res_model, clp_resource_attributes, self._resource_config.api
+                clp_res_model, clp_resource_attributes, self._resource_config
             )
 
         elif clp_res_model in [
             AZURE2G_MODEL,
         ]:
             clp_handler = AzureCloudProviderEnvVarHandler(
-                clp_res_model, clp_resource_attributes, self._resource_config.api
+                clp_res_model, clp_resource_attributes, self._resource_config
             )
 
         elif clp_res_model in [GCP2G_MODEL]:

@@ -1,6 +1,8 @@
 from cloudshell.cp.core.cancellation_manager import CancellationContextManager
 from cloudshell.cp.core.request_actions import GetVMDetailsRequestActions
 from cloudshell.cp.core.reservation_info import ReservationInfo
+from cloudshell.shell.core.driver_utils import GlobalLock
+
 from cloudshell.cp.terraform.flows import delete_instance
 from cloudshell.cp.terraform.flows.deploy_vm.base_flow import TFDeployVMFlow
 from cloudshell.cp.terraform.flows.refresh_ip import refresh_ip
@@ -127,6 +129,7 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
     def PowerCycle(self, context, ports, delay):
         pass
 
+    @GlobalLock.lock
     def remote_refresh_ip(self, context, ports, cancellation_context):
         """Called when reserving a sandbox during setup.
 
@@ -155,6 +158,7 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
                 reservation_id=reservation_info.reservation_id,
             )
 
+    @GlobalLock.lock
     def GetVmDetails(self, context, requests, cancellation_context):
         """Called when reserving a sandbox during setup.
 
