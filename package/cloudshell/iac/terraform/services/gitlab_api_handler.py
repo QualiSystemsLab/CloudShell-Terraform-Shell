@@ -16,6 +16,7 @@ class GitlabApiHandler:
         self.token = token
         self.base_url = f"{self.protocol}://{self.host}/api/v4"
         self.session = requests.Session()
+        self.session.verify = False
         if self.token:
             self._add_auth_header()
 
