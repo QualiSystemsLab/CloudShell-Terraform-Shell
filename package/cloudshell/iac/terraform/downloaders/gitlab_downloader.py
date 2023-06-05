@@ -36,8 +36,8 @@ def extract_data_from_browser_url(url) -> GitLabBrowserUrlData:
     Sample Raw Browser url: "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/rds/project1"
     'sha' can be branch or commit id
     """
-    pattern = (r'^(?P<protocol>https?)://(?P<domain>[^/]+)/(?P<user>[^/]+)/(?P<project>[^/]+)/-/tree/'
-               r'(?P<sha>[^/]+)/(?P<path>.*)?$')
+    pattern = (r'^(?P<protocol>https?)://(?P<domain>[^/]+)/(?P<user>[^/]+)/('
+               r'?P<project>[^/]+)(/-)?/tree/(?P<sha>[^/]+)/(?P<path>.*)?$')
 
     match = re.match(pattern, url)
     if not match:

@@ -83,7 +83,7 @@ class CPTfProcExec:
 
         return self._tf_working_dir
 
-    def delete_local_temp_dir(self, deploy_app: VMFromTerraformGit):
+    def delete_local_temp_dir(self, deploy_app: VMFromTerraformGit | BaseTFDeployedApp):
         tf_path = Path(self._get_tf_working_dir(deploy_app))
         tmp_folder_found = False
         while not tmp_folder_found:

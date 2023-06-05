@@ -37,11 +37,17 @@ node_types:
         type: cloudshell.datatypes.Password
         tags: [ user_input ]
       Terraform App Inputs Map:
-        description: Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)
+        description: "Semi-colon separated name=value list (e.g. 
+        terraform_input_var_name1=App Resource Attribute Name;
+        terraform_input_var_name2=App Resource Attribute Name...)"
         type: string
         tags: [ user_input ]
       Terraform App Outputs Map:
-        description: Semi-colon separated name=value list (e.g. varname1=varvalue1;varname2=varvalue2...)
+        description: "Semi-colon separated name=value list (e.g. 
+        terraform_output_var_name1=App Resource Attribute Name;
+        terraform_output_var_name2=App Resource Attribute Name...). App Resource 
+        Attributes Names 'app_name' and 'address' reserved for the address and name of 
+        the deployed resource."
         type: string
         tags: [ user_input ]
       Branch:
