@@ -1,21 +1,24 @@
 import json
 
+import boto3
 from botocore.exceptions import ClientError
-from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
+from constants import (
+    ACCESS_KEY_ATTRIBUTE,
+    AWS2G_MODEL,
+    AWS_MODELS,
+    SECRET_KEY_ATTRIBUTE,
+)
+from data_model import AwsTfBackend
+
 from cloudshell.shell.core.driver_context import AutoLoadDetails
+from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
+
 # from data_model import *  # run 'shellfoundry generate' to generate data model classes
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
-import boto3
-
-from constants import AWS_MODELS, AWS2G_MODEL
-
-from constants import ACCESS_KEY_ATTRIBUTE, SECRET_KEY_ATTRIBUTE
-from data_model import AwsTfBackend
 
 
-class AwsTfBackendDriver (ResourceDriverInterface):
-
+class AwsTfBackendDriver(ResourceDriverInterface):
     def __init__(self):
         """
         ctor must be without arguments, it is created with reflection at run time
@@ -56,28 +59,48 @@ class AwsTfBackendDriver (ResourceDriverInterface):
 
         with LoggingSessionContext(context) as logger:
             aws_backend_resource = AwsTfBackend.create_from_context(context)
-            tf_state_file_string = self._generate_state_file_string(aws_backend_resource, tf_state_unique_name)
+            tf_state_file_string = self._generate_state_file_string(
+                aws_backend_resource, tf_state_unique_name
+            )
 
             backend_data = {"tf_state_file_string": tf_state_file_string}
             try:
                 api = CloudShellSessionContext(context).get_api()
 
-                access_key_dec = api.DecryptPassword(aws_backend_resource.access_key).Value
-                secret_key_dec = api.DecryptPassword(aws_backend_resource.secret_key).Value
+                access_key_dec = api.DecryptPassword(
+                    aws_backend_resource.access_key
+                ).Value
+                secret_key_dec = api.DecryptPassword(
+                    aws_backend_resource.secret_key
+                ).Value
 
                 if access_key_dec and secret_key_dec:
-                    self._backend_secret_vars = {"access_key": access_key_dec, "secret_key": secret_key_dec}
+                    self._backend_secret_vars = {
+                        "access_key": access_key_dec,
+                        "secret_key": secret_key_dec,
+                    }
                 else:
                     if aws_backend_resource.cloud_provider:
 
-                        clp_details = api.GetResourceDetails(aws_backend_resource.cloud_provider)
+                        clp_details = api.GetResourceDetails(
+                            aws_backend_resource.cloud_provider
+                        )
                         self._fill_backend_sercret_vars_data(api, clp_details)
 
             except Exception as e:
-                self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
+                self._handle_exception_logging(
+                    logger, "Inputs for Cloud Backend Access missing or incorrect"
+                )
 
-            logger.info(f"Returning backend data for creating provider file :\n{backend_data}")
-            response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
+            logger.info(
+                f"Returning backend data for creating provider file :\n{backend_data}"
+            )
+            response = json.dumps(
+                {
+                    "backend_data": backend_data,
+                    "backend_secret_vars": self._backend_secret_vars,
+                }
+            )
             return response
 
     def delete_tfstate_file(self, context, tf_state_unique_name: str):
@@ -92,10 +115,17 @@ class AwsTfBackendDriver (ResourceDriverInterface):
 
                 self._validate_attributes(aws_backend_resource, bucket_name, logger)
 
-                aws_session = self._create_aws_session(api, access_key, secret_key, aws_backend_resource, logger)
-                aws_session.resource('s3').meta.client.delete_object(Bucket=bucket_name, Key=tf_state_unique_name)
+                aws_session = self._create_aws_session(
+                    api, access_key, secret_key, aws_backend_resource, logger
+                )
+                aws_session.resource("s3").meta.client.delete_object(
+                    Bucket=bucket_name, Key=tf_state_unique_name
+                )
             except Exception as e:
-                raise ValueError(f"{tf_state_unique_name} file was not removed from backend provider")
+                raise ValueError(
+                    f"{tf_state_unique_name} file was not removed from backend provider"
+                )
+
     # </editor-fold>
 
     def _fill_backend_sercret_vars_data(self, api, clp_details) -> None:
@@ -104,9 +134,14 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         access_key_dec, secret_key_dec = self._get_decrypted_aws_keys(api, clp_details)
 
         if access_key_dec and secret_key_dec:
-            self._backend_secret_vars = {"access_key": access_key_dec, "secret_key": secret_key_dec}
+            self._backend_secret_vars = {
+                "access_key": access_key_dec,
+                "secret_key": secret_key_dec,
+            }
 
-    def _generate_state_file_string(self, aws_backend_resource: AwsTfBackend, tf_state_unique_name: str):
+    def _generate_state_file_string(
+        self, aws_backend_resource: AwsTfBackend, tf_state_unique_name: str
+    ):
         tf_state_file_string = f'terraform {{\n\
 \tbackend "s3" {{\n\
 \t\tbucket = "{aws_backend_resource.bucket_name}"\n\
@@ -128,33 +163,52 @@ class AwsTfBackendDriver (ResourceDriverInterface):
 
                 self._validate_attributes(aws_backend_resource, bucket_name, logger)
 
-                aws_session = self._create_aws_session(api, access_key, secret_key, aws_backend_resource, logger)
+                aws_session = self._create_aws_session(
+                    api, access_key, secret_key, aws_backend_resource, logger
+                )
 
-                bucket_data = aws_session.resource('s3').meta.client.head_bucket(Bucket=bucket_name)
+                bucket_data = aws_session.resource("s3").meta.client.head_bucket(
+                    Bucket=bucket_name
+                )
 
             except ClientError as client_exception:
-                if client_exception.response['Error']['Code'] == '403':
-                    self._handle_exception_logging(logger, "Access to bucket denied (possibly wrong keys)")
-                if client_exception.response['Error']['Code'] == '404':
+                if client_exception.response["Error"]["Code"] == "403":
+                    self._handle_exception_logging(
+                        logger, "Access to bucket denied (possibly wrong keys)"
+                    )
+                if client_exception.response["Error"]["Code"] == "404":
                     self._handle_exception_logging(logger, "Bucket was not found")
-                self._handle_exception_logging(logger, f"There was an issue accessing the bucket. Error code = "
-                                                       f"{client_exception.response['Error']['Code']}")
+                self._handle_exception_logging(
+                    logger,
+                    f"There was an issue accessing the bucket. Error code = "
+                    f"{client_exception.response['Error']['Code']}",
+                )
             except Exception as e:
-                self._handle_exception_logging(logger, f"There was an issue accessing the bucket.{e}")
+                self._handle_exception_logging(
+                    logger, f"There was an issue accessing the bucket.{e}"
+                )
 
-    def _create_aws_session(self, api, access_key, secret_key, aws_backend_resource, logger):
+    def _create_aws_session(
+        self, api, access_key, secret_key, aws_backend_resource, logger
+    ):
         # Keys defines on AWS TF BACKEND RESOURCE
         if access_key and secret_key:
             if aws_backend_resource.cloud_provider:
-                self._handle_exception_logging(logger, "Only one method of authentication should be filled")
+                self._handle_exception_logging(
+                    logger, "Only one method of authentication should be filled"
+                )
 
-            aws_session = boto3.Session(aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+            aws_session = boto3.Session(
+                aws_access_key_id=access_key, aws_secret_access_key=secret_key
+            )
 
         # Keys not defines on AWS TF BACKEND RESOURCE (CLP reference should have been set)
         else:
             # CLP had not been set...
             if not aws_backend_resource.cloud_provider:
-                self._handle_exception_logging(logger, "At least one method of authentication should be filled")
+                self._handle_exception_logging(
+                    logger, "At least one method of authentication should be filled"
+                )
 
             # Check a correct CLP has been reference and get an AWS session based of its attributes
             clp_details = self._validate_clp(api, aws_backend_resource, logger)
@@ -164,7 +218,9 @@ class AwsTfBackendDriver (ResourceDriverInterface):
     def _get_aws_session_based_on_clp(self, api, clp_details):
         access_key_dec, secret_key_dec = self._get_decrypted_aws_keys(api, clp_details)
         if access_key_dec and secret_key_dec:
-            aws_session = boto3.Session(aws_access_key_id=access_key_dec, aws_secret_access_key=secret_key_dec)
+            aws_session = boto3.Session(
+                aws_access_key_id=access_key_dec, aws_secret_access_key=secret_key_dec
+            )
         else:
             aws_session = boto3.Session()
         return aws_session
@@ -175,14 +231,18 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         if clp_details.ResourceModelName == AWS2G_MODEL:
             aws_model_prefix = AWS2G_MODEL + "."
         access_key = self._get_attrbiute_value_from_clp(
-            clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE)
+            clp_details.ResourceAttributes, aws_model_prefix, ACCESS_KEY_ATTRIBUTE
+        )
         secret_key = self._get_attrbiute_value_from_clp(
-            clp_details.ResourceAttributes, aws_model_prefix, SECRET_KEY_ATTRIBUTE)
+            clp_details.ResourceAttributes, aws_model_prefix, SECRET_KEY_ATTRIBUTE
+        )
         access_key_dec = api.DecryptPassword(access_key).Value
         secret_key_dec = api.DecryptPassword(secret_key).Value
         return access_key_dec, secret_key_dec
 
-    def _get_attrbiute_value_from_clp(self, attributes, model_prefix, attribute_name) -> str:
+    def _get_attrbiute_value_from_clp(
+        self, attributes, model_prefix, attribute_name
+    ) -> str:
         for attribute in attributes:
 
             if attribute.Name == f"{model_prefix}{attribute_name}":
@@ -201,13 +261,19 @@ class AwsTfBackendDriver (ResourceDriverInterface):
         clp_details = api.GetResourceDetails(clp_resource_name)
         clp_res_model = clp_details.ResourceModelName
         clpr_res_fam = clp_details.ResourceFamilyName
-        if (clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider') or \
-                clp_res_model not in AWS_MODELS:
-            logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
-            raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
+        if (
+            clpr_res_fam != "Cloud Provider" and clpr_res_fam != "CS_CloudProvider"
+        ) or clp_res_model not in AWS_MODELS:
+            logger.error(
+                f"Cloud Provider does not have the expected type: {clpr_res_fam}"
+            )
+            raise ValueError(
+                f"Cloud Provider does not have the expected type:{clpr_res_fam}"
+            )
         return clp_details
 
     def _handle_exception_logging(self, logger, msg):
         logger.exception(msg)
         raise ValueError(msg)
+
     # </editor-fold>

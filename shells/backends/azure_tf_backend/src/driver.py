@@ -1,22 +1,19 @@
 import json
 
 from azure.core.exceptions import ClientAuthenticationError
-from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
+from azure.mgmt.storage import StorageManagementClient
+from azure.storage.blob import BlobServiceClient
+from constants import AZURE2G_MODEL, AZURE_MODELS
+from data_model import AzureTfBackend
+from msrestazure.azure_active_directory import ServicePrincipalCredentials
+
 from cloudshell.shell.core.driver_context import AutoLoadDetails
+from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
-from constants import AZURE2G_MODEL, AZURE_MODELS
-from data_model import AzureTfBackend
 
-from azure.storage.blob import BlobServiceClient
-
-from msrestazure.azure_active_directory import ServicePrincipalCredentials
-from azure.mgmt.storage import StorageManagementClient
-
-
-class AzureTfBackendDriver (ResourceDriverInterface):
-
+class AzureTfBackendDriver(ResourceDriverInterface):
     def __init__(self):
         """
         ctor must be without arguments, it is created with reflection at run time
@@ -58,8 +55,12 @@ class AzureTfBackendDriver (ResourceDriverInterface):
     def _get_validated_blob_svc_client(self, context):
         with LoggingSessionContext(context) as logger:
             azure_backend_resource = AzureTfBackend.create_from_context(context)
-            credential = self._get_cloud_credential(context, azure_backend_resource, logger)
-            blob_svc_container_client = self._get_container_client(logger, azure_backend_resource, credential)
+            credential = self._get_cloud_credential(
+                context, azure_backend_resource, logger
+            )
+            blob_svc_container_client = self._get_container_client(
+                logger, azure_backend_resource, credential
+            )
             self._validate_container(logger, blob_svc_container_client)
             return blob_svc_container_client
 
@@ -69,7 +70,8 @@ class AzureTfBackendDriver (ResourceDriverInterface):
             blob_svc_container_client.get_container_properties()
         except ClientAuthenticationError as e:
             self._handle_exception_logging(
-                logger, "Was not able to Authenticate in order to validate azure backend storage"
+                logger,
+                "Was not able to Authenticate in order to validate azure backend storage",
             )
 
     def _get_cloud_credential(self, context, azure_backend_resource, logger):
@@ -77,34 +79,51 @@ class AzureTfBackendDriver (ResourceDriverInterface):
             api = CloudShellSessionContext(context).get_api()
             if api.DecryptPassword(azure_backend_resource.access_key).Value:
                 if azure_backend_resource.cloud_provider:
-                    self._handle_exception_logging(logger, "Only one method of authentication should be filled")
-                credentials = api.DecryptPassword(azure_backend_resource.access_key).Value
+                    self._handle_exception_logging(
+                        logger, "Only one method of authentication should be filled"
+                    )
+                credentials = api.DecryptPassword(
+                    azure_backend_resource.access_key
+                ).Value
             else:
                 if azure_backend_resource.cloud_provider:
-                    clp_details = self._validate_clp(api, azure_backend_resource, logger)
+                    clp_details = self._validate_clp(
+                        api, azure_backend_resource, logger
+                    )
 
-                    account_keys = self._get_storage_keys(api, azure_backend_resource, clp_details)
+                    account_keys = self._get_storage_keys(
+                        api, azure_backend_resource, clp_details
+                    )
                     if not account_keys.keys:
-                        self._handle_exception_logging(logger, "Unable to find access key for the storage account")
+                        self._handle_exception_logging(
+                            logger, "Unable to find access key for the storage account"
+                        )
                     credentials = account_keys.keys[0].value
                 else:
-                    self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing")
+                    self._handle_exception_logging(
+                        logger, "Inputs for Cloud Backend Access missing"
+                    )
         except Exception as e:
-            self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
+            self._handle_exception_logging(
+                logger, "Inputs for Cloud Backend Access missing or incorrect"
+            )
         return credentials
 
     def _get_container_client(self, logger, azure_backend_resource, credential):
         try:
             blob_svc_client = BlobServiceClient(
                 account_url=f"https://{azure_backend_resource.storage_account_name}.blob.core.windows.net/",
-                credential=credential
+                credential=credential,
             )
-            blob_svc_container_client = blob_svc_client.get_container_client(azure_backend_resource.container_name)
+            blob_svc_container_client = blob_svc_client.get_container_client(
+                azure_backend_resource.container_name
+            )
             # The following command will yield an exception in case container does not exist
             blob_svc_container_client.get_container_properties()
         except ClientAuthenticationError as e:
             self._handle_exception_logging(
-                logger, "Was not able to Authenticate in order to validate azure backend storage"
+                logger,
+                "Was not able to Authenticate in order to validate azure backend storage",
             )
         return blob_svc_container_client
 
@@ -112,17 +131,21 @@ class AzureTfBackendDriver (ResourceDriverInterface):
         azure_model_prefix = ""
         if clp_details.ResourceModelName == AZURE2G_MODEL:
             azure_model_prefix = AZURE2G_MODEL + "."
-        self._fill_backend_sercret_vars_data(api, azure_model_prefix, clp_details.ResourceAttributes)
+        self._fill_backend_sercret_vars_data(
+            api, azure_model_prefix, clp_details.ResourceAttributes
+        )
         credentials = ServicePrincipalCredentials(
             tenant=self._backend_secret_vars["tenant_id"],
             client_id=self._backend_secret_vars["client_id"],
-            secret=self._backend_secret_vars["client_secret"]
+            secret=self._backend_secret_vars["client_secret"],
         )
         storage_client = StorageManagementClient(
-            credentials=credentials, subscription_id=self._backend_secret_vars["subscription_id"]
+            credentials=credentials,
+            subscription_id=self._backend_secret_vars["subscription_id"],
         )
         account_keys = storage_client.storage_accounts.list_keys(
-            azure_backend_resource.resource_group, azure_backend_resource.storage_account_name
+            azure_backend_resource.resource_group,
+            azure_backend_resource.storage_account_name,
         )
         return account_keys
 
@@ -133,34 +156,56 @@ class AzureTfBackendDriver (ResourceDriverInterface):
     def get_backend_data(self, context, tf_state_unique_name: str) -> str:
         with LoggingSessionContext(context) as logger:
             azure_backend_resource = AzureTfBackend.create_from_context(context)
-            tf_state_file_string = self._generate_state_file_string(azure_backend_resource, tf_state_unique_name)
+            tf_state_file_string = self._generate_state_file_string(
+                azure_backend_resource, tf_state_unique_name
+            )
 
             backend_data = {"tf_state_file_string": tf_state_file_string}
             try:
                 api = CloudShellSessionContext(context).get_api()
 
-                if api.DecryptPassword(azure_backend_resource.access_key).Value != '':
-                    dec_access_key = api.DecryptPassword(azure_backend_resource.access_key).Value
+                if api.DecryptPassword(azure_backend_resource.access_key).Value != "":
+                    dec_access_key = api.DecryptPassword(
+                        azure_backend_resource.access_key
+                    ).Value
                     # self._backend_secret_vars = {"access_key": dec_access_key}
                 else:
                     if azure_backend_resource.cloud_provider:
-                        clp_details = self._validate_clp(api, azure_backend_resource, logger)
+                        clp_details = self._validate_clp(
+                            api, azure_backend_resource, logger
+                        )
 
                         azure_model_prefix = ""
                         if clp_details.ResourceModelName == AZURE2G_MODEL:
                             azure_model_prefix = AZURE2G_MODEL + "."
                         # self._backend_secret_vars = {"access_key": self._get_cloud_credential()}
-                        self._fill_backend_sercret_vars_data(api, azure_model_prefix, clp_details.ResourceAttributes)
+                        self._fill_backend_sercret_vars_data(
+                            api, azure_model_prefix, clp_details.ResourceAttributes
+                        )
                     else:
-                        self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing")
-                self._backend_secret_vars = \
-                    {"access_key": self._get_cloud_credential(context, azure_backend_resource, logger)}
+                        self._handle_exception_logging(
+                            logger, "Inputs for Cloud Backend Access missing"
+                        )
+                self._backend_secret_vars = {
+                    "access_key": self._get_cloud_credential(
+                        context, azure_backend_resource, logger
+                    )
+                }
 
             except Exception as e:
-                self._handle_exception_logging(logger, "Inputs for Cloud Backend Access missing or incorrect")
+                self._handle_exception_logging(
+                    logger, "Inputs for Cloud Backend Access missing or incorrect"
+                )
 
-            logger.info(f"Returning backend data for creating provider file :\n{backend_data}")
-            response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
+            logger.info(
+                f"Returning backend data for creating provider file :\n{backend_data}"
+            )
+            response = json.dumps(
+                {
+                    "backend_data": backend_data,
+                    "backend_secret_vars": self._backend_secret_vars,
+                }
+            )
             return response
 
     def delete_tfstate_file(self, context, tf_state_unique_name: str):
@@ -170,7 +215,9 @@ class AzureTfBackendDriver (ResourceDriverInterface):
             if blob["name"] == tf_state_unique_name:
                 container_client.delete_blob(blob)
                 return
-        raise ValueError(f"{tf_state_unique_name} file was not removed from backend provider")
+        raise ValueError(
+            f"{tf_state_unique_name} file was not removed from backend provider"
+        )
 
     def _generate_state_file_string(self, azure_backend_resource, tf_state_unique_name):
         tf_state_file_string = f'terraform {{\n\
@@ -187,13 +234,20 @@ class AzureTfBackendDriver (ResourceDriverInterface):
         clp_details = api.GetResourceDetails(clp_resource_name)
         clp_res_model = clp_details.ResourceModelName
         clpr_res_fam = clp_details.ResourceFamilyName
-        if (clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider') or \
-                clp_res_model not in AZURE_MODELS:
-            logger.error(f"Cloud Provider does not have the expected type: {clpr_res_fam}")
-            raise ValueError(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
+        if (
+            clpr_res_fam != "Cloud Provider" and clpr_res_fam != "CS_CloudProvider"
+        ) or clp_res_model not in AZURE_MODELS:
+            logger.error(
+                f"Cloud Provider does not have the expected type: {clpr_res_fam}"
+            )
+            raise ValueError(
+                f"Cloud Provider does not have the expected type:{clpr_res_fam}"
+            )
         return clp_details
 
-    def _fill_backend_sercret_vars_data(self, api, azure_model_prefix, clp_resource_attributes):
+    def _fill_backend_sercret_vars_data(
+        self, api, azure_model_prefix, clp_resource_attributes
+    ):
         self._backend_secret_vars = {}
         for attr in clp_resource_attributes:
             if attr.Name == azure_model_prefix + "Azure Subscription ID":

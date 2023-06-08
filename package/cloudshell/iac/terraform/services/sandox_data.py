@@ -1,15 +1,24 @@
 import json
 
-from cloudshell.api.cloudshell_api import SandboxDataKeyValue, GetSandboxDataInfo
-
-from cloudshell.iac.terraform.constants import EXECUTE_STATUS, DESTROY_STATUS, NONE, TF_WORKING_DIR, ATTRIBUTE_NAMES
+from cloudshell.api.cloudshell_api import GetSandboxDataInfo, SandboxDataKeyValue
+from cloudshell.iac.terraform.constants import (
+    ATTRIBUTE_NAMES,
+    DESTROY_STATUS,
+    EXECUTE_STATUS,
+    NONE,
+    TF_WORKING_DIR,
+)
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 
 
-class SandboxDataHandler(object):
-    def __init__(self, driver_helper_obj: ShellHelperObject, tf_working_dir: str = None):
+class SandboxDataHandler:
+    def __init__(
+        self, driver_helper_obj: ShellHelperObject, tf_working_dir: str = None
+    ):
         self._driver_helper_obj = driver_helper_obj
-        self._uuid = self._driver_helper_obj.attr_handler.get_attribute(ATTRIBUTE_NAMES.UUID)
+        self._uuid = self._driver_helper_obj.attr_handler.get_attribute(
+            ATTRIBUTE_NAMES.UUID
+        )
         if not self._ged_uuid_data_as_str():
             self._create_tf_exec_state_data_entry(self._uuid)
         self._tf_working_dir = self._get_tf_working_dir(tf_working_dir)
@@ -33,18 +42,22 @@ class SandboxDataHandler(object):
         self._add_entry_to_sandbox_data(new_sdkv)
 
     def _add_entry_to_sandbox_data(self, sdkv_to_add: SandboxDataKeyValue) -> None:
-        self._driver_helper_obj.api.SetSandboxData(self._driver_helper_obj.sandbox_id, [sdkv_to_add])
+        self._driver_helper_obj.api.SetSandboxData(
+            self._driver_helper_obj.sandbox_id, [sdkv_to_add]
+        )
 
     def _generate_first_uuid_state_entry(self) -> str:
         first_tf_exec_status_data_entry = {
             EXECUTE_STATUS: NONE,
             DESTROY_STATUS: NONE,
-            TF_WORKING_DIR: NONE
+            TF_WORKING_DIR: NONE,
         }
         return json.dumps(first_tf_exec_status_data_entry)
 
     def _get_sb_data_val_by_key(self, sandbox_data: GetSandboxDataInfo, key: str):
-        value = [attr.Value for attr in sandbox_data.SandboxDataKeyValues if attr.Key == key]
+        value = [
+            attr.Value for attr in sandbox_data.SandboxDataKeyValues if attr.Key == key
+        ]
         if value.__len__() >= 1:
             return value[0]
 
@@ -64,7 +77,9 @@ class SandboxDataHandler(object):
         uuid_sdkv_value = self._check_for_uuid_data()
         uuid_sdkv_value[key] = new_value
         updated_sdkv = SandboxDataKeyValue(self._uuid, json.dumps(uuid_sdkv_value))
-        self._driver_helper_obj.api.SetSandboxData(self._driver_helper_obj.sandbox_id, [updated_sdkv])
+        self._driver_helper_obj.api.SetSandboxData(
+            self._driver_helper_obj.sandbox_id, [updated_sdkv]
+        )
 
     def _get_value_for_key(self, key: str) -> str:
         uuid_sdkv_value = self._check_for_uuid_data()
@@ -77,6 +92,8 @@ class SandboxDataHandler(object):
         return json.loads(uuid_sdkv)
 
     def _ged_uuid_data_as_str(self) -> str:
-        current_data = self._driver_helper_obj.api.GetSandboxData(self._driver_helper_obj.sandbox_id)
+        current_data = self._driver_helper_obj.api.GetSandboxData(
+            self._driver_helper_obj.sandbox_id
+        )
         uuid_sdkv = self._get_sb_data_val_by_key(current_data, self._uuid)
         return uuid_sdkv

@@ -2,6 +2,7 @@ from logging import Logger
 
 from cloudshell.cp.core.flows import AbstractVMDetailsFlow
 from cloudshell.cp.core.request_actions.models import VmDetailsData
+
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
 from cloudshell.cp.terraform.terraform_cp_shell import TerraformCPShell
 
@@ -23,5 +24,4 @@ class TFGetVMDetailsFlow(AbstractVMDetailsFlow):
 
     def _get_vm_details(self, deployed_app: BaseTFDeployedApp) -> VmDetailsData:
         tf_outputs = self.tf_executor.refresh_terraform(deployed_app)
-        return tf_outputs.get_vm_details_data(self._resource_conf,
-                                              deployed_app.name)
+        return tf_outputs.get_vm_details_data(self._resource_conf, deployed_app.name)

@@ -13,11 +13,14 @@ def refresh_ip(
     resource_conf: TerraformResourceConfig,
     reservation_id: str,
     logger: Logger,
-    ) -> str:
+) -> str:
     logger.info("Starting delete instance command...")
     with suppress(Exception):
-        if any(x for x in deployed_app.terraform_app_outputs_map.values() if
-                x.casefold() == "address"):
+        if any(
+            x
+            for x in deployed_app.terraform_app_outputs_map.values()
+            if x.casefold() == "address"
+        ):
             return ""
         tf_exec = TerraformCPShell(
             resource_config=resource_conf,

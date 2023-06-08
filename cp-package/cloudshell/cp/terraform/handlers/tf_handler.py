@@ -8,15 +8,6 @@ from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, check_output
 
 from cloudshell.cp.core.request_actions.models import VMDetails
-
-from cloudshell.cp.terraform.constants import REFRESH
-from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
-from cloudshell.cp.terraform.handlers.cp_downloader import CPDownloader
-from cloudshell.cp.terraform.handlers.provider_handler import CPProviderHandler
-from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
-from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
-from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
-from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.iac.terraform.constants import (
     ALLOWED_LOGGING_CMDS,
     APPLY,
@@ -34,6 +25,15 @@ from cloudshell.iac.terraform.services.string_cleaner import StringCleaner
 from cloudshell.iac.terraform.tagging.tag_terraform_resources import (
     start_tagging_terraform_resources,
 )
+
+from cloudshell.cp.terraform.constants import REFRESH
+from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
+from cloudshell.cp.terraform.handlers.cp_downloader import CPDownloader
+from cloudshell.cp.terraform.handlers.provider_handler import CPProviderHandler
+from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
+from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
+from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
+from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 
 
 class CPTfProcExec:
@@ -95,10 +95,12 @@ class CPTfProcExec:
         tf_path_str = str(tf_path)
         shutil.rmtree(tf_path_str, onerror=handle_remove_readonly)
 
-    def init_terraform(self,
-                       deploy_app: VMFromTerraformGit | BaseTFDeployedApp,
-                       app_name: str,
-                       force_init: bool = False):
+    def init_terraform(
+        self,
+        deploy_app: VMFromTerraformGit | BaseTFDeployedApp,
+        app_name: str,
+        force_init: bool = False,
+    ):
         self._logger.info("Performing Terraform Init...")
         tf_working_dir = self._get_tf_working_dir(deploy_app)
         self._backend_handler.generate_backend_cfg_file(
@@ -123,9 +125,11 @@ class CPTfProcExec:
         if deployed_app.name:
             name = next(
                 (
-                    k for k, v in deployed_app.terraform_app_inputs_map.items()
+                    k
+                    for k, v in deployed_app.terraform_app_inputs_map.items()
                     if v == "app_name"
-                ), None
+                ),
+                None,
             )
             if name:
                 cmd.extend(["-var", f"{name}={deployed_app.name}"])
@@ -153,10 +157,7 @@ class CPTfProcExec:
 
                 inputs_dict = self._get_inputs(deploy_app)
 
-                tags_dict = (
-                    self._resource_config.tags
-                    | deploy_app.custom_tags
-                )
+                tags_dict = self._resource_config.tags | deploy_app.custom_tags
 
                 if len(tags_dict) > 50:
                     raise ValueError(
@@ -186,9 +187,11 @@ class CPTfProcExec:
         if vm_name:
             name = next(
                 (
-                    k for k, v in deploy_app.terraform_app_inputs_map.items()
+                    k
+                    for k, v in deploy_app.terraform_app_inputs_map.items()
                     if v == "app_name"
-                ), None
+                ),
+                None,
             )
             if name:
                 cmd.extend(["-var", f"{name}={vm_name}"])
@@ -236,9 +239,7 @@ class CPTfProcExec:
             raise
 
     def save_terraform_outputs(
-        self,
-            deploy_app: VMFromTerraformGit | BaseTFDeployedApp,
-            app_name: str
+        self, deploy_app: VMFromTerraformGit | BaseTFDeployedApp, app_name: str
     ) -> TFDeployResult | None:
         try:
             self._logger.info("Running 'terraform output -json'")

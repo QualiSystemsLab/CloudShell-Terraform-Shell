@@ -3,13 +3,14 @@ import os
 from logging import Logger
 
 from cloudshell.api.cloudshell_api import InputNameValue
-from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.iac.terraform.constants import (
     ATTRIBUTE_NAMES,
     DELETE_TFSTATE_FILE_COMMAND,
     GET_BACKEND_DATA_COMMAND,
 )
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
+
+from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 
 
 class CPBackendHandler:

@@ -1,10 +1,11 @@
 from logging import Logger
 
 from cloudshell.api.cloudshell_api import CloudShellAPISession
-from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpdater
 from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
 from cloudshell.iac.terraform.tagging.tags import TagsManager
+
+from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 
 
 class CPShellHelperObject:

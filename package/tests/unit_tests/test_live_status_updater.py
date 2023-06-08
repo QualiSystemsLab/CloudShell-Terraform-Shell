@@ -1,6 +1,5 @@
 import unittest
-
-from mock import Mock
+from unittest.mock import Mock
 
 from cloudshell.iac.terraform.services.live_status_updater import LiveStatusUpdater
 
@@ -27,4 +26,6 @@ class TestLiveStatusUpdater(unittest.TestCase):
         updater.set_service_live_status("service name", "Online", "description...")
 
         # assert
-        api.SetServiceLiveStatus.assert_called_with(sandbox_id, "service name", "Online", "description...")
+        api.SetServiceLiveStatus.assert_called_with(
+            sandbox_id, "service name", "Online", "description..."
+        )

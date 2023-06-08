@@ -1,5 +1,10 @@
 import logging
 
+from cloudshell.iac.terraform.services.local_dir_service import LocalDir
+from cloudshell.iac.terraform.services.object_factory import ObjectFactory
+from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
+from cloudshell.iac.terraform.tagging.tags import TagsManager
+
 from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
 from cloudshell.cp.terraform.handlers.provider_handler import CPProviderHandler
 from cloudshell.cp.terraform.handlers.tf_handler import CPTfProcExec
@@ -7,18 +12,14 @@ from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
 from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
-from cloudshell.iac.terraform.services.local_dir_service import LocalDir
-from cloudshell.iac.terraform.services.object_factory import ObjectFactory
-from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
-from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 
 class TerraformCPShell:
     def __init__(
-            self,
-            resource_config: TerraformResourceConfig,
-            logger: logging.Logger,
-            sandbox_id: str,
+        self,
+        resource_config: TerraformResourceConfig,
+        logger: logging.Logger,
+        sandbox_id: str,
     ):
 
         self._resource_config = resource_config
@@ -28,9 +29,9 @@ class TerraformCPShell:
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
 
     def deploy_terraform(
-            self,
-            deploy_app: VMFromTerraformGit,
-            vm_name: str,
+        self,
+        deploy_app: VMFromTerraformGit,
+        vm_name: str,
     ) -> TFDeployResult:
         tf_proc_executer = CPTfProcExec(
             self._resource_config,
@@ -53,7 +54,7 @@ class TerraformCPShell:
             raise
 
     def learn_terraform(
-            self, deployed_app: BaseTFDeployedApp, vm_name
+        self, deployed_app: BaseTFDeployedApp, vm_name
     ) -> TFDeployResult:
         tf_proc_executer = CPTfProcExec(
             self._resource_config,
@@ -74,9 +75,7 @@ class TerraformCPShell:
             self._logger.error("Failed to modify Terraform")
             raise
 
-    def refresh_terraform(
-            self, deployed_app: BaseTFDeployedApp
-    ) -> TFDeployResult:
+    def refresh_terraform(self, deployed_app: BaseTFDeployedApp) -> TFDeployResult:
         tf_proc_executer = CPTfProcExec(
             self._resource_config,
             self._sandbox_id,

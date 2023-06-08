@@ -1,6 +1,5 @@
 import unittest
-
-from mock import Mock
+from unittest.mock import Mock
 
 from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesService
 
@@ -27,4 +26,6 @@ class TestSandboxMessagesService(unittest.TestCase):
         messages_service.write_message("my msg")
 
         # assert
-        api.WriteMessageToReservationOutput.assert_called_with(sandbox_id, '"my service" my msg')
+        api.WriteMessageToReservationOutput.assert_called_with(
+            sandbox_id, '"my service" my msg'
+        )

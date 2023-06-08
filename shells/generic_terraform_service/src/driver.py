@@ -1,12 +1,10 @@
+from cloudshell.iac.terraform import TerraformShell, TerraformShellConfig
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
-from cloudshell.iac.terraform import TerraformShell, TerraformShellConfig
 
-
-class GenericTerraformServiceDriver (ResourceDriverInterface):
-
+class GenericTerraformServiceDriver(ResourceDriverInterface):
     def __init__(self):
         """
         ctor must be without arguments, it is created with reflection at run time
@@ -31,12 +29,16 @@ class GenericTerraformServiceDriver (ResourceDriverInterface):
 
     def execute_terraform(self, context: ResourceCommandContext):
         with LoggingSessionContext(context) as logger:
-            config = TerraformShellConfig(write_sandbox_messages=True, update_live_status=True)
+            config = TerraformShellConfig(
+                write_sandbox_messages=True, update_live_status=True
+            )
             tf_shell = TerraformShell(context, logger, config)
             tf_shell.execute_terraform()
 
     def destroy_terraform(self, context: ResourceCommandContext):
         with LoggingSessionContext(context) as logger:
-            config = TerraformShellConfig(write_sandbox_messages=True, update_live_status=True)
+            config = TerraformShellConfig(
+                write_sandbox_messages=True, update_live_status=True
+            )
             tf_shell = TerraformShell(context, logger, config)
             tf_shell.destroy_terraform()

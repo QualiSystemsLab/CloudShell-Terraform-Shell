@@ -1,4 +1,5 @@
 import unittest
+
 from cloudshell.iac.terraform.downloaders import gitlab_downloader
 
 
@@ -10,6 +11,7 @@ class TestGitlabUrlExtractor(unittest.TestCase):
     api style url:
     http://<domain>/api/v4/projects/<project_id>/repository/archive.zip?path=<path>=<branch>
     """
+
     BROWSER_URL = "http://192.168.85.26/quali_natti/terraformstuff/-/tree/test-branch/parent-dir/hello-world"
     API_URL = "http://192.168.85.26/api/v4/projects/2/repository/archive.zip?path=parent%2Ddir%2Fhello%2Dworld&sha=test%2Dbranch"
 
@@ -34,5 +36,9 @@ class TestGitlabUrlExtractor(unittest.TestCase):
 
     def test_raises(self):
         url_arg = "http://www.google.com"
-        self.assertRaises(ValueError, gitlab_downloader.extract_data_from_api_url, url_arg)
-        self.assertRaises(ValueError, gitlab_downloader.extract_data_from_browser_url, url_arg)
+        self.assertRaises(
+            ValueError, gitlab_downloader.extract_data_from_api_url, url_arg
+        )
+        self.assertRaises(
+            ValueError, gitlab_downloader.extract_data_from_browser_url, url_arg
+        )

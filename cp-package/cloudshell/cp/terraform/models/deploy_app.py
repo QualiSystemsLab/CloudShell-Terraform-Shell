@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from cloudshell.cp.core.request_actions import DeployVMRequestActions
 from cloudshell.cp.core.request_actions.models import DeployApp
+
 from cloudshell.cp.terraform import constants
 from cloudshell.cp.terraform.models.base_deployment_app import (
     ResourceAttrRODeploymentPath,
@@ -36,9 +37,9 @@ class VMFromTerraformGit(DeployApp):
     terraform_app_outputs_map: dict[str:str] = ResourceDictAttrRODeploymentPath(
         ATTR_NAMES.terraform_app_outputs_map
     )
-    terraform_sensitive_inputs: dict[
-        str:str
-    ] = ResourceDictAttrRODeploymentPath(ATTR_NAMES.terraform_sensitive_inputs)
+    terraform_sensitive_inputs: dict[str:str] = ResourceDictAttrRODeploymentPath(
+        ATTR_NAMES.terraform_sensitive_inputs
+    )
 
     def __post_init__(self):
         """Post init."""

@@ -1,13 +1,8 @@
 import logging
 import re
-from typing import Type
 import urllib.parse
+from typing import Type
 
-from cloudshell.cp.terraform.models.base_deployment_app import (
-    TerraformDeploymentAppAttributeNames, TerraformResourceAttributeNames,
-)
-from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
-from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.iac.terraform.downloaders.base_git_downloader import (
     GitScriptDownloaderBase,
 )
@@ -18,6 +13,13 @@ from cloudshell.iac.terraform.downloaders.gitlab_downloader import (
     GitLabScriptDownloader,
 )
 from cloudshell.iac.terraform.downloaders.tf_exec_downloader import TfExecDownloader
+
+from cloudshell.cp.terraform.models.base_deployment_app import (
+    TerraformDeploymentAppAttributeNames,
+    TerraformResourceAttributeNames,
+)
+from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
+from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 
 
 class CPDownloader:

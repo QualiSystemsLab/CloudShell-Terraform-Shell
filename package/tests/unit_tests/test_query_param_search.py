@@ -1,4 +1,5 @@
 import unittest
+
 from cloudshell.iac.terraform.downloaders.gitlab_downloader import get_query_param_val
 
 

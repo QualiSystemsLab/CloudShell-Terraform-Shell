@@ -1,10 +1,12 @@
 import os
+
+from dotenv import load_dotenv
+
 import cloudshell.helpers.scripts.cloudshell_dev_helpers as dev_helpers
 from cloudshell.api.cloudshell_api import AttributeNameValue
 from cloudshell.workflow.orchestration.sandbox import Sandbox
-from tests.integration_tests.constants import SHELL_NAME, UUID_ATTRIBUTE
 
-from dotenv import load_dotenv
+from tests.integration_tests.constants import SHELL_NAME, UUID_ATTRIBUTE
 
 load_dotenv()
 
@@ -15,11 +17,20 @@ cs_pass = os.environ.get("CS_PASSWORD")
 cs_domain = os.environ.get("RESERVATION_DOMAIN")
 
 
-dev_helpers.attach_to_cloudshell_as(cs_user, cs_pass, cs_domain, sb_id, server_address=server_address, cloudshell_api_port='8029')
+dev_helpers.attach_to_cloudshell_as(
+    cs_user,
+    cs_pass,
+    cs_domain,
+    sb_id,
+    server_address=server_address,
+    cloudshell_api_port="8029",
+)
 
 
 def print_uuids(sb: Sandbox):
-    services = sb.automation_api.GetReservationDetails(sb_id, disableCache=True).ReservationDescription.Services
+    services = sb.automation_api.GetReservationDetails(
+        sb_id, disableCache=True
+    ).ReservationDescription.Services
     for service in services:
         for attribute in service.Attributes:
             if attribute.Name == f"{SHELL_NAME}.UUID":
@@ -28,12 +39,16 @@ def print_uuids(sb: Sandbox):
                 for sbdkv in data.SandboxDataKeyValues:
                     if sbdkv.Key == attribute.Value:
                         service_data = sbdkv.Value
-                print(f"{service.Alias}.UUID={attribute.Value} \n data={service_data}\n\n")
+                print(
+                    f"{service.Alias}.UUID={attribute.Value} \n data={service_data}\n\n"
+                )
                 continue
 
 
 def wipe_uuids(sb: Sandbox):
-    services = sb.automation_api.GetReservationDetails(sb_id, disableCache=True).ReservationDescription.Services
+    services = sb.automation_api.GetReservationDetails(
+        sb_id, disableCache=True
+    ).ReservationDescription.Services
     attr_req = [AttributeNameValue(UUID_ATTRIBUTE, "")]
 
     for service in services:

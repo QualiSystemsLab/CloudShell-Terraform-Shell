@@ -3,7 +3,6 @@ from logging import Logger
 
 
 class GitScriptDownloaderBase(ABC):
-
     def __init__(self, logger: Logger):
         self.logger = logger
 

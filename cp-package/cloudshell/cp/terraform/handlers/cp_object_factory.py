@@ -1,7 +1,5 @@
 import logging
 
-from cloudshell.cp.terraform.models.cp_shell_helper import CPShellHelperObject
-from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.iac.terraform import TerraformShellConfig
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from cloudshell.iac.terraform.models.tf_service import TerraformServiceObject
@@ -11,6 +9,9 @@ from cloudshell.iac.terraform.services.sandbox_messages import SandboxMessagesSe
 from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 from cloudshell.iac.terraform.tagging.tags import TagsManager
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
+
+from cloudshell.cp.terraform.models.cp_shell_helper import CPShellHelperObject
+from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 
 
 class CPObjectFactory:

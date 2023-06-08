@@ -3,11 +3,7 @@ TERRAFORM_URL = "https://releases.hashicorp.com/terraform"
 TERRAFORM_LATEST_URL = "https://checkpoint-api.hashicorp.com/v1/check/terraform"
 
 # OS types defined by sys.platform
-OS_TYPES = {
-    'darwin': 'darwin_amd64',
-    'linux': 'linux_amd64',
-    'win32': 'windows_amd64'
-}
+OS_TYPES = {"darwin": "darwin_amd64", "linux": "linux_amd64", "win32": "windows_amd64"}
 
 # Log levels
 ERROR_LOG_LEVEL = 40
@@ -44,10 +40,16 @@ AWS2G_MODEL = "Amazon AWS Cloud Provider 2G"
 
 GCP2G_MODEL = "Google Cloud Provider"
 
-CLP_PROVIDER_MODELS = [AWS1G_MODEL, AWS2G_MODEL, AZURE1G_MODEL, AZURE2G_MODEL, GCP2G_MODEL]
+CLP_PROVIDER_MODELS = [
+    AWS1G_MODEL,
+    AWS2G_MODEL,
+    AZURE1G_MODEL,
+    AZURE2G_MODEL,
+    GCP2G_MODEL,
+]
 
 # Misc
-DIRTY_CHARS = r'''
+DIRTY_CHARS = r"""
                 \x1B  # ESC
                 (?:   # 7-bit C1 Fe (except CSI)
                     [@-Z\\-_]
@@ -57,10 +59,9 @@ DIRTY_CHARS = r'''
                     [ -/]*  # Intermediate bytes
                     [@-~]   # Final byte
                 )
-            '''
+            """
 
-GITHUB_REPO_PATTERN = \
-    "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/(?:blob/|tree/|/?)(?P<branch_id>.+?)/(?P<path>.*?)$"
+GITHUB_REPO_PATTERN = "^https://.+?/(?P<account_id>.+?)/(?P<repo_id>.+?)/(?:blob/|tree/|/?)(?P<branch_id>.+?)/(?P<path>.*?)$"
 
 
 class ATTRIBUTE_NAMES:

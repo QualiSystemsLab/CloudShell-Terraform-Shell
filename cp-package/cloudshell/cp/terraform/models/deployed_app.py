@@ -5,6 +5,7 @@ from cloudshell.cp.core.request_actions import (
     GetVMDetailsRequestActions,
 )
 from cloudshell.cp.core.request_actions.models import DeployedApp
+
 from cloudshell.cp.terraform import constants
 from cloudshell.cp.terraform.models.base_deployment_app import (
     ResourceAttrRODeploymentPath,

@@ -1,10 +1,12 @@
 from logging import Logger
 
 import jsonpickle
+
 from cloudshell.cp.core.request_actions.models import (
     ValidateAttributes,
     ValidateAttributesResponse,
 )
+
 from cloudshell.cp.terraform.actions.validation import ValidationActions
 from cloudshell.cp.terraform.constants import VM_FROM_TF_GIT
 

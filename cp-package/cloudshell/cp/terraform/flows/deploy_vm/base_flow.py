@@ -6,6 +6,7 @@ from cloudshell.cp.core.flows.deploy import AbstractDeployFlow
 from cloudshell.cp.core.request_actions.models import DeployAppResult
 from cloudshell.cp.core.rollback import RollbackCommandsManager
 from cloudshell.cp.core.utils.name_generator import NameGenerator
+
 from cloudshell.cp.terraform.models.tf_deploy_app_result import TFDeployAppResult
 from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
 from cloudshell.cp.terraform.terraform_cp_shell import TerraformCPShell
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
     from cloudshell.cp.core.cancellation_manager import CancellationContextManager
     from cloudshell.cp.core.request_actions import DeployVMRequestActions
     from cloudshell.cp.core.reservation_info import ReservationInfo
+
     from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
     from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 

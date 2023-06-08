@@ -29,9 +29,7 @@ class VMDetailsActions:
         for output, output_data in tf_outputs.items():
             if output_data.get("sensitive"):
                 continue
-            data.append(
-                VmDetailsProperty(key=output, value=output_data.get("value"))
-            )
+            data.append(VmDetailsProperty(key=output, value=output_data.get("value")))
         return data
 
     def create(self) -> VmDetailsData:

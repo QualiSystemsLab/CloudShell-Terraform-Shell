@@ -1,6 +1,7 @@
 from logging import Logger
 
 import jsonpickle
+
 from cloudshell.cp.terraform.flows.get_attribute_hints.deployment_type_handlers import (
     get_handler,
 )

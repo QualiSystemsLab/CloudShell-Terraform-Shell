@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Tests for `AzureTfBackendDriver`
@@ -11,7 +10,6 @@ import unittest
 
 
 class TestAzureTfBackendDriver(unittest.TestCase):
-
     def setUp(self):
         pass
 
@@ -22,6 +20,7 @@ class TestAzureTfBackendDriver(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     sys.exit(unittest.main())

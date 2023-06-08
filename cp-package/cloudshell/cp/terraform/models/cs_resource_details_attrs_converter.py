@@ -6,6 +6,7 @@ from itertools import chain
 from typing import TYPE_CHECKING, Any
 
 from attrs import Attribute, define, field, fields
+
 from cloudshell.api.cloudshell_api import ResourceInfo
 from cloudshell.shell.standards.core.namespace_type import NameSpaceType
 from cloudshell.shell.standards.core.resource_conf.attrs_converter import (

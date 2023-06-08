@@ -1,9 +1,13 @@
+import os
 import shutil
 import unittest
-from cloudshell.iac.terraform.downloaders.gitlab_downloader import GitLabScriptDownloader
-from tests.integration_tests.helper_objects.stdout_logger import get_test_logger
+
+from cloudshell.iac.terraform.downloaders.gitlab_downloader import (
+    GitLabScriptDownloader,
+)
+
 from tests.integration_tests.helper_objects.env_vars import GitLabEnvVars
-import os
+from tests.integration_tests.helper_objects.stdout_logger import get_test_logger
 
 
 class TestGitlabDownloader(unittest.TestCase):
@@ -14,16 +18,20 @@ class TestGitlabDownloader(unittest.TestCase):
         self.working_dir = None
 
     def test_api_url_download(self):
-        working_dir = self.downloader.download_repo(url=self.gitlab_vars.api_url,
-                                                    token=self.gitlab_vars.token,
-                                                    branch=self.gitlab_vars.branch)
+        working_dir = self.downloader.download_repo(
+            url=self.gitlab_vars.api_url,
+            token=self.gitlab_vars.token,
+            branch=self.gitlab_vars.branch,
+        )
         self.working_dir = working_dir
         assert working_dir
 
     def test_browser_url_download(self):
-        working_dir = self.downloader.download_repo(url=self.gitlab_vars.natural_url,
-                                                    token=self.gitlab_vars.token,
-                                                    branch=self.gitlab_vars.branch)
+        working_dir = self.downloader.download_repo(
+            url=self.gitlab_vars.natural_url,
+            token=self.gitlab_vars.token,
+            branch=self.gitlab_vars.branch,
+        )
         self.working_dir = working_dir
         assert working_dir
 

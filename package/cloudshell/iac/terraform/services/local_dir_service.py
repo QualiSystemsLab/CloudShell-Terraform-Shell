@@ -3,10 +3,10 @@ import os
 import shutil
 from pathlib import Path
 
+from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.downloaders.downloader import Downloader
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
-from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
 
 
 def handle_remove_readonly(func, path, exc_info):
@@ -21,6 +21,7 @@ def handle_remove_readonly(func, path, exc_info):
     Usage : ``shutil.rmtree(path, onerror=onerror)``
     """
     import stat
+
     # Is the error an access error?
     if not os.access(path, os.W_OK):
         os.chmod(path, stat.S_IWUSR)
@@ -36,13 +37,15 @@ def validate_tf_exe(exe_path: str):
 
 class LocalDir:
     @staticmethod
-    def delete_local_temp_dir(sandbox_data_handler: SandboxDataHandler, tf_working_dir: str):
+    def delete_local_temp_dir(
+        sandbox_data_handler: SandboxDataHandler, tf_working_dir: str
+    ):
         tf_path = Path(tf_working_dir)
         tmp_folder_found = False
         while not tmp_folder_found:
             objects_in_folder = os.listdir(tf_path.parent.absolute())
             if len(objects_in_folder) == 2:
-                if 'REPO' in objects_in_folder and 'repo.zip' in objects_in_folder:
+                if "REPO" in objects_in_folder and "repo.zip" in objects_in_folder:
                     tmp_folder_found = True
             tf_path = Path(tf_path.parent.absolute())
         tf_path_str = str(tf_path)
@@ -54,8 +57,11 @@ class LocalDir:
         return working_dir and os.path.isdir(working_dir)
 
     @staticmethod
-    def prepare_tf_working_dir(logger: logging.Logger, sandbox_data_handler: SandboxDataHandler,
-                               shell_helper: ShellHelperObject):
+    def prepare_tf_working_dir(
+        logger: logging.Logger,
+        sandbox_data_handler: SandboxDataHandler,
+        shell_helper: ShellHelperObject,
+    ):
         tf_working_dir = sandbox_data_handler.get_tf_working_dir()
 
         if not (tf_working_dir and os.path.isdir(tf_working_dir)):
@@ -63,7 +69,9 @@ class LocalDir:
             downloader = Downloader(shell_helper)
             tf_working_dir = downloader.download_terraform_module()
 
-            local_tf_exe = shell_helper.attr_handler.get_attribute(ATTRIBUTE_NAMES.LOCAL_TERRAFORM)
+            local_tf_exe = shell_helper.attr_handler.get_attribute(
+                ATTRIBUTE_NAMES.LOCAL_TERRAFORM
+            )
 
             # if offline, can copy local terraform exe (must exist already on ES)
             if local_tf_exe:

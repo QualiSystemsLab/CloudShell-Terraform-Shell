@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 
 
-class EnvVars(object):
+class EnvVars:
     def __init__(self, service_name: str):
         load_dotenv()
         self.cs_user = os.environ.get("CS_USERNAME")

@@ -1,6 +1,5 @@
 import unittest
-
-from mock import Mock
+from unittest.mock import Mock
 
 from cloudshell.iac.terraform.services.svc_attribute_handler import ServiceAttrHandler
 
@@ -16,7 +15,7 @@ class TestServiceAttrHandler(unittest.TestCase):
         tf_service.cloudshell_model_name = "cloudshell_model_name"
         tf_service.attributes = {
             "attribute_name": "attribute_value3",
-            "cloudshell_model_name.attribute_name": "attribute_value4"
+            "cloudshell_model_name.attribute_name": "attribute_value4",
         }
         svc_attribute_handler = ServiceAttrHandler(tf_service)
 
@@ -24,7 +23,9 @@ class TestServiceAttrHandler(unittest.TestCase):
         attribute_value1 = svc_attribute_handler.get_attribute("")
         attribute_value2 = svc_attribute_handler.get_attribute("wrong_attribute_name")
         attribute_value3 = svc_attribute_handler.get_attribute("attribute_name")
-        attribute_value4 = svc_attribute_handler.get_attribute("cloudshell_model_name.attribute_name")
+        attribute_value4 = svc_attribute_handler.get_attribute(
+            "cloudshell_model_name.attribute_name"
+        )
 
         # assert
         self.assertEqual(attribute_value1, "")
@@ -38,7 +39,7 @@ class TestServiceAttrHandler(unittest.TestCase):
         tf_service.cloudshell_model_name = "cloudshell_model_name"
         tf_service.attributes = {
             "attribute1": "attribute_value1",
-            "cloudshell_model_name.attribute2": "attribute_value2"
+            "cloudshell_model_name.attribute2": "attribute_value2",
         }
         svc_attribute_handler = ServiceAttrHandler(tf_service)
 
@@ -54,7 +55,7 @@ class TestServiceAttrHandler(unittest.TestCase):
         tf_service.cloudshell_model_name = "cloudshell_model_name"
         tf_service.attributes = {
             "attribute1": "attribute_value1",
-            "cloudshell_model_name.attribute2": "attribute_value2"
+            "cloudshell_model_name.attribute2": "attribute_value2",
         }
         svc_attribute_handler = ServiceAttrHandler(tf_service)
 
@@ -70,7 +71,7 @@ class TestServiceAttrHandler(unittest.TestCase):
         tf_service.cloudshell_model_name = "cloudshell_model_name"
         tf_service.attributes = {
             "attribute1": "attribute_value1",
-            "cloudshell_model_name.attribute2": "attribute_value2"
+            "cloudshell_model_name.attribute2": "attribute_value2",
         }
         svc_attribute_handler = ServiceAttrHandler(tf_service)
 
@@ -86,7 +87,7 @@ class TestServiceAttrHandler(unittest.TestCase):
         tf_service.cloudshell_model_name = "cloudshell_model_name"
         tf_service.attributes = {
             "attribute1": "attribute_value1",
-            "cloudshell_model_name.attribute2": "attribute_value2"
+            "cloudshell_model_name.attribute2": "attribute_value2",
         }
         svc_attribute_handler = ServiceAttrHandler(tf_service)
 
@@ -102,7 +103,7 @@ class TestServiceAttrHandler(unittest.TestCase):
         tf_service.cloudshell_model_name = "cloudshell_model_name"
         tf_service.attributes = {
             "attribute1": "attribute_value1",
-            "cloudshell_model_name.attribute2": "attribute_value2"
+            "cloudshell_model_name.attribute2": "attribute_value2",
         }
         svc_attribute_handler = ServiceAttrHandler(tf_service)
 

@@ -3,13 +3,7 @@ from __future__ import annotations
 from typing import Union
 
 from cloudshell.api.cloudshell_api import CloudShellAPISession, ResourceInfo
-from cloudshell.cp.terraform.constants import SHELL_NAME
-from cloudshell.cp.terraform.models.base_deployment_app import (
-    GitProviderAttrRO,
-    ResourceAttrROShellName,
-    ResourceBoolAttrROShellName,
-    TerraformResourceAttributeNames, CustomTagsAttrRO,
-)
+from cloudshell.iac.terraform.tagging.tags import TagsManager
 from cloudshell.shell.core.driver_context import (
     AutoLoadCommandContext,
     ResourceCommandContext,
@@ -21,7 +15,14 @@ from cloudshell.shell.standards.core.resource_config_entities import (
     ResourceListAttrRO,
 )
 
-from cloudshell.iac.terraform.tagging.tags import TagsManager
+from cloudshell.cp.terraform.constants import SHELL_NAME
+from cloudshell.cp.terraform.models.base_deployment_app import (
+    CustomTagsAttrRO,
+    GitProviderAttrRO,
+    ResourceAttrROShellName,
+    ResourceBoolAttrROShellName,
+    TerraformResourceAttributeNames,
+)
 
 CONTEXT_TYPES = Union[
     ResourceCommandContext,

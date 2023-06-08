@@ -1,9 +1,14 @@
-from cloudshell.shell.core.driver_context import ResourceCommandContext, AutoLoadDetails, AutoLoadAttribute, \
-    AutoLoadResource
 from collections import defaultdict
 
+from cloudshell.shell.core.driver_context import (
+    AutoLoadAttribute,
+    AutoLoadDetails,
+    AutoLoadResource,
+    ResourceCommandContext,
+)
 
-class LegacyUtils(object):
+
+class LegacyUtils:
     def __init__(self):
         self._datamodel_clss_dict = self.__generate_datamodel_classes_dict()
 
@@ -12,8 +17,10 @@ class LegacyUtils(object):
         root_name = context.resource.name
         root = self.__create_resource_from_datamodel(model_name, root_name)
         attributes = self.__create_attributes_dict(autoload_details.attributes)
-        self.__attach_attributes_to_resource(attributes, '', root)
-        self.__build_sub_resoruces_hierarchy(root, autoload_details.resources, attributes)
+        self.__attach_attributes_to_resource(attributes, "", root)
+        self.__build_sub_resoruces_hierarchy(
+            root, autoload_details.resources, attributes
+        )
         return root
 
     def __create_resource_from_datamodel(self, model_name, res_name):
@@ -28,58 +35,73 @@ class LegacyUtils(object):
     def __build_sub_resoruces_hierarchy(self, root, sub_resources, attributes):
         d = defaultdict(list)
         for resource in sub_resources:
-            splitted = resource.relative_address.split('/')
-            parent = '' if len(splitted) == 1 else resource.relative_address.rsplit('/', 1)[0]
+            splitted = resource.relative_address.split("/")
+            parent = (
+                ""
+                if len(splitted) == 1
+                else resource.relative_address.rsplit("/", 1)[0]
+            )
             rank = len(splitted)
             d[rank].append((parent, resource))
 
-        self.__set_models_hierarchy_recursively(d, 1, root, '', attributes)
+        self.__set_models_hierarchy_recursively(d, 1, root, "", attributes)
 
-    def __set_models_hierarchy_recursively(self, dict, rank, manipulated_resource, resource_relative_addr, attributes):
-        if rank not in dict: # validate if key exists
+    def __set_models_hierarchy_recursively(
+        self, dict, rank, manipulated_resource, resource_relative_addr, attributes
+    ):
+        if rank not in dict:  # validate if key exists
             pass
 
         for (parent, resource) in dict[rank]:
             if parent == resource_relative_addr:
                 sub_resource = self.__create_resource_from_datamodel(
-                    resource.model.replace(' ', ''),
-                    resource.name)
-                self.__attach_attributes_to_resource(attributes, resource.relative_address, sub_resource)
+                    resource.model.replace(" ", ""), resource.name
+                )
+                self.__attach_attributes_to_resource(
+                    attributes, resource.relative_address, sub_resource
+                )
                 manipulated_resource.add_sub_resource(
-                    self.__slice_parent_from_relative_path(parent, resource.relative_address), sub_resource)
-                self.__set_models_hierarchy_recursively(
-                    dict,
-                    rank + 1,
+                    self.__slice_parent_from_relative_path(
+                        parent, resource.relative_address
+                    ),
                     sub_resource,
-                    resource.relative_address,
-                    attributes)
+                )
+                self.__set_models_hierarchy_recursively(
+                    dict, rank + 1, sub_resource, resource.relative_address, attributes
+                )
 
     def __attach_attributes_to_resource(self, attributes, curr_relative_addr, resource):
         for attribute in attributes[curr_relative_addr]:
-            setattr(resource, attribute.attribute_name.lower().replace(' ', '_'), attribute.attribute_value)
+            setattr(
+                resource,
+                attribute.attribute_name.lower().replace(" ", "_"),
+                attribute.attribute_value,
+            )
         del attributes[curr_relative_addr]
 
     def __slice_parent_from_relative_path(self, parent, relative_addr):
-        if parent is '':
+        if parent == "":
             return relative_addr
-        return relative_addr[len(parent) + 1:] # + 1 because we want to remove the seperator also
+        return relative_addr[
+            len(parent) + 1 :
+        ]  # + 1 because we want to remove the seperator also
 
     def __generate_datamodel_classes_dict(self):
         return dict(self.__collect_generated_classes())
 
     def __collect_generated_classes(self):
-        import sys, inspect
+        import inspect
+        import sys
+
         return inspect.getmembers(sys.modules[__name__], inspect.isclass)
 
 
-class AzureTfBackend(object):
+class AzureTfBackend:
     def __init__(self, name):
-        """
-        
-        """
+        """ """
         self.attributes = {}
         self.resources = {}
-        self._cloudshell_model_name = 'Azure Tf Backend'
+        self._cloudshell_model_name = "Azure Tf Backend"
         self._name = name
 
     def add_sub_resource(self, relative_path, sub_resource):
@@ -99,22 +121,33 @@ class AzureTfBackend(object):
             result.attributes[attr] = context.resource.attributes[attr]
         return result
 
-    def create_autoload_details(self, relative_path=''):
+    def create_autoload_details(self, relative_path=""):
         """
         :param relative_path:
         :type relative_path: str
         :return
         """
-        resources = [AutoLoadResource(model=self.resources[r].cloudshell_model_name,
-            name=self.resources[r].name,
-            relative_address=self._get_relative_path(r, relative_path))
-            for r in self.resources]
-        attributes = [AutoLoadAttribute(relative_path, a, self.attributes[a]) for a in self.attributes]
+        resources = [
+            AutoLoadResource(
+                model=self.resources[r].cloudshell_model_name,
+                name=self.resources[r].name,
+                relative_address=self._get_relative_path(r, relative_path),
+            )
+            for r in self.resources
+        ]
+        attributes = [
+            AutoLoadAttribute(relative_path, a, self.attributes[a])
+            for a in self.attributes
+        ]
         autoload_details = AutoLoadDetails(resources, attributes)
         for r in self.resources:
-            curr_path = relative_path + '/' + r if relative_path else r
-            curr_auto_load_details = self.resources[r].create_autoload_details(curr_path)
-            autoload_details = self._merge_autoload_details(autoload_details, curr_auto_load_details)
+            curr_path = relative_path + "/" + r if relative_path else r
+            curr_auto_load_details = self.resources[r].create_autoload_details(
+                curr_path
+            )
+            autoload_details = self._merge_autoload_details(
+                autoload_details, curr_auto_load_details
+            )
         return autoload_details
 
     def _get_relative_path(self, child_path, parent_path):
@@ -127,7 +160,7 @@ class AzureTfBackend(object):
         :return: Combined path
         :rtype str
         """
-        return parent_path + '/' + child_path if parent_path else child_path
+        return parent_path + "/" + child_path if parent_path else child_path
 
     @staticmethod
     def _merge_autoload_details(autoload_details1, autoload_details2):
@@ -152,14 +185,18 @@ class AzureTfBackend(object):
         Returns the name of the Cloudshell model
         :return:
         """
-        return 'AzureTfBackend'
+        return "AzureTfBackend"
 
     @property
     def storage_account_name(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.Storage Account Name'] if 'Azure Tf Backend.Storage Account Name' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Storage Account Name"]
+            if "Azure Tf Backend.Storage Account Name" in self.attributes
+            else None
+        )
 
     @storage_account_name.setter
     def storage_account_name(self, value):
@@ -167,14 +204,18 @@ class AzureTfBackend(object):
         The name of the storage account to be used in order to save the state file
         :type value: str
         """
-        self.attributes['Azure Tf Backend.Storage Account Name'] = value
+        self.attributes["Azure Tf Backend.Storage Account Name"] = value
 
     @property
     def container_name(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.Container Name'] if 'Azure Tf Backend.Container Name' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Container Name"]
+            if "Azure Tf Backend.Container Name" in self.attributes
+            else None
+        )
 
     @container_name.setter
     def container_name(self, value):
@@ -182,14 +223,18 @@ class AzureTfBackend(object):
         The name of the storage container to be used in order to save the state file
         :type value: str
         """
-        self.attributes['Azure Tf Backend.Container Name'] = value
+        self.attributes["Azure Tf Backend.Container Name"] = value
 
     @property
     def access_key(self):
         """
         :rtype: string
         """
-        return self.attributes['Azure Tf Backend.Access Key'] if 'Azure Tf Backend.Access Key' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Access Key"]
+            if "Azure Tf Backend.Access Key" in self.attributes
+            else None
+        )
 
     @access_key.setter
     def access_key(self, value):
@@ -197,14 +242,18 @@ class AzureTfBackend(object):
         Azure storage account access key
         :type value: string
         """
-        self.attributes['Azure Tf Backend.Access Key'] = value
+        self.attributes["Azure Tf Backend.Access Key"] = value
 
     @property
     def cloud_provider(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.Cloud Provider'] if 'Azure Tf Backend.Cloud Provider' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Cloud Provider"]
+            if "Azure Tf Backend.Cloud Provider" in self.attributes
+            else None
+        )
 
     @cloud_provider.setter
     def cloud_provider(self, value):
@@ -212,14 +261,18 @@ class AzureTfBackend(object):
         In case Access Key has not been filled - the keys from the cloud provider will be used.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.Cloud Provider'] = value
+        self.attributes["Azure Tf Backend.Cloud Provider"] = value
 
     @property
     def resource_group(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.Resource Group'] if 'Azure Tf Backend.Resource Group' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Resource Group"]
+            if "Azure Tf Backend.Resource Group" in self.attributes
+            else None
+        )
 
     @resource_group.setter
     def resource_group(self, value):
@@ -227,14 +280,18 @@ class AzureTfBackend(object):
         Resource Group of the StorageAccount/Container (if Cloud Provider authentication has been filled)
         :type value: str
         """
-        self.attributes['Azure Tf Backend.Resource Group'] = value
+        self.attributes["Azure Tf Backend.Resource Group"] = value
 
     @property
     def user(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.User'] if 'Azure Tf Backend.User' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.User"]
+            if "Azure Tf Backend.User" in self.attributes
+            else None
+        )
 
     @user.setter
     def user(self, value):
@@ -242,29 +299,37 @@ class AzureTfBackend(object):
         User with administrative privileges
         :type value: str
         """
-        self.attributes['Azure Tf Backend.User'] = value
+        self.attributes["Azure Tf Backend.User"] = value
 
     @property
     def password(self):
         """
         :rtype: string
         """
-        return self.attributes['Azure Tf Backend.Password'] if 'Azure Tf Backend.Password' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Password"]
+            if "Azure Tf Backend.Password" in self.attributes
+            else None
+        )
 
     @password.setter
     def password(self, value):
         """
-        
+
         :type value: string
         """
-        self.attributes['Azure Tf Backend.Password'] = value
+        self.attributes["Azure Tf Backend.Password"] = value
 
     @property
     def enable_password(self):
         """
         :rtype: string
         """
-        return self.attributes['Azure Tf Backend.Enable Password'] if 'Azure Tf Backend.Enable Password' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Enable Password"]
+            if "Azure Tf Backend.Enable Password" in self.attributes
+            else None
+        )
 
     @enable_password.setter
     def enable_password(self, value):
@@ -272,14 +337,18 @@ class AzureTfBackend(object):
         The enable password is required by some CLI protocols such as Telnet and is required according to the device configuration.
         :type value: string
         """
-        self.attributes['Azure Tf Backend.Enable Password'] = value
+        self.attributes["Azure Tf Backend.Enable Password"] = value
 
     @property
     def power_management(self):
         """
         :rtype: bool
         """
-        return self.attributes['Azure Tf Backend.Power Management'] if 'Azure Tf Backend.Power Management' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Power Management"]
+            if "Azure Tf Backend.Power Management" in self.attributes
+            else None
+        )
 
     @power_management.setter
     def power_management(self, value=True):
@@ -287,29 +356,37 @@ class AzureTfBackend(object):
         Used by the power management orchestration, if enabled, to determine whether to automatically manage the device power status. Enabled by default.
         :type value: bool
         """
-        self.attributes['Azure Tf Backend.Power Management'] = value
+        self.attributes["Azure Tf Backend.Power Management"] = value
 
     @property
     def sessions_concurrency_limit(self):
         """
         :rtype: float
         """
-        return self.attributes['Azure Tf Backend.Sessions Concurrency Limit'] if 'Azure Tf Backend.Sessions Concurrency Limit' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Sessions Concurrency Limit"]
+            if "Azure Tf Backend.Sessions Concurrency Limit" in self.attributes
+            else None
+        )
 
     @sessions_concurrency_limit.setter
-    def sessions_concurrency_limit(self, value='1'):
+    def sessions_concurrency_limit(self, value="1"):
         """
         The maximum number of concurrent sessions that the driver will open to the device. Default is 1 (no concurrency).
         :type value: float
         """
-        self.attributes['Azure Tf Backend.Sessions Concurrency Limit'] = value
+        self.attributes["Azure Tf Backend.Sessions Concurrency Limit"] = value
 
     @property
     def snmp_read_community(self):
         """
         :rtype: string
         """
-        return self.attributes['Azure Tf Backend.SNMP Read Community'] if 'Azure Tf Backend.SNMP Read Community' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.SNMP Read Community"]
+            if "Azure Tf Backend.SNMP Read Community" in self.attributes
+            else None
+        )
 
     @snmp_read_community.setter
     def snmp_read_community(self, value):
@@ -317,14 +394,18 @@ class AzureTfBackend(object):
         The SNMP Read-Only Community String is like a password. It is sent along with each SNMP Get-Request and allows (or denies) access to device.
         :type value: string
         """
-        self.attributes['Azure Tf Backend.SNMP Read Community'] = value
+        self.attributes["Azure Tf Backend.SNMP Read Community"] = value
 
     @property
     def snmp_write_community(self):
         """
         :rtype: string
         """
-        return self.attributes['Azure Tf Backend.SNMP Write Community'] if 'Azure Tf Backend.SNMP Write Community' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.SNMP Write Community"]
+            if "Azure Tf Backend.SNMP Write Community" in self.attributes
+            else None
+        )
 
     @snmp_write_community.setter
     def snmp_write_community(self, value):
@@ -332,14 +413,18 @@ class AzureTfBackend(object):
         The SNMP Write Community String is like a password. It is sent along with each SNMP Set-Request and allows (or denies) chaning MIBs values.
         :type value: string
         """
-        self.attributes['Azure Tf Backend.SNMP Write Community'] = value
+        self.attributes["Azure Tf Backend.SNMP Write Community"] = value
 
     @property
     def snmp_v3_user(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.SNMP V3 User'] if 'Azure Tf Backend.SNMP V3 User' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.SNMP V3 User"]
+            if "Azure Tf Backend.SNMP V3 User" in self.attributes
+            else None
+        )
 
     @snmp_v3_user.setter
     def snmp_v3_user(self, value):
@@ -347,14 +432,18 @@ class AzureTfBackend(object):
         Relevant only in case SNMP V3 is in use.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.SNMP V3 User'] = value
+        self.attributes["Azure Tf Backend.SNMP V3 User"] = value
 
     @property
     def snmp_v3_password(self):
         """
         :rtype: string
         """
-        return self.attributes['Azure Tf Backend.SNMP V3 Password'] if 'Azure Tf Backend.SNMP V3 Password' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.SNMP V3 Password"]
+            if "Azure Tf Backend.SNMP V3 Password" in self.attributes
+            else None
+        )
 
     @snmp_v3_password.setter
     def snmp_v3_password(self, value):
@@ -362,14 +451,18 @@ class AzureTfBackend(object):
         Relevant only in case SNMP V3 is in use.
         :type value: string
         """
-        self.attributes['Azure Tf Backend.SNMP V3 Password'] = value
+        self.attributes["Azure Tf Backend.SNMP V3 Password"] = value
 
     @property
     def snmp_v3_private_key(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.SNMP V3 Private Key'] if 'Azure Tf Backend.SNMP V3 Private Key' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.SNMP V3 Private Key"]
+            if "Azure Tf Backend.SNMP V3 Private Key" in self.attributes
+            else None
+        )
 
     @snmp_v3_private_key.setter
     def snmp_v3_private_key(self, value):
@@ -377,59 +470,75 @@ class AzureTfBackend(object):
         Relevant only in case SNMP V3 is in use.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.SNMP V3 Private Key'] = value
+        self.attributes["Azure Tf Backend.SNMP V3 Private Key"] = value
 
     @property
     def snmp_v3_authentication_protocol(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.SNMP V3 Authentication Protocol'] if 'Azure Tf Backend.SNMP V3 Authentication Protocol' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.SNMP V3 Authentication Protocol"]
+            if "Azure Tf Backend.SNMP V3 Authentication Protocol" in self.attributes
+            else None
+        )
 
     @snmp_v3_authentication_protocol.setter
-    def snmp_v3_authentication_protocol(self, value='No Authentication Protocol'):
+    def snmp_v3_authentication_protocol(self, value="No Authentication Protocol"):
         """
         Relevant only in case SNMP V3 is in use.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.SNMP V3 Authentication Protocol'] = value
+        self.attributes["Azure Tf Backend.SNMP V3 Authentication Protocol"] = value
 
     @property
     def snmp_v3_privacy_protocol(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.SNMP V3 Privacy Protocol'] if 'Azure Tf Backend.SNMP V3 Privacy Protocol' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.SNMP V3 Privacy Protocol"]
+            if "Azure Tf Backend.SNMP V3 Privacy Protocol" in self.attributes
+            else None
+        )
 
     @snmp_v3_privacy_protocol.setter
-    def snmp_v3_privacy_protocol(self, value='No Privacy Protocol'):
+    def snmp_v3_privacy_protocol(self, value="No Privacy Protocol"):
         """
         Relevant only in case SNMP V3 is in use.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.SNMP V3 Privacy Protocol'] = value
+        self.attributes["Azure Tf Backend.SNMP V3 Privacy Protocol"] = value
 
     @property
     def snmp_version(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.SNMP Version'] if 'Azure Tf Backend.SNMP Version' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.SNMP Version"]
+            if "Azure Tf Backend.SNMP Version" in self.attributes
+            else None
+        )
 
     @snmp_version.setter
-    def snmp_version(self, value=''):
+    def snmp_version(self, value=""):
         """
         The version of SNMP to use. Possible values are v1, v2c and v3.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.SNMP Version'] = value
+        self.attributes["Azure Tf Backend.SNMP Version"] = value
 
     @property
     def enable_snmp(self):
         """
         :rtype: bool
         """
-        return self.attributes['Azure Tf Backend.Enable SNMP'] if 'Azure Tf Backend.Enable SNMP' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Enable SNMP"]
+            if "Azure Tf Backend.Enable SNMP" in self.attributes
+            else None
+        )
 
     @enable_snmp.setter
     def enable_snmp(self, value=True):
@@ -437,14 +546,18 @@ class AzureTfBackend(object):
         If set to True and SNMP isn???t enabled yet in the device the Shell will automatically enable SNMP in the device when Autoload command is called. SNMP must be enabled on the device for the Autoload command to run successfully. True by default.
         :type value: bool
         """
-        self.attributes['Azure Tf Backend.Enable SNMP'] = value
+        self.attributes["Azure Tf Backend.Enable SNMP"] = value
 
     @property
     def disable_snmp(self):
         """
         :rtype: bool
         """
-        return self.attributes['Azure Tf Backend.Disable SNMP'] if 'Azure Tf Backend.Disable SNMP' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Disable SNMP"]
+            if "Azure Tf Backend.Disable SNMP" in self.attributes
+            else None
+        )
 
     @disable_snmp.setter
     def disable_snmp(self, value=False):
@@ -452,14 +565,18 @@ class AzureTfBackend(object):
         If set to True SNMP will be disabled automatically by the Shell after the Autoload command execution is completed. False by default.
         :type value: bool
         """
-        self.attributes['Azure Tf Backend.Disable SNMP'] = value
+        self.attributes["Azure Tf Backend.Disable SNMP"] = value
 
     @property
     def console_server_ip_address(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.Console Server IP Address'] if 'Azure Tf Backend.Console Server IP Address' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Console Server IP Address"]
+            if "Azure Tf Backend.Console Server IP Address" in self.attributes
+            else None
+        )
 
     @console_server_ip_address.setter
     def console_server_ip_address(self, value):
@@ -467,29 +584,37 @@ class AzureTfBackend(object):
         The IP address of the console server, in IPv4 format.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.Console Server IP Address'] = value
+        self.attributes["Azure Tf Backend.Console Server IP Address"] = value
 
     @property
     def console_user(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.Console User'] if 'Azure Tf Backend.Console User' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Console User"]
+            if "Azure Tf Backend.Console User" in self.attributes
+            else None
+        )
 
     @console_user.setter
     def console_user(self, value):
         """
-        
+
         :type value: str
         """
-        self.attributes['Azure Tf Backend.Console User'] = value
+        self.attributes["Azure Tf Backend.Console User"] = value
 
     @property
     def console_port(self):
         """
         :rtype: float
         """
-        return self.attributes['Azure Tf Backend.Console Port'] if 'Azure Tf Backend.Console Port' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Console Port"]
+            if "Azure Tf Backend.Console Port" in self.attributes
+            else None
+        )
 
     @console_port.setter
     def console_port(self, value):
@@ -497,44 +622,56 @@ class AzureTfBackend(object):
         The port on the console server, usually TCP port, which the device is associated with.
         :type value: float
         """
-        self.attributes['Azure Tf Backend.Console Port'] = value
+        self.attributes["Azure Tf Backend.Console Port"] = value
 
     @property
     def console_password(self):
         """
         :rtype: string
         """
-        return self.attributes['Azure Tf Backend.Console Password'] if 'Azure Tf Backend.Console Password' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Console Password"]
+            if "Azure Tf Backend.Console Password" in self.attributes
+            else None
+        )
 
     @console_password.setter
     def console_password(self, value):
         """
-        
+
         :type value: string
         """
-        self.attributes['Azure Tf Backend.Console Password'] = value
+        self.attributes["Azure Tf Backend.Console Password"] = value
 
     @property
     def cli_connection_type(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.CLI Connection Type'] if 'Azure Tf Backend.CLI Connection Type' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.CLI Connection Type"]
+            if "Azure Tf Backend.CLI Connection Type" in self.attributes
+            else None
+        )
 
     @cli_connection_type.setter
-    def cli_connection_type(self, value='Auto'):
+    def cli_connection_type(self, value="Auto"):
         """
         The CLI connection type that will be used by the driver. Possible values are Auto, Console, SSH, Telnet and TCP. If Auto is selected the driver will choose the available connection type automatically. Default value is Auto.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.CLI Connection Type'] = value
+        self.attributes["Azure Tf Backend.CLI Connection Type"] = value
 
     @property
     def cli_tcp_port(self):
         """
         :rtype: float
         """
-        return self.attributes['Azure Tf Backend.CLI TCP Port'] if 'Azure Tf Backend.CLI TCP Port' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.CLI TCP Port"]
+            if "Azure Tf Backend.CLI TCP Port" in self.attributes
+            else None
+        )
 
     @cli_tcp_port.setter
     def cli_tcp_port(self, value):
@@ -542,14 +679,18 @@ class AzureTfBackend(object):
         TCP Port to user for CLI connection. If kept empty a default CLI port will be used based on the chosen protocol, for example Telnet will use port 23.
         :type value: float
         """
-        self.attributes['Azure Tf Backend.CLI TCP Port'] = value
+        self.attributes["Azure Tf Backend.CLI TCP Port"] = value
 
     @property
     def backup_location(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.Backup Location'] if 'Azure Tf Backend.Backup Location' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Backup Location"]
+            if "Azure Tf Backend.Backup Location" in self.attributes
+            else None
+        )
 
     @backup_location.setter
     def backup_location(self, value):
@@ -557,29 +698,37 @@ class AzureTfBackend(object):
         Used by the save/restore orchestration to determine where backups should be saved.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.Backup Location'] = value
+        self.attributes["Azure Tf Backend.Backup Location"] = value
 
     @property
     def backup_type(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.Backup Type'] if 'Azure Tf Backend.Backup Type' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Backup Type"]
+            if "Azure Tf Backend.Backup Type" in self.attributes
+            else None
+        )
 
     @backup_type.setter
-    def backup_type(self, value='File System'):
+    def backup_type(self, value="File System"):
         """
         Supported protocols for saving and restoring of configuration and firmware files. Possible values are 'File System' 'FTP' and 'TFTP'. Default value is 'File System'.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.Backup Type'] = value
+        self.attributes["Azure Tf Backend.Backup Type"] = value
 
     @property
     def backup_user(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.Backup User'] if 'Azure Tf Backend.Backup User' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Backup User"]
+            if "Azure Tf Backend.Backup User" in self.attributes
+            else None
+        )
 
     @backup_user.setter
     def backup_user(self, value):
@@ -587,14 +736,18 @@ class AzureTfBackend(object):
         Username for the storage server used for saving and restoring of configuration and firmware files.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.Backup User'] = value
+        self.attributes["Azure Tf Backend.Backup User"] = value
 
     @property
     def backup_password(self):
         """
         :rtype: string
         """
-        return self.attributes['Azure Tf Backend.Backup Password'] if 'Azure Tf Backend.Backup Password' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.Backup Password"]
+            if "Azure Tf Backend.Backup Password" in self.attributes
+            else None
+        )
 
     @backup_password.setter
     def backup_password(self, value):
@@ -602,7 +755,7 @@ class AzureTfBackend(object):
         Password for the storage server used for saving and restoring of configuration and firmware files.
         :type value: string
         """
-        self.attributes['Azure Tf Backend.Backup Password'] = value
+        self.attributes["Azure Tf Backend.Backup Password"] = value
 
     @property
     def name(self):
@@ -614,7 +767,7 @@ class AzureTfBackend(object):
     @name.setter
     def name(self, value):
         """
-        
+
         :type value: str
         """
         self._name = value
@@ -629,7 +782,7 @@ class AzureTfBackend(object):
     @cloudshell_model_name.setter
     def cloudshell_model_name(self, value):
         """
-        
+
         :type value: str
         """
         self._cloudshell_model_name = value
@@ -639,7 +792,11 @@ class AzureTfBackend(object):
         """
         :rtype: str
         """
-        return self.attributes['CS_GenericResource.System Name'] if 'CS_GenericResource.System Name' in self.attributes else None
+        return (
+            self.attributes["CS_GenericResource.System Name"]
+            if "CS_GenericResource.System Name" in self.attributes
+            else None
+        )
 
     @system_name.setter
     def system_name(self, value):
@@ -647,29 +804,37 @@ class AzureTfBackend(object):
         A unique identifier for the device, if exists in the device terminal/os.
         :type value: str
         """
-        self.attributes['CS_GenericResource.System Name'] = value
+        self.attributes["CS_GenericResource.System Name"] = value
 
     @property
     def vendor(self):
         """
         :rtype: str
         """
-        return self.attributes['CS_GenericResource.Vendor'] if 'CS_GenericResource.Vendor' in self.attributes else None
+        return (
+            self.attributes["CS_GenericResource.Vendor"]
+            if "CS_GenericResource.Vendor" in self.attributes
+            else None
+        )
 
     @vendor.setter
-    def vendor(self, value=''):
+    def vendor(self, value=""):
         """
         The name of the device manufacture.
         :type value: str
         """
-        self.attributes['CS_GenericResource.Vendor'] = value
+        self.attributes["CS_GenericResource.Vendor"] = value
 
     @property
     def contact_name(self):
         """
         :rtype: str
         """
-        return self.attributes['CS_GenericResource.Contact Name'] if 'CS_GenericResource.Contact Name' in self.attributes else None
+        return (
+            self.attributes["CS_GenericResource.Contact Name"]
+            if "CS_GenericResource.Contact Name" in self.attributes
+            else None
+        )
 
     @contact_name.setter
     def contact_name(self, value):
@@ -677,62 +842,72 @@ class AzureTfBackend(object):
         The name of a contact registered in the device.
         :type value: str
         """
-        self.attributes['CS_GenericResource.Contact Name'] = value
+        self.attributes["CS_GenericResource.Contact Name"] = value
 
     @property
     def location(self):
         """
         :rtype: str
         """
-        return self.attributes['CS_GenericResource.Location'] if 'CS_GenericResource.Location' in self.attributes else None
+        return (
+            self.attributes["CS_GenericResource.Location"]
+            if "CS_GenericResource.Location" in self.attributes
+            else None
+        )
 
     @location.setter
-    def location(self, value=''):
+    def location(self, value=""):
         """
         The device physical location identifier. For example Lab1/Floor2/Row5/Slot4.
         :type value: str
         """
-        self.attributes['CS_GenericResource.Location'] = value
+        self.attributes["CS_GenericResource.Location"] = value
 
     @property
     def model(self):
         """
         :rtype: str
         """
-        return self.attributes['CS_GenericResource.Model'] if 'CS_GenericResource.Model' in self.attributes else None
+        return (
+            self.attributes["CS_GenericResource.Model"]
+            if "CS_GenericResource.Model" in self.attributes
+            else None
+        )
 
     @model.setter
-    def model(self, value=''):
+    def model(self, value=""):
         """
         The device model. This information is typically used for abstract resource filtering.
         :type value: str
         """
-        self.attributes['CS_GenericResource.Model'] = value
+        self.attributes["CS_GenericResource.Model"] = value
 
     @property
     def model_name(self):
         """
         :rtype: str
         """
-        return self.attributes['CS_GenericResource.Model Name'] if 'CS_GenericResource.Model Name' in self.attributes else None
+        return (
+            self.attributes["CS_GenericResource.Model Name"]
+            if "CS_GenericResource.Model Name" in self.attributes
+            else None
+        )
 
     @model_name.setter
-    def model_name(self, value=''):
+    def model_name(self, value=""):
         """
         The catalog name of the device model. This attribute will be displayed in CloudShell instead of the CloudShell model.
         :type value: str
         """
-        self.attributes['CS_GenericResource.Model Name'] = value
+        self.attributes["CS_GenericResource.Model Name"] = value
 
 
-class ResourcePort(object):
+class ResourcePort:
     def __init__(self, name):
-        """
-        
-        """
+        """ """
         self.attributes = {}
         self.resources = {}
-        self._cloudshell_model_name = 'Azure Tf Backend.ResourcePort'
+        self._cloudshell_model_name = "Azure Tf Backend.ResourcePort"
         self._name = name
 
     def add_sub_resource(self, relative_path, sub_resource):
@@ -752,22 +927,33 @@ class ResourcePort(object):
             result.attributes[attr] = context.resource.attributes[attr]
         return result
 
-    def create_autoload_details(self, relative_path=''):
+    def create_autoload_details(self, relative_path=""):
         """
         :param relative_path:
         :type relative_path: str
         :return
         """
-        resources = [AutoLoadResource(model=self.resources[r].cloudshell_model_name,
-            name=self.resources[r].name,
-            relative_address=self._get_relative_path(r, relative_path))
-            for r in self.resources]
-        attributes = [AutoLoadAttribute(relative_path, a, self.attributes[a]) for a in self.attributes]
+        resources = [
+            AutoLoadResource(
+                model=self.resources[r].cloudshell_model_name,
+                name=self.resources[r].name,
+                relative_address=self._get_relative_path(r, relative_path),
+            )
+            for r in self.resources
+        ]
+        attributes = [
+            AutoLoadAttribute(relative_path, a, self.attributes[a])
+            for a in self.attributes
+        ]
         autoload_details = AutoLoadDetails(resources, attributes)
         for r in self.resources:
-            curr_path = relative_path + '/' + r if relative_path else r
-            curr_auto_load_details = self.resources[r].create_autoload_details(curr_path)
-            autoload_details = self._merge_autoload_details(autoload_details, curr_auto_load_details)
+            curr_path = relative_path + "/" + r if relative_path else r
+            curr_auto_load_details = self.resources[r].create_autoload_details(
+                curr_path
+            )
+            autoload_details = self._merge_autoload_details(
+                autoload_details, curr_auto_load_details
+            )
         return autoload_details
 
     def _get_relative_path(self, child_path, parent_path):
@@ -780,7 +966,7 @@ class ResourcePort(object):
         :return: Combined path
         :rtype str
         """
-        return parent_path + '/' + child_path if parent_path else child_path
+        return parent_path + "/" + child_path if parent_path else child_path
 
     @staticmethod
     def _merge_autoload_details(autoload_details1, autoload_details2):
@@ -805,59 +991,75 @@ class ResourcePort(object):
         Returns the name of the Cloudshell model
         :return:
         """
-        return 'ResourcePort'
+        return "ResourcePort"
 
     @property
     def mac_address(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.ResourcePort.MAC Address'] if 'Azure Tf Backend.ResourcePort.MAC Address' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.ResourcePort.MAC Address"]
+            if "Azure Tf Backend.ResourcePort.MAC Address" in self.attributes
+            else None
+        )
 
     @mac_address.setter
-    def mac_address(self, value=''):
+    def mac_address(self, value=""):
         """
-        
+
         :type value: str
         """
-        self.attributes['Azure Tf Backend.ResourcePort.MAC Address'] = value
+        self.attributes["Azure Tf Backend.ResourcePort.MAC Address"] = value
 
     @property
     def ipv4_address(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.ResourcePort.IPv4 Address'] if 'Azure Tf Backend.ResourcePort.IPv4 Address' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.ResourcePort.IPv4 Address"]
+            if "Azure Tf Backend.ResourcePort.IPv4 Address" in self.attributes
+            else None
+        )
 
     @ipv4_address.setter
     def ipv4_address(self, value):
         """
-        
+
         :type value: str
         """
-        self.attributes['Azure Tf Backend.ResourcePort.IPv4 Address'] = value
+        self.attributes["Azure Tf Backend.ResourcePort.IPv4 Address"] = value
 
     @property
     def ipv6_address(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.ResourcePort.IPv6 Address'] if 'Azure Tf Backend.ResourcePort.IPv6 Address' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.ResourcePort.IPv6 Address"]
+            if "Azure Tf Backend.ResourcePort.IPv6 Address" in self.attributes
+            else None
+        )
 
     @ipv6_address.setter
     def ipv6_address(self, value):
         """
-        
+
         :type value: str
         """
-        self.attributes['Azure Tf Backend.ResourcePort.IPv6 Address'] = value
+        self.attributes["Azure Tf Backend.ResourcePort.IPv6 Address"] = value
 
     @property
     def port_speed(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.ResourcePort.Port Speed'] if 'Azure Tf Backend.ResourcePort.Port Speed' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.ResourcePort.Port Speed"]
+            if "Azure Tf Backend.ResourcePort.Port Speed" in self.attributes
+            else None
+        )
 
     @port_speed.setter
     def port_speed(self, value):
@@ -865,7 +1067,7 @@ class ResourcePort(object):
         The port speed (e.g 10Gb/s, 40Gb/s, 100Mb/s)
         :type value: str
         """
-        self.attributes['Azure Tf Backend.ResourcePort.Port Speed'] = value
+        self.attributes["Azure Tf Backend.ResourcePort.Port Speed"] = value
 
     @property
     def name(self):
@@ -877,7 +1079,7 @@ class ResourcePort(object):
     @name.setter
     def name(self, value):
         """
-        
+
         :type value: str
         """
         self._name = value
@@ -892,7 +1094,7 @@ class ResourcePort(object):
     @cloudshell_model_name.setter
     def cloudshell_model_name(self, value):
         """
-        
+
         :type value: str
         """
         self._cloudshell_model_name = value
@@ -902,25 +1104,27 @@ class ResourcePort(object):
         """
         :rtype: str
         """
-        return self.attributes['CS_Port.Model Name'] if 'CS_Port.Model Name' in self.attributes else None
+        return (
+            self.attributes["CS_Port.Model Name"]
+            if "CS_Port.Model Name" in self.attributes
+            else None
+        )
 
     @model_name.setter
-    def model_name(self, value=''):
+    def model_name(self, value=""):
         """
         The catalog name of the device model. This attribute will be displayed in CloudShell instead of the CloudShell model.
         :type value: str
         """
-        self.attributes['CS_Port.Model Name'] = value
+        self.attributes["CS_Port.Model Name"] = value
 
 
-class GenericPowerPort(object):
+class GenericPowerPort:
     def __init__(self, name):
-        """
-        
-        """
+        """ """
         self.attributes = {}
         self.resources = {}
-        self._cloudshell_model_name = 'Azure Tf Backend.GenericPowerPort'
+        self._cloudshell_model_name = "Azure Tf Backend.GenericPowerPort"
         self._name = name
 
     def add_sub_resource(self, relative_path, sub_resource):
@@ -940,22 +1144,33 @@ class GenericPowerPort(object):
             result.attributes[attr] = context.resource.attributes[attr]
         return result
 
-    def create_autoload_details(self, relative_path=''):
+    def create_autoload_details(self, relative_path=""):
         """
         :param relative_path:
         :type relative_path: str
         :return
         """
-        resources = [AutoLoadResource(model=self.resources[r].cloudshell_model_name,
-            name=self.resources[r].name,
-            relative_address=self._get_relative_path(r, relative_path))
-            for r in self.resources]
-        attributes = [AutoLoadAttribute(relative_path, a, self.attributes[a]) for a in self.attributes]
+        resources = [
+            AutoLoadResource(
+                model=self.resources[r].cloudshell_model_name,
+                name=self.resources[r].name,
+                relative_address=self._get_relative_path(r, relative_path),
+            )
+            for r in self.resources
+        ]
+        attributes = [
+            AutoLoadAttribute(relative_path, a, self.attributes[a])
+            for a in self.attributes
+        ]
         autoload_details = AutoLoadDetails(resources, attributes)
         for r in self.resources:
-            curr_path = relative_path + '/' + r if relative_path else r
-            curr_auto_load_details = self.resources[r].create_autoload_details(curr_path)
-            autoload_details = self._merge_autoload_details(autoload_details, curr_auto_load_details)
+            curr_path = relative_path + "/" + r if relative_path else r
+            curr_auto_load_details = self.resources[r].create_autoload_details(
+                curr_path
+            )
+            autoload_details = self._merge_autoload_details(
+                autoload_details, curr_auto_load_details
+            )
         return autoload_details
 
     def _get_relative_path(self, child_path, parent_path):
@@ -968,7 +1183,7 @@ class GenericPowerPort(object):
         :return: Combined path
         :rtype str
         """
-        return parent_path + '/' + child_path if parent_path else child_path
+        return parent_path + "/" + child_path if parent_path else child_path
 
     @staticmethod
     def _merge_autoload_details(autoload_details1, autoload_details2):
@@ -993,14 +1208,18 @@ class GenericPowerPort(object):
         Returns the name of the Cloudshell model
         :return:
         """
-        return 'GenericPowerPort'
+        return "GenericPowerPort"
 
     @property
     def model(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.GenericPowerPort.Model'] if 'Azure Tf Backend.GenericPowerPort.Model' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.GenericPowerPort.Model"]
+            if "Azure Tf Backend.GenericPowerPort.Model" in self.attributes
+            else None
+        )
 
     @model.setter
     def model(self, value):
@@ -1008,29 +1227,37 @@ class GenericPowerPort(object):
         The device model. This information is typically used for abstract resource filtering.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.GenericPowerPort.Model'] = value
+        self.attributes["Azure Tf Backend.GenericPowerPort.Model"] = value
 
     @property
     def serial_number(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.GenericPowerPort.Serial Number'] if 'Azure Tf Backend.GenericPowerPort.Serial Number' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.GenericPowerPort.Serial Number"]
+            if "Azure Tf Backend.GenericPowerPort.Serial Number" in self.attributes
+            else None
+        )
 
     @serial_number.setter
     def serial_number(self, value):
         """
-        
+
         :type value: str
         """
-        self.attributes['Azure Tf Backend.GenericPowerPort.Serial Number'] = value
+        self.attributes["Azure Tf Backend.GenericPowerPort.Serial Number"] = value
 
     @property
     def version(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.GenericPowerPort.Version'] if 'Azure Tf Backend.GenericPowerPort.Version' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.GenericPowerPort.Version"]
+            if "Azure Tf Backend.GenericPowerPort.Version" in self.attributes
+            else None
+        )
 
     @version.setter
     def version(self, value):
@@ -1038,14 +1265,18 @@ class GenericPowerPort(object):
         The firmware version of the resource.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.GenericPowerPort.Version'] = value
+        self.attributes["Azure Tf Backend.GenericPowerPort.Version"] = value
 
     @property
     def port_description(self):
         """
         :rtype: str
         """
-        return self.attributes['Azure Tf Backend.GenericPowerPort.Port Description'] if 'Azure Tf Backend.GenericPowerPort.Port Description' in self.attributes else None
+        return (
+            self.attributes["Azure Tf Backend.GenericPowerPort.Port Description"]
+            if "Azure Tf Backend.GenericPowerPort.Port Description" in self.attributes
+            else None
+        )
 
     @port_description.setter
     def port_description(self, value):
@@ -1053,7 +1284,7 @@ class GenericPowerPort(object):
         The description of the port as configured in the device.
         :type value: str
         """
-        self.attributes['Azure Tf Backend.GenericPowerPort.Port Description'] = value
+        self.attributes["Azure Tf Backend.GenericPowerPort.Port Description"] = value
 
     @property
     def name(self):
@@ -1065,7 +1296,7 @@ class GenericPowerPort(object):
     @name.setter
     def name(self, value):
         """
-        
+
         :type value: str
         """
         self._name = value
@@ -1080,7 +1311,7 @@ class GenericPowerPort(object):
     @cloudshell_model_name.setter
     def cloudshell_model_name(self, value):
         """
-        
+
         :type value: str
         """
         self._cloudshell_model_name = value
@@ -1090,15 +1321,16 @@ class GenericPowerPort(object):
         """
         :rtype: str
         """
-        return self.attributes['CS_PowerPort.Model Name'] if 'CS_PowerPort.Model Name' in self.attributes else None
+        return (
+            self.attributes["CS_PowerPort.Model Name"]
+            if "CS_PowerPort.Model Name" in self.attributes
+            else None
+        )
 
     @model_name.setter
-    def model_name(self, value=''):
+    def model_name(self, value=""):
         """
         The catalog name of the device model. This attribute will be displayed in CloudShell instead of the CloudShell model.
         :type value: str
         """
-        self.attributes['CS_PowerPort.Model Name'] = value
-
-
-
+        self.attributes["CS_PowerPort.Model Name"] = value

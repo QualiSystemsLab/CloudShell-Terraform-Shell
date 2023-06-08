@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from urllib.request import urlopen
 
 import attr
+
 from cloudshell.cp.terraform.exceptions import (
     BaseTFException,
     InvalidAttributeException,

@@ -1,21 +1,21 @@
-from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
-from cloudshell.shell.core.driver_context import AutoLoadDetails
-from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
-from cloudshell.shell.core.session.logging_session import LoggingSessionContext
-
-from googleapiclient import discovery
-# from google.oauth2 import service_account
-from google.cloud import storage
-import os
 import json
+import os
 import sys
 
 from constants import GCP_MODELS, GOOGLE_APPLICATION_CREDENTIALS
 from data_model import GcpTfBackend
 
+# from google.oauth2 import service_account
+from google.cloud import storage
+from googleapiclient import discovery
 
-class GcpTfBackendDriver (ResourceDriverInterface):
+from cloudshell.shell.core.driver_context import AutoLoadDetails
+from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
+from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
+from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
+
+class GcpTfBackendDriver(ResourceDriverInterface):
     def __init__(self):
         """
         ctor must be without arguments, it is created with reflection at run time
@@ -50,7 +50,7 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         # In real life, this code will be preceded by SNMP/other calls to the resource details and will not be static
         # run 'shellfoundry generate' in order to create classes that represent your data model
 
-        '''
+        """
         resource = GcpTfBackend.create_from_context(context)
         resource.vendor = 'specify the shell vendor'
         resource.model = 'specify the shell model'
@@ -58,14 +58,19 @@ class GcpTfBackendDriver (ResourceDriverInterface):
         port1.ipv4_address = '192.168.10.7'
         resource.add_sub_resource('1', port1)
         return resource.create_autoload_details()
-        '''
+        """
         with LoggingSessionContext(context) as logger:
             try:
                 gcp_service = self._can_conntect_to_gcp(context, logger)
                 if not gcp_service:
-                    raise RuntimeError("There was an issue accessing GCP, please check authentication credentials.")
+                    raise RuntimeError(
+                        "There was an issue accessing GCP, please check authentication credentials."
+                    )
             except Exception as e:
-                self._raise_and_log(logger, f"There was an issue initialization GCP provider resource. {e}")
+                self._raise_and_log(
+                    logger,
+                    f"There was an issue initialization GCP provider resource. {e}",
+                )
             return AutoLoadDetails([], [])
 
     # </editor-fold>
@@ -77,13 +82,15 @@ class GcpTfBackendDriver (ResourceDriverInterface):
             if len(str(get_bucket)) < 0:
                 self._raise_and_log(logger, f"Bucket {bucket_name} not found")
         except Exception as e:
-            self._raise_and_log(logger, f"There was an issue accessing the bucket {bucket_name}.{e}")
+            self._raise_and_log(
+                logger, f"There was an issue accessing the bucket {bucket_name}.{e}"
+            )
 
     def _can_conntect_to_gcp(self, context, logger) -> bool:
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
         project_id = gcp_backend_resource.project
         self._create_gcp_session(context, project_id, logger)
-        client = discovery.build('compute', 'v1')
+        client = discovery.build("compute", "v1")
         response = client.healthChecks().list(project=project_id).execute()
         return len(response) > 0
 
@@ -99,11 +106,22 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 os.environ[GOOGLE_APPLICATION_CREDENTIALS] = gcp_service
                 os.environ["GOOGLE_PROJECT"] = project_id
             except Exception as e:
-                self._raise_and_log(logger, f"Inputs for Cloud Backend Access missing or incorrect.{e}")
-            tf_state_file_string = self._generate_state_file_string(gcp_backend_resource, tf_state_unique_name)
+                self._raise_and_log(
+                    logger, f"Inputs for Cloud Backend Access missing or incorrect.{e}"
+                )
+            tf_state_file_string = self._generate_state_file_string(
+                gcp_backend_resource, tf_state_unique_name
+            )
             backend_data = {"tf_state_file_string": tf_state_file_string}
-            logger.warning(f"Returning backend data for creating provider file :\n{backend_data}")
-            response = json.dumps({"backend_data": backend_data, "backend_secret_vars": self._backend_secret_vars})
+            logger.warning(
+                f"Returning backend data for creating provider file :\n{backend_data}"
+            )
+            response = json.dumps(
+                {
+                    "backend_data": backend_data,
+                    "backend_secret_vars": self._backend_secret_vars,
+                }
+            )
             return response
 
     def delete_tfstate_file(self, context, tf_state_unique_name: str):
@@ -119,16 +137,26 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 """Delete object under folder"""
                 blobs = list(bucket.list_blobs(prefix=tf_state_unique_name))
                 if len(blobs) == 0:
-                    self._raise_and_log(logger, f"Folder {tf_state_unique_name} not exists.")
+                    self._raise_and_log(
+                        logger, f"Folder {tf_state_unique_name} not exists."
+                    )
                 elif len(blobs) > 1:
-                    self._raise_and_log(logger, f"There are more than 1 Folder {tf_state_unique_name} currenlty {len(blobs)} folders exist.")
+                    self._raise_and_log(
+                        logger,
+                        f"There are more than 1 Folder {tf_state_unique_name} currenlty {len(blobs)} folders exist.",
+                    )
                 else:
                     bucket.delete_blobs(blobs)
                     logger.info(f"Folder {tf_state_unique_name} deleted.")
             except Exception as e:
-                self._raise_and_log(logger, f"{tf_state_unique_name} file was not removed from backend provider.{e}")
+                self._raise_and_log(
+                    logger,
+                    f"{tf_state_unique_name} file was not removed from backend provider.{e}",
+                )
 
-    def _generate_state_file_string(self, gcp_backend_resource: GcpTfBackend, tf_state_unique_name: str):
+    def _generate_state_file_string(
+        self, gcp_backend_resource: GcpTfBackend, tf_state_unique_name: str
+    ):
         tf_state_file_string = f'terraform {{\n\
 \tbackend "gcs" {{\n\
 \t\tbucket = "{gcp_backend_resource.bucket_name}"\n\
@@ -139,25 +167,37 @@ class GcpTfBackendDriver (ResourceDriverInterface):
 
     def _create_gcp_session(self, context, project_id: str, logger):
         if not project_id:
-            self._raise_and_log(logger, "Project id must be filled", error_type=ValueError)
+            self._raise_and_log(
+                logger, "Project id must be filled", error_type=ValueError
+            )
         api = CloudShellSessionContext(context).get_api()
         gcp_backend_resource = GcpTfBackend.create_from_context(context)
         json_path = gcp_backend_resource.credentials_json_path
         # json_path defines on GCP TF BACKEND RESOURCE
         if json_path:
             if gcp_backend_resource.cloud_provider:
-                self._raise_and_log(logger, "Only one method of authentication should be filled", error_type=ValueError)
+                self._raise_and_log(
+                    logger,
+                    "Only one method of authentication should be filled",
+                    error_type=ValueError,
+                )
             os.environ[GOOGLE_APPLICATION_CREDENTIALS] = json_path
             os.environ["GOOGLE_PROJECT"] = project_id
         # Keys not defines on GCP TF BACKEND RESOURCE (CLP reference should have been set)
         else:
             # CLP had not been set...
             if not gcp_backend_resource.cloud_provider:
-                self._raise_and_log(logger, "At least one method of authentication should be filled", error_type=ValueError)
+                self._raise_and_log(
+                    logger,
+                    "At least one method of authentication should be filled",
+                    error_type=ValueError,
+                )
 
             # Check a correct CLP has been reference
             clp_details = api.GetResourceDetails
-            clp_resource_details = self._get_and_validate_clp(clp_details, gcp_backend_resource, logger)
+            clp_resource_details = self._get_and_validate_clp(
+                clp_details, gcp_backend_resource, logger
+            )
             json_path = self._fill_backend_sercret_vars_data(clp_resource_details)
             os.environ[GOOGLE_APPLICATION_CREDENTIALS] = json_path
             os.environ["GOOGLE_PROJECT"] = project_id
@@ -172,13 +212,18 @@ class GcpTfBackendDriver (ResourceDriverInterface):
                 clp_json_path = attr.Value
                 return clp_json_path
 
-    def _get_and_validate_clp(self, clp_details, gcp_backend_resource: str, logger) -> str:
+    def _get_and_validate_clp(
+        self, clp_details, gcp_backend_resource: str, logger
+    ) -> str:
         clp_details_resource = clp_details(gcp_backend_resource.cloud_provider)
         clp_res_model = clp_details_resource.ResourceModelName
         clpr_res_fam = clp_details_resource.ResourceFamilyName
-        if (clpr_res_fam != 'Cloud Provider' and clpr_res_fam != 'CS_CloudProvider') or \
-                clp_res_model not in GCP_MODELS:
-            logger.warning(f"Cloud Provider does not have the expected type:{clpr_res_fam}")
+        if (
+            clpr_res_fam != "Cloud Provider" and clpr_res_fam != "CS_CloudProvider"
+        ) or clp_res_model not in GCP_MODELS:
+            logger.warning(
+                f"Cloud Provider does not have the expected type:{clpr_res_fam}"
+            )
         clp_name = clp_details(clp_details_resource.Name)
         return clp_name
 
@@ -189,5 +234,5 @@ class GcpTfBackendDriver (ResourceDriverInterface):
 
         (err_type, value, traceback) = sys.exc_info()
         if err_type:
-            raise   # re-raising original exception
+            raise  # re-raising original exception
         raise RuntimeError(msg)
