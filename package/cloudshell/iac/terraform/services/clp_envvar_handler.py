@@ -94,17 +94,22 @@ class AWSCloudProviderEnvVarHandler(BaseCloudProviderEnvVarHandler):
     def _assume_shared_vpc_role(aws_session, shared_vpc_role_arn, region):
         endpoint_url = f"https://sts.{region}.amazonaws.com"
         sts = aws_session.client("sts", endpoint_url=endpoint_url)
-        data = sts.assume_role(
-            RoleArn=shared_vpc_role_arn,
-            RoleSessionName="CS-SharedVPC-Session",
-        )
-        credentials = data["Credentials"]
-        session = boto3.Session(
-            aws_access_key_id=credentials["AccessKeyId"],
-            aws_secret_access_key=credentials["SecretAccessKey"],
-            aws_session_token=credentials["SessionToken"],
-            region_name=region,
-        )
+
+        data = sts.get_caller_identity()
+        if data.get("Arn") == shared_vpc_role_arn:
+            session = aws_session
+        else:
+            data = sts.assume_role(
+                RoleArn=shared_vpc_role_arn,
+                RoleSessionName="CS-SharedVPC-Session",
+            )
+            credentials = data["Credentials"]
+            session = boto3.Session(
+                aws_access_key_id=credentials["AccessKeyId"],
+                aws_secret_access_key=credentials["SecretAccessKey"],
+                aws_session_token=credentials["SessionToken"],
+                region_name=region,
+            )
         return session
 
     def _get_credentials(self, session):
