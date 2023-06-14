@@ -1,12 +1,6 @@
 import logging
 
-from cloudshell.iac.terraform.services.local_dir_service import LocalDir
-from cloudshell.iac.terraform.services.object_factory import ObjectFactory
-from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
-from cloudshell.iac.terraform.tagging.tags import TagsManager
-
 from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
-from cloudshell.cp.terraform.handlers.provider_handler import CPProviderHandler
 from cloudshell.cp.terraform.handlers.tf_handler import CPTfProcExec
 from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
@@ -26,7 +20,6 @@ class TerraformCPShell:
         self._logger = logger
         self._sandbox_id = sandbox_id
         self._backend_handler = CPBackendHandler(self._resource_config, self._logger)
-        self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
 
     def deploy_terraform(
         self,
@@ -40,7 +33,6 @@ class TerraformCPShell:
             self._backend_handler,
         )
         try:
-            self._provider_handler.initialize_provider(deploy_app)
             tf_proc_executer.init_terraform(deploy_app, vm_name)
             tf_proc_executer.tag_terraform(deploy_app)
             tf_proc_executer.plan_terraform(deploy_app, vm_name)
@@ -64,7 +56,6 @@ class TerraformCPShell:
         )
 
         try:
-            self._provider_handler.initialize_provider(deployed_app)
             tf_proc_executer.init_terraform(deployed_app, vm_name)
             tf_proc_executer.plan_terraform(deployed_app, vm_name)
             tf_proc_executer.apply_terraform()
@@ -86,10 +77,9 @@ class TerraformCPShell:
         try:
             vm_name = deployed_app.name
             path = deployed_app.vmdetails.uid
-            self._provider_handler.initialize_provider(deployed_app)
             tf_proc_executer.set_tf_working_dir(path)
             tf_proc_executer.init_terraform(deployed_app, vm_name, force_init=True)
-            tf_proc_executer.show_terraform()
+            tf_proc_executer.show_terraform(deployed_app)
             return tf_proc_executer.save_terraform_outputs(deployed_app, vm_name)
             # Todo UUID - path to tfstate, if tfstate not found raise Error
             #  mentioning case with multiple ES servers
@@ -108,7 +98,6 @@ class TerraformCPShell:
         tf_proc_executer.set_tf_working_dir(path)
 
         try:
-            self._provider_handler.initialize_provider(deployed_app)
             tf_proc_executer.init_terraform(deployed_app, deployed_app.name, True)
             tf_proc_executer.destroy_terraform(deployed_app)
         finally:

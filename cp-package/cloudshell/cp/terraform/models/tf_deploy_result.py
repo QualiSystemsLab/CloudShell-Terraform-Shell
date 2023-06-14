@@ -1,7 +1,6 @@
 from functools import lru_cache
 
 from cloudshell.cp.core.request_actions.models import Attribute, VmDetailsData
-
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.cp.terraform.utils.vm_details import create_vm_details
 

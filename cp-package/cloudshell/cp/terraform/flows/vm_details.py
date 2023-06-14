@@ -2,7 +2,6 @@ from logging import Logger
 
 from cloudshell.cp.core.flows import AbstractVMDetailsFlow
 from cloudshell.cp.core.request_actions.models import VmDetailsData
-
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
 from cloudshell.cp.terraform.terraform_cp_shell import TerraformCPShell
 

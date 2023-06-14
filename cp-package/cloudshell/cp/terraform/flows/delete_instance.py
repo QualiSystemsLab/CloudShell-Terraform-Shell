@@ -5,11 +5,11 @@ from logging import Logger
 from threading import Lock
 
 from cloudshell.cp.core.reservation_info import ReservationInfo
-from cloudshell.iac.terraform.tagging.tags import TagsManager
-
 from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
 from cloudshell.cp.terraform.terraform_cp_shell import TerraformCPShell
+
+from cloudshell.iac.terraform.tagging.tags import TagsManager
 
 folder_delete_lock = Lock()
 

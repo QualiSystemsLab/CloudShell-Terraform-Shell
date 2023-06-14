@@ -1,13 +1,23 @@
 from __future__ import annotations
 
+import functools
 import json
 import logging
 import os
 import shutil
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, check_output
+from typing import Union
 
-from cloudshell.cp.core.request_actions.models import VMDetails
+from cloudshell.cp.terraform.constants import REFRESH
+from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
+from cloudshell.cp.terraform.handlers.cp_downloader import CPDownloader
+from cloudshell.cp.terraform.handlers.provider_handler import CPProviderHandler
+from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
+from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
+from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
+from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
+
 from cloudshell.iac.terraform.constants import (
     ALLOWED_LOGGING_CMDS,
     APPLY,
@@ -26,15 +36,6 @@ from cloudshell.iac.terraform.tagging.tag_terraform_resources import (
     start_tagging_terraform_resources,
 )
 
-from cloudshell.cp.terraform.constants import REFRESH
-from cloudshell.cp.terraform.handlers.cp_backend_handler import CPBackendHandler
-from cloudshell.cp.terraform.handlers.cp_downloader import CPDownloader
-from cloudshell.cp.terraform.handlers.provider_handler import CPProviderHandler
-from cloudshell.cp.terraform.models.deploy_app import VMFromTerraformGit
-from cloudshell.cp.terraform.models.deployed_app import BaseTFDeployedApp
-from cloudshell.cp.terraform.models.tf_deploy_result import TFDeployResult
-from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
-
 
 class CPTfProcExec:
     def __init__(
@@ -50,6 +51,7 @@ class CPTfProcExec:
         self._backend_handler = backend_handler
         self._tf_working_dir = None
         self._provider_handler = CPProviderHandler(self._resource_config, self._logger)
+        self._env = None
 
     def _get_inputs(
         self, deploy_app: VMFromTerraformGit | BaseTFDeployedApp
@@ -61,6 +63,15 @@ class CPTfProcExec:
         )
 
         return inputs
+
+    def _get_cp_auth_env_vars(
+        self, deploy_app: BaseTFDeployedApp | VMFromTerraformGit
+    ) -> dict[str, str]:
+        if not self._env:
+            self._env = os.environ | self._provider_handler.initialize_provider(
+                deploy_app
+            )
+        return self._env
 
     def set_tf_working_dir(self, tf_working_dir: str):
         self._tf_working_dir = tf_working_dir
@@ -101,6 +112,7 @@ class CPTfProcExec:
         app_name: str,
         force_init: bool = False,
     ):
+        env_vars = self._get_cp_auth_env_vars(deploy_app)
         self._logger.info("Performing Terraform Init...")
         tf_working_dir = self._get_tf_working_dir(deploy_app)
         self._backend_handler.generate_backend_cfg_file(
@@ -115,13 +127,14 @@ class CPTfProcExec:
             for key in backend_config_vars.keys():
                 variables.append(f"-backend-config={key}={backend_config_vars[key]}")
         try:
-            self._run_tf_proc_with_command(variables, INIT)
+            self._run_tf_proc_with_command(variables, env_vars, INIT)
         except Exception as e:
             raise
 
     def destroy_terraform(self, deployed_app: BaseTFDeployedApp):
         self._logger.info("Performing Terraform Destroy")
         cmd = ["destroy", "-auto-approve", "-no-color"]
+        env_vars = self._get_cp_auth_env_vars(deployed_app)
         if deployed_app.name:
             name = next(
                 (
@@ -143,7 +156,7 @@ class CPTfProcExec:
 
         try:
             self._logger.info(cmd)
-            self._run_tf_proc_with_command(cmd, DESTROY)
+            self._run_tf_proc_with_command(cmd, env_vars, DESTROY)
             self._backend_handler.delete_backend_tf_state_file(
                 deployed_app.name, self._sandbox_id
             )
@@ -183,6 +196,7 @@ class CPTfProcExec:
     def plan_terraform(self, deploy_app, vm_name=None) -> None:
         self._logger.info("Running Terraform Plan")
 
+        env_vars = self._get_cp_auth_env_vars(deploy_app)
         cmd = ["plan", "-out", "planfile", "-input=false", "-no-color"]
         if vm_name:
             name = next(
@@ -203,7 +217,7 @@ class CPTfProcExec:
             cmd.extend(["-var", f"{tf_var_name}={tf_var_value}"])
 
         try:
-            self._run_tf_proc_with_command(cmd, PLAN)
+            self._run_tf_proc_with_command(cmd, env_vars, PLAN)
         except Exception:
             self._logger.error("Terraform Plan failed.")
             raise
@@ -215,15 +229,15 @@ class CPTfProcExec:
 
         try:
             self._logger.info("Executing Terraform Apply...")
-            self._run_tf_proc_with_command(cmd, APPLY)
+            self._run_tf_proc_with_command(cmd, self._env, APPLY)
             self._logger.info("Terraform Apply completed")
         except Exception as e:
             self._logger.info("Terraform Apply Failed")
             raise
 
-    def show_terraform(self) -> None:
+    def show_terraform(self, deployed_app) -> None:
         self._logger.info("Running Terraform Refresh")
-
+        env_vars = self._get_cp_auth_env_vars(deployed_app)
         cmd = ["show", "-no-color"]
         # tf_vars = self._get_inputs(deployed_app)
         # add all TF variables to command
@@ -232,7 +246,7 @@ class CPTfProcExec:
 
         try:
             self._logger.info("Executing Terraform Refresh...")
-            self._run_tf_proc_with_command(cmd, REFRESH)
+            self._run_tf_proc_with_command(cmd, env_vars, REFRESH)
             self._logger.info("Terraform Refresh completed")
         except Exception as e:
             self._logger.info("Terraform Refresh Failed")
@@ -241,12 +255,13 @@ class CPTfProcExec:
     def save_terraform_outputs(
         self, deploy_app: VMFromTerraformGit | BaseTFDeployedApp, app_name: str
     ) -> TFDeployResult | None:
+        env_vars = self._get_cp_auth_env_vars(deploy_app)
         try:
             self._logger.info("Running 'terraform output -json'")
 
             # get all TF outputs in json format
             cmd = ["output", "-json"]
-            tf_exec_output = self._run_tf_proc_with_command(cmd, OUTPUT)
+            tf_exec_output = self._run_tf_proc_with_command(cmd, env_vars, OUTPUT)
             unparsed_output_json = json.loads(tf_exec_output)
 
             return TFDeployResult(
@@ -263,13 +278,13 @@ class CPTfProcExec:
             )
             raise
 
-    def _run_tf_proc_with_command(self, cmd: list, command: str) -> str:
+    def _run_tf_proc_with_command(self, cmd: list, env: dict, command: str) -> str:
         tform_command = [f"{os.path.join(self._tf_working_dir, 'terraform.exe')}"]
         tform_command.extend(cmd)
 
         try:
             output = check_output(
-                tform_command, cwd=self._tf_working_dir, stderr=STDOUT
+                tform_command, cwd=self._tf_working_dir, env=env, stderr=STDOUT
             ).decode("utf-8")
 
             clean_output = StringCleaner.get_clean_string(output)

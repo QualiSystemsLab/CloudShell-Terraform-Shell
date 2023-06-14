@@ -4,6 +4,8 @@ from datetime import datetime
 from distutils.util import strtobool
 from subprocess import STDOUT, CalledProcessError, check_output
 
+from cloudshell.logging.qs_logger import _create_logger
+
 from cloudshell.iac.terraform.constants import (
     ALLOWED_LOGGING_CMDS,
     APPLY,
@@ -32,7 +34,6 @@ from cloudshell.iac.terraform.services.string_cleaner import StringCleaner
 from cloudshell.iac.terraform.tagging.tag_terraform_resources import (
     start_tagging_terraform_resources,
 )
-from cloudshell.logging.qs_logger import _create_logger
 
 
 class TfProcExec:

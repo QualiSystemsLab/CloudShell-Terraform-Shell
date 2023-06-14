@@ -4,12 +4,11 @@ import re
 from enum import Enum
 from functools import lru_cache
 
+from cloudshell.cp.terraform.exceptions import InvalidResourceAttributeValue
 from cloudshell.shell.standards.core.resource_config_entities import (
     ResourceAttrRO,
     ResourceBoolAttrRO,
 )
-
-from cloudshell.cp.terraform.exceptions import InvalidResourceAttributeValue
 
 COLLECTION_SEPARATOR_PATTERN = re.compile(r"[,;]")
 KEY_VALUE_SEPARATOR_PATTERN = re.compile(r"[=]")

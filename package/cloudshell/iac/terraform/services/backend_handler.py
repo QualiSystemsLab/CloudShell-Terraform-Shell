@@ -2,6 +2,7 @@ import json
 import os
 
 from cloudshell.api.cloudshell_api import InputNameValue
+
 from cloudshell.iac.terraform.constants import (
     ATTRIBUTE_NAMES,
     DELETE_TFSTATE_FILE_COMMAND,

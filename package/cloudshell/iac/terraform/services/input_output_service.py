@@ -3,6 +3,7 @@ from collections import namedtuple
 from typing import Dict, List
 
 from cloudshell.api.cloudshell_api import AttributeNameValue
+
 from cloudshell.iac.terraform.constants import ATTRIBUTE_NAMES
 from cloudshell.iac.terraform.models.shell_helper import ShellHelperObject
 

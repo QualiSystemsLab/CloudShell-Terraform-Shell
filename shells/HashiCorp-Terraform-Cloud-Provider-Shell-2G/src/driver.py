@@ -1,16 +1,6 @@
 from cloudshell.cp.core.cancellation_manager import CancellationContextManager
 from cloudshell.cp.core.request_actions import GetVMDetailsRequestActions
 from cloudshell.cp.core.reservation_info import ReservationInfo
-from cloudshell.shell.core.driver_context import (
-    AutoLoadDetails,
-    CancellationContext,
-    ResourceCommandContext,
-)
-from cloudshell.shell.core.driver_utils import GlobalLock
-from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
-from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
-from cloudshell.shell.core.session.logging_session import LoggingSessionContext
-
 from cloudshell.cp.terraform.flows import delete_instance
 from cloudshell.cp.terraform.flows.deploy_vm.base_flow import TFDeployVMFlow
 from cloudshell.cp.terraform.flows.refresh_ip import refresh_ip
@@ -24,6 +14,15 @@ from cloudshell.cp.terraform.models.deployed_app import (
     TFDeployedVMActions,
 )
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
+from cloudshell.shell.core.driver_context import (
+    AutoLoadDetails,
+    CancellationContext,
+    ResourceCommandContext,
+)
+from cloudshell.shell.core.driver_utils import GlobalLock
+from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
+from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
+from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
 
 class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):

@@ -1,7 +1,8 @@
-from cloudshell.iac.terraform import TerraformShell, TerraformShellConfig
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.session.logging_session import LoggingSessionContext
+
+from cloudshell.iac.terraform import TerraformShell, TerraformShellConfig
 
 
 class GenericTerraformServiceDriver(ResourceDriverInterface):

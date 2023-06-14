@@ -1,6 +1,7 @@
 import json
 
 from cloudshell.api.cloudshell_api import GetSandboxDataInfo, SandboxDataKeyValue
+
 from cloudshell.iac.terraform.constants import (
     ATTRIBUTE_NAMES,
     DESTROY_STATUS,

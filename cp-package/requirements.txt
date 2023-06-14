@@ -1,3 +1,4 @@
+boto3
 cloudshell-iac-terraform~=1.3
 cloudshell-automation-api~=2021.1
 cloudshell-shell-core~=5.0

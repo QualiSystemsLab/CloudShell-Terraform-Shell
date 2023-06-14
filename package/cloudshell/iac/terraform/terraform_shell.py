@@ -1,6 +1,9 @@
 import logging
 from contextlib import nullcontext
 
+from cloudshell.shell.core.driver_context import ResourceCommandContext
+from cloudshell.shell.core.session.logging_session import LoggingSessionContext
+
 from cloudshell.iac.terraform import TerraformShellConfig
 from cloudshell.iac.terraform.constants import (
     ATTRIBUTE_NAMES,
@@ -12,8 +15,6 @@ from cloudshell.iac.terraform.services.local_dir_service import LocalDir
 from cloudshell.iac.terraform.services.object_factory import ObjectFactory
 from cloudshell.iac.terraform.services.provider_handler import ProviderHandler
 from cloudshell.iac.terraform.services.sandox_data import SandboxDataHandler
-from cloudshell.shell.core.driver_context import ResourceCommandContext
-from cloudshell.shell.core.session.logging_session import LoggingSessionContext
 
 
 class TerraformShell:

@@ -1,6 +1,7 @@
 from logging import Logger
 
 from cloudshell.api.cloudshell_api import ResourceInfo
+
 from cloudshell.iac.terraform.constants import (
     ATTRIBUTE_NAMES,
     AWS1G_MODEL,

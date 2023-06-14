@@ -2,10 +2,9 @@ from logging import Logger
 
 import attr
 
-from cloudshell.shell.core.driver_context import AutoLoadDetails
-
 # from cloudshell.cp.terraform.actions.validation import ValidationActions
 from cloudshell.cp.terraform.resource_config import TerraformResourceConfig
+from cloudshell.shell.core.driver_context import AutoLoadDetails
 
 
 @attr.s(auto_attribs=True)
