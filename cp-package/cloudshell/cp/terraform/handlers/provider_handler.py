@@ -170,12 +170,12 @@ class CPProviderHandler:
 
     def initialize_provider(
         self, deploy_app: BaseTFDeployedApp | VMFromTerraformGit
-    ) -> dict[str, str] | None:
+    ) -> dict[str, str]:
         clp_resource_name = (
             deploy_app.cloud_provider or self._resource_config.cloud_provider
         )
         if not clp_resource_name:
-            return
+            return {}
         clp_details = self._resource_config.api.GetResourceDetails(clp_resource_name)
         clp_res_model = clp_details.ResourceModelName
 

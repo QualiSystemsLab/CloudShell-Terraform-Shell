@@ -48,8 +48,8 @@ class TerraformResourceConfig(GenericResourceConfig):
     custom_tags = CustomTagsAttrRO(
         ATTR_NAMES.custom_tags, ResourceListAttrRO.NAMESPACE.SHELL_NAME
     )
-    apply_tags = False
-    # apply_tags = ResourceBoolAttrROShellName(ATTR_NAMES.apply_tags)
+    # apply_tags = False
+    apply_tags = ResourceBoolAttrROShellName(ATTR_NAMES.apply_tags)
 
     @classmethod
     def from_context(
