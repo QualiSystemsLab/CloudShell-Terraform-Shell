@@ -168,8 +168,18 @@ class CPTfProcExec:
             try:
                 self._logger.info("Adding Tags to Terraform Resources")
 
-                inputs_dict = self._get_inputs(deploy_app)
-
+                inputs_dict = self._get_inputs(deploy_app) or {}
+                if deploy_app.app_name:
+                    name = next(
+                        (
+                            k
+                            for k, v in deploy_app.terraform_app_inputs_map.items()
+                            if v == "app_name"
+                        ),
+                        None,
+                    )
+                    if name:
+                        inputs_dict[name] = deploy_app.app_name
                 tags_dict = self._resource_config.tags | deploy_app.custom_tags
 
                 if len(tags_dict) > 50:

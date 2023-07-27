@@ -61,15 +61,15 @@ class TerraformResourceConfig(GenericResourceConfig):
     ) -> TerraformResourceConfig:
         # noinspection PyTypeChecker
         # return type is VCenterResourceConfig not GenericResourceConfig
-        # if isinstance(context, ResourceRemoteCommandContext):
-        #     reservation = context.remote_reservation
-        # else:
-        #     reservation = context.reservation
-        # tags_manager = TagsManager(reservation)
+        if hasattr(context, "remote_reservation"):
+            reservation = context.remote_reservation
+        else:
+            reservation = context.reservation
+        tags_manager = TagsManager(reservation)
         result = super().from_context(
             context=context, shell_name=shell_name, api=api, supported_os=supported_os
         )
-        # result.tags = tags_manager.get_default_tags() | result.custom_tags
+        result.tags = tags_manager.get_default_tags() | result.custom_tags
         return result
 
     @classmethod
