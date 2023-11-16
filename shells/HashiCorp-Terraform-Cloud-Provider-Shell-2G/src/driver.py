@@ -1,7 +1,7 @@
 from cloudshell.cp.core.cancellation_manager import CancellationContextManager
 from cloudshell.cp.core.request_actions import GetVMDetailsRequestActions
 from cloudshell.cp.core.reservation_info import ReservationInfo
-from cloudshell.cp.terraform.flows import delete_instance
+from cloudshell.cp.terraform.flows import delete_instance, reconfigure_vm
 from cloudshell.cp.terraform.flows.deploy_vm.base_flow import TFDeployVMFlow
 from cloudshell.cp.terraform.flows.refresh_ip import refresh_ip
 from cloudshell.cp.terraform.flows.vm_details import TFGetVMDetailsFlow
@@ -91,6 +91,28 @@ class HashiCorpTerraformCloudProviderShell2GDriver(ResourceDriverInterface):
                 logger=logger,
             )
             return deploy_flow.deploy(request_actions=request_actions)
+
+    def reconfigure_module(self, context, ports):
+        """Called to update an exiting terraform deployment.
+
+        Method updates the Terraform modules - VM instance or
+        container, based on resource attributes.
+        :param RemoteResourceCommandContext context:
+        :param ports:
+        """
+        with LoggingSessionContext(context) as logger:
+            logger.info("Starting Deploy command")
+            api = CloudShellSessionContext(context).get_api()
+            resource_config = TerraformResourceConfig.from_context(context, api=api)
+            resource = context.remote_endpoints[0]
+            actions = TFDeployedVMActions.from_remote_resource(resource, api)
+            reservation_info = ReservationInfo.from_remote_resource_context(context)
+            reconfigure_vm(
+                deployed_app=actions.deployed_app,
+                resource_conf=resource_config,
+                logger=logger,
+                reservation_id=reservation_info.reservation_id,
+            )
 
     def PowerOnHidden(self, context, ports):
         self.PowerOn(context, ports)

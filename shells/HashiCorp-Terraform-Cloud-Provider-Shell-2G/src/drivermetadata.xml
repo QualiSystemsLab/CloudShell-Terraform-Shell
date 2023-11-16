@@ -16,6 +16,10 @@
             <Command Description="" DisplayName="Power On" Name="PowerOn" Tags="power" />
             <Command Description="" DisplayName="Power Off" Name="PowerOff" Tags="power" />
         </Category>
+        <Category Name="Management">
+            <Command Description="" DisplayName="Reconfigure Module"
+                     EnableCancellation="true" Name="reconfigure_module" Tags="remote_connectivity,allow_shared" />
+        </Category>
 
     </Layout>
 </Driver>

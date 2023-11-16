@@ -111,18 +111,23 @@ class CPTfProcExec:
         deploy_app: VMFromTerraformGit | BaseTFDeployedApp,
         app_name: str,
         force_init: bool = False,
+        upgrade_init: bool = False,
     ):
         env_vars = self._get_cp_auth_env_vars(deploy_app)
         self._logger.info("Performing Terraform Init...")
         tf_working_dir = self._get_tf_working_dir(deploy_app)
-        self._backend_handler.generate_backend_cfg_file(
-            app_name=app_name, sandbox_id=self._sandbox_id, working_dir=tf_working_dir
-        )
-        backend_config_vars = self._backend_handler.get_backend_secret_vars()
+        backend_config_vars = None
+        if not force_init or not upgrade_init:
+            self._backend_handler.generate_backend_cfg_file(
+                app_name=app_name, sandbox_id=self._sandbox_id, working_dir=tf_working_dir
+            )
+            backend_config_vars = self._backend_handler.get_backend_secret_vars()
 
         variables = ["init", "-no-color"]
         if force_init:
             variables.append("-reconfigure")
+        if upgrade_init:
+            variables.append("-upgrade")
         if backend_config_vars:
             for key in backend_config_vars.keys():
                 variables.append(f"-backend-config={key}={backend_config_vars[key]}")
@@ -163,13 +168,15 @@ class CPTfProcExec:
         except Exception as e:
             raise
 
-    def tag_terraform(self, deploy_app: VMFromTerraformGit) -> None:
+    def tag_terraform(self, deploy_app: VMFromTerraformGit | BaseTFDeployedApp) -> None:
         if self._resource_config.apply_tags:
             try:
                 self._logger.info("Adding Tags to Terraform Resources")
 
                 inputs_dict = self._get_inputs(deploy_app) or {}
-                if deploy_app.app_name:
+                name = None
+                if hasattr(deploy_app, "app_name") and deploy_app.app_name:
+
                     name = next(
                         (
                             k
@@ -178,8 +185,17 @@ class CPTfProcExec:
                         ),
                         None,
                     )
-                    if name:
-                        inputs_dict[name] = deploy_app.app_name
+                elif hasattr(deploy_app, "name") and deploy_app.name:
+                    name = next(
+                        (
+                            k
+                            for k, v in deploy_app.terraform_app_inputs_map.items()
+                            if v == "app_name"
+                        ),
+                        None,
+                    )
+                if name:
+                    inputs_dict[name] = deploy_app.app_name
                 tags_dict = self._resource_config.tags | deploy_app.custom_tags
 
                 if len(tags_dict) > 50:

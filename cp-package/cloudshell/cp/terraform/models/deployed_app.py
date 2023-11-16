@@ -11,7 +11,6 @@ from cloudshell.cp.terraform.models.base_deployment_app import (
     ResourceBoolAttrRODeploymentPath,
     ResourceDictAttrRODeploymentPath,
     ResourceDictPasswordAttrRODeploymentPath,
-    ResourcePasswordAttrRODeploymentPath,
     TerraformDeploymentAppAttributeNames,
 )
 
@@ -55,6 +54,30 @@ class BaseTFDeployedApp(DeployedApp):
                 inputs[input_name] = attr
 
         return inputs
+
+    @property
+    def full_name_attrs_map(self):
+        """Get full name attributes map.
+
+        :return: dict of full name attributes
+        :rtype: dict[str: str]
+        """
+        attrs_map = {}
+        for attr_name, attr in self.attributes.items():
+            if attr_name.startswith(self.DEPLOYMENT_PATH):
+                continue
+            attrs_map[attr_name.split(".")[-1]] = attr_name
+        return attrs_map
+
+    def get_app_resource_attribute(self, attr_name):
+        """Get App Resource attribute by its name.
+
+        :param str attr_name:
+        :return:
+        """
+        for attr, value in self.attributes.items():
+            if any([attr == attr_name, attr.endswith(f".{attr_name}")]):
+                return value
 
 
 class TFGetVMDetailsRequestActions(GetVMDetailsRequestActions):

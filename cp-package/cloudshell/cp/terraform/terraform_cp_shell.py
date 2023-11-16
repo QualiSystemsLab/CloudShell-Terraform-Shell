@@ -45,8 +45,10 @@ class TerraformCPShell:
                 tf_proc_executer.delete_local_temp_dir(deploy_app)
             raise
 
-    def learn_terraform(
-        self, deployed_app: BaseTFDeployedApp, vm_name
+    def update_terraform(
+        self,
+        deployed_app: BaseTFDeployedApp,
+        vm_name: str,
     ) -> TFDeployResult:
         tf_proc_executer = CPTfProcExec(
             self._resource_config,
@@ -56,7 +58,10 @@ class TerraformCPShell:
         )
 
         try:
-            tf_proc_executer.init_terraform(deployed_app, vm_name)
+            path = deployed_app.vmdetails.uid
+            tf_proc_executer.set_tf_working_dir(path)
+            tf_proc_executer.init_terraform(deployed_app, vm_name, upgrade_init=True)
+            tf_proc_executer.tag_terraform(deployed_app)
             tf_proc_executer.plan_terraform(deployed_app, vm_name)
             tf_proc_executer.apply_terraform()
             return tf_proc_executer.save_terraform_outputs(deployed_app, vm_name)

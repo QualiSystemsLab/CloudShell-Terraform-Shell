@@ -24,13 +24,6 @@ class SwitchNotFound(BaseTFException):
         super().__init__(f"Neither dvSwitch nor vSwitch with name {name} not found")
 
 
-# class HostNotPresentInCluster(BaseTFException):
-#     def __init__(self, cluster: ClusterHandler):
-#         self.cluster = cluster
-#         super().__init__(f"There aren't hosts in the {cluster}")
-
-
-# todo move this validation to the model
 BEHAVIOURS_DURING_SAVE = ("Remain Powered On", "Power Off")
 
 
